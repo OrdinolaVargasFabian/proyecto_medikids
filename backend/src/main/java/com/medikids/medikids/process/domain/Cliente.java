@@ -1,0 +1,26 @@
+package com.medikids.medikids.process.domain;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Setter
+@Getter
+@ToString
+@Builder
+@Table(name = "Cliente")
+public class Cliente {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Column(nullable = false)
+    private int id_cliente;
+    @Column(nullable = false)
+    private int id_usuario;
+    @Column(nullable = false)
+    private int dni_responsable;
+    @Column(nullable = false)
+    private String direccion;
+}
