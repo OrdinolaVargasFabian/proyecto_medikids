@@ -3,6 +3,8 @@ package com.medikids.medikids.process.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Date;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,6 +20,8 @@ public class Usuario {
     @Column(nullable = false)
     private int id_usuario;
     @Column(nullable = false)
+    private int id_rol;
+    @Column(nullable = false)
     private String nombres;
     @Column(nullable = false)
     private String apellidos;
@@ -27,6 +31,28 @@ public class Usuario {
     private String password;
     @Column(nullable = false)
     private int telefono;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false, updatable = false)
+    private Date fecha_registro;
+
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private int id_rol;
+    private Date fecha_modificado;
+
+    @Column(nullable = false)
+    private char visible; //1: Sí, 0: No
+
+    @PrePersist
+    protected void onCreate() {
+        Date ahora = new Date();
+        this.fecha_registro = ahora;
+        this.fecha_modificado = ahora;
+        this.visible = '1';
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.fecha_modificado = new Date();
+    }
 }

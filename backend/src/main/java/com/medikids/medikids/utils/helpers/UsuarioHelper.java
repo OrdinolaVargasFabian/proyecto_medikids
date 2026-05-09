@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,9 @@ public class UsuarioHelper implements Serializable {
                 .email(usuario.getEmail())
                 .password(usuario.getPassword())
                 .telefono(usuario.getTelefono())
+                .fecha_registro(usuario.getFecha_registro())
+                .fecha_modificado(usuario.getFecha_modificado())
+                .visible(usuario.getVisible())
                 .build();
     }
 
@@ -32,12 +36,13 @@ public class UsuarioHelper implements Serializable {
     public static Usuario buildUsuario(UsuarioRequest usuario) {
         return Usuario.builder()
                 .id_usuario(usuario.getId_usuario())
+                .id_rol(usuario.getId_rol())
                 .nombres(usuario.getNombres())
                 .apellidos(usuario.getApellidos())
                 .email(usuario.getEmail())
                 .password(usuario.getPassword())
                 .telefono(usuario.getTelefono())
-                .id_rol(usuario.getId_rol())
+                .fecha_registro(new Date())
                 .build();
     }
 
@@ -52,6 +57,9 @@ public class UsuarioHelper implements Serializable {
                         .email(usuario.getEmail())
                         .password(usuario.getPassword())
                         .telefono(usuario.getTelefono())
+                        .fecha_registro(usuario.getFecha_registro())
+                        .fecha_modificado(usuario.getFecha_modificado())
+                        .visible(usuario.getVisible())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -67,6 +75,9 @@ public class UsuarioHelper implements Serializable {
                         .email(usuario.getEmail())
                         .password(usuario.getPassword())
                         .telefono(usuario.getTelefono())
+                        .fecha_registro(usuario.getFecha_registro())
+                        .fecha_modificado(usuario.getFecha_modificado())
+                        .visible(usuario.getVisible())
                         .build())
                 .collect(Collectors.toList());
         Page<UsuarioDto> usuarioPage$ = new PageImpl<UsuarioDto>(usuarios);

@@ -1,14 +1,17 @@
 package com.medikids.medikids.expose.web;
 
+import com.medikids.medikids.expose.model.UsuarioRequest;
 import com.medikids.medikids.process.dto.UsuarioDto;
 import com.medikids.medikids.process.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/usuario")
@@ -20,5 +23,38 @@ public class UsuarioController {
     @GetMapping("/all")
     public List<UsuarioDto> all() {
         return usuarioService.getAll();
+    }
+
+    @GetMapping("/getBy/{id}")
+    public ResponseEntity<UsuarioDto> getById(@PathVariable int id) {
+        UsuarioDto usuarioDto = usuarioService.getById(id);
+        if (Objects.nonNull(usuarioDto)) {
+            return ResponseEntity.ok(usuarioDto);
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    @PostMapping("/save")
+    public UsuarioDto save(@RequestBody UsuarioRequest usuario) {
+        return usuarioService.save(usuario);
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<UsuarioDto> update(@PathVariable int id, @RequestBody UsuarioRequest usuario) {
+        UsuarioDto usuarioDto = usuarioService.update(id, usuario);
+        if (Objects.nonNull(usuarioDto)) {
+            return ResponseEntity.ok(usuarioDto);
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Object> delete(@PathVariable int id) {
+        Boolean isDelete = usuarioService.delete(id);
+        if (isDelete)
+            return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }
