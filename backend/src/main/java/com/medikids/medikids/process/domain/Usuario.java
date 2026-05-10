@@ -43,6 +43,14 @@ public class Usuario {
     @Column(nullable = false)
     private char visible; //1: Sí, 0: No
 
+    // ── Campos para 2FA ──
+    @Column(nullable = true)
+    private String codigoVerificacion;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = true)
+    private Date codigoExpiracion;
+
     @PrePersist
     protected void onCreate() {
         Date ahora = new Date();

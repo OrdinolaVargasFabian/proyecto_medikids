@@ -6,6 +6,7 @@ import com.medikids.medikids.process.dto.UsuarioDto;
 import com.medikids.medikids.process.repository.UsuarioRepository;
 import com.medikids.medikids.utils.helpers.UsuarioHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -17,6 +18,9 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public List<UsuarioDto> getAll() {
         return UsuarioHelper.mapAll(usuarioRepository.findAll());
     }
@@ -27,6 +31,8 @@ public class UsuarioService {
     }
 
     public UsuarioDto save(UsuarioRequest usuario) {
+        // Encriptar password antes de guardar
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         return UsuarioHelper.mapUsuario(usuarioRepository.save(UsuarioHelper.buildUsuario(usuario)));
     }
 
@@ -37,7 +43,7 @@ public class UsuarioService {
             usuarioUpdate.get().setNombres(usuario.getNombres());
             usuarioUpdate.get().setApellidos(usuario.getApellidos());
             usuarioUpdate.get().setEmail(usuario.getEmail());
-            usuarioUpdate.get().setPassword(usuario.getPassword());
+            usuarioUpdate.get().setPassword(passwordEncoder.encode(usuario.getPassword()));
             usuarioUpdate.get().setTelefono(usuario.getTelefono());
             usuarioUpdate.get().setFecha_modificado(new Date());
 
