@@ -1,8 +1,8 @@
-package com.medikids.medikids_osorio_backend.utils.helper;
+package com.medikids.medikids.utils.helpers;
 
-import com.medikids.medikids_osorio_backend.expose.model.PacienteRequest;
-import com.medikids.medikids_osorio_backend.process.domain.Paciente;
-import com.medikids.medikids_osorio_backend.process.dto.PacienteDto;
+import com.medikids.medikids.expose.model.PacienteRequest;
+import com.medikids.medikids.process.domain.Paciente;
+import com.medikids.medikids.process.dto.PacienteDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 

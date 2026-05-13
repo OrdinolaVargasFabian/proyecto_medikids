@@ -1,8 +1,8 @@
-package com.medikids.medikids_osorio_backend.expose.web;
+package com.medikids.medikids.expose.web;
 
-import com.medikids.medikids_osorio_backend.expose.model.PacienteRequest;
-import com.medikids.medikids_osorio_backend.process.dto.PacienteDto;
-import com.medikids.medikids_osorio_backend.process.service.PacienteService;
+import com.medikids.medikids.expose.model.PacienteRequest;
+import com.medikids.medikids.process.dto.PacienteDto;
+import com.medikids.medikids.process.service.PacienteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

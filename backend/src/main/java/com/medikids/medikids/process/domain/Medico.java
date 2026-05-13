@@ -1,4 +1,4 @@
-package com.medikids.medikids_osorio_backend.process.domain;
+package com.medikids.medikids.process.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
