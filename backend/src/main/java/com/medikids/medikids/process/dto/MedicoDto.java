@@ -18,4 +18,7 @@ public class MedicoDto implements Serializable {
     private String estado;
     private int id_usuario;
     private int id_especialidad;
+    private String nombres;
+    private String apellidos;
+    private String email;
 }

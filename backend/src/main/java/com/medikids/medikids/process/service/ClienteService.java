@@ -25,6 +25,11 @@ public class ClienteService {
         return cliente.map(ClienteHelper::mapCliente).orElse(null);
     }
 
+    public ClienteDto getByIdUsuario(int idUsuario) {
+        Optional<Cliente> cliente = clienteRepository.findByIdUsuario(idUsuario);
+        return cliente.map(ClienteHelper::mapCliente).orElse(null);
+    }
+
     public ClienteDto save(ClienteRequest cliente) {
         return ClienteHelper.mapCliente(clienteRepository.save(ClienteHelper.buildCliente(cliente)));
     }

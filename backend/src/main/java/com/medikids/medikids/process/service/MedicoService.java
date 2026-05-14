@@ -2,14 +2,17 @@ package com.medikids.medikids.process.service;
 
 import com.medikids.medikids.expose.model.MedicoRequest;
 import com.medikids.medikids.process.domain.Medico;
+import com.medikids.medikids.process.domain.Usuario;
 import com.medikids.medikids.process.dto.MedicoDto;
 import com.medikids.medikids.process.repository.MedicoRepository;
+import com.medikids.medikids.process.repository.UsuarioRepository;
 import com.medikids.medikids.utils.helpers.MedicoHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MedicoService {
@@ -17,13 +20,34 @@ public class MedicoService {
     @Autowired
     private MedicoRepository medicoRepository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     public List<MedicoDto> getAll() {
-        return MedicoHelper.mapAll(medicoRepository.findAll());
+        List<Medico> medicos = medicoRepository.findAll();
+        return medicos.stream().map(m -> {
+            MedicoDto dto = MedicoHelper.mapMedico(m);
+            Usuario u = usuarioRepository.findById((long) m.getId_usuario()).orElse(null);
+            if (u != null) {
+                dto.setNombres(u.getNombres());
+                dto.setApellidos(u.getApellidos());
+                dto.setEmail(u.getEmail());
+            }
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     public MedicoDto getById(int id) {
         Optional<Medico> medico = medicoRepository.findById((long) id);
-        return medico.map(MedicoHelper::mapMedico).orElse(null);
+        if (medico.isEmpty()) return null;
+        MedicoDto dto = MedicoHelper.mapMedico(medico.get());
+        Usuario u = usuarioRepository.findById((long) medico.get().getId_usuario()).orElse(null);
+        if (u != null) {
+            dto.setNombres(u.getNombres());
+            dto.setApellidos(u.getApellidos());
+            dto.setEmail(u.getEmail());
+        }
+        return dto;
     }
 
     public MedicoDto save(MedicoRequest medico) {
@@ -53,5 +77,25 @@ public class MedicoService {
         }
 
         return null;
+    }
+
+    public MedicoDto toggleStatus(int id) {
+        Optional<Medico> medicoOpt = medicoRepository.findById((long) id);
+        if (medicoOpt.isEmpty()) return null;
+
+        Medico medico = medicoOpt.get();
+        medico.setEstado(
+                medico.getEstado() == Medico.EstadoMedico.activo
+                        ? Medico.EstadoMedico.inactivo
+                        : Medico.EstadoMedico.activo
+        );
+        MedicoDto dto = MedicoHelper.mapMedico(medicoRepository.save(medico));
+        Usuario u = usuarioRepository.findById((long) medico.getId_usuario()).orElse(null);
+        if (u != null) {
+            dto.setNombres(u.getNombres());
+            dto.setApellidos(u.getApellidos());
+            dto.setEmail(u.getEmail());
+        }
+        return dto;
     }
 }

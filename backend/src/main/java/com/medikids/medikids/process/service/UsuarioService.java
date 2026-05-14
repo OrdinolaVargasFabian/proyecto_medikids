@@ -31,6 +31,10 @@ public class UsuarioService {
     }
 
     public UsuarioDto save(UsuarioRequest usuario) {
+        // Validar que el email no esté registrado
+        if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
+            throw new RuntimeException("El correo electrónico ya está registrado");
+        }
         // Encriptar password antes de guardar
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         return UsuarioHelper.mapUsuario(usuarioRepository.save(UsuarioHelper.buildUsuario(usuario)));

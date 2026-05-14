@@ -1,4 +1,5 @@
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { useMemo } from "react";
 
 const padresNav = [
   { label: "Panel Principal", path: "/padres", icon: "M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" },
@@ -18,15 +19,40 @@ const doctorNav = [
   { label: "Incidencias", path: "/doctor/incidencias", icon: "M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" },
 ];
 
+const ROLE_LABELS = {
+  1: "Padre / Tutor",
+  2: "Médico",
+  3: "Administrador",
+};
+
 export const DashboardLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const usuario = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("usuario"));
+    } catch {
+      return null;
+    }
+  }, []);
 
   const isAdmin = location.pathname.startsWith("/admin");
   const isDoctor = location.pathname.startsWith("/doctor");
   const navItems = isAdmin ? adminNav : isDoctor ? doctorNav : padresNav;
-  const roleLabel = isAdmin ? "Administrador" : isDoctor ? "Médico" : "Padre / Tutor";
-  const userName = isAdmin ? "Admin MediKids" : isDoctor ? "Dra. María García" : "Juan López";
-  const userInitials = isAdmin ? "AM" : isDoctor ? "MG" : "JL";
+
+  const rol = usuario?.id_rol;
+  const roleLabel = ROLE_LABELS[rol] || "Usuario";
+  const nombres = usuario?.nombres || "Usuario";
+  const apellidos = usuario?.apellidos || "";
+  const userName = `${nombres} ${apellidos}`.trim() || "Usuario";
+  const initials = (nombres.charAt(0) + (apellidos.charAt(0) || "")).toUpperCase() || "U";
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("usuario");
+    navigate("/login");
+  };
 
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden font-sans">
@@ -64,15 +90,15 @@ export const DashboardLayout = () => {
         </nav>
 
         <div className="p-4 border-t border-white/10">
-          <Link
-            to="/"
+          <button
+            onClick={handleLogout}
             className="w-full py-3 text-sm text-white/60 hover:text-white hover:bg-white/10 rounded-xl transition-colors flex items-center justify-center gap-2 font-medium"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
             </svg>
             Cerrar Sesión
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -94,7 +120,7 @@ export const DashboardLayout = () => {
               <div className="text-xs text-gray-500">{roleLabel}</div>
             </div>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-medi-400 to-medi-600 text-white flex items-center justify-center font-extrabold shadow-md">
-              {userInitials}
+              {initials}
             </div>
           </div>
         </header>

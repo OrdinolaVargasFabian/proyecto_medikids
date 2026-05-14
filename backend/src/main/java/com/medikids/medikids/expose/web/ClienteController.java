@@ -34,6 +34,16 @@ public class ClienteController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
+    @GetMapping("/usuario/{idUsuario}")
+    public ResponseEntity<ClienteDto> getByIdUsuario(@PathVariable int idUsuario) {
+        ClienteDto clienteDto = clienteService.getByIdUsuario(idUsuario);
+        if (Objects.nonNull(clienteDto)) {
+            return ResponseEntity.ok(clienteDto);
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
     @PostMapping("/save")
     public ClienteDto save(@RequestBody ClienteRequest cliente) {
         return clienteService.save(cliente);
