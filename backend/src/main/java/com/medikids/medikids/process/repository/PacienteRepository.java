@@ -1,8 +1,9 @@
-package com.medikids.medikids_osorio_backend.process.repository;
+package com.medikids.medikids.process.repository;
 
-import com.medikids.medikids_osorio_backend.process.domain.Paciente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.medikids.medikids.process.domain.Paciente;
 
 @Repository
 // La librería provee las consultas básicas, no es necesario implementarlas.

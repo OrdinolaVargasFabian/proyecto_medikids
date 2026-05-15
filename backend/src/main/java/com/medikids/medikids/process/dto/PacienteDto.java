@@ -1,4 +1,4 @@
-package com.medikids.medikids_osorio_backend.process.dto;
+package com.medikids.medikids.process.dto;
 
 import lombok.Builder;
 import lombok.Getter;

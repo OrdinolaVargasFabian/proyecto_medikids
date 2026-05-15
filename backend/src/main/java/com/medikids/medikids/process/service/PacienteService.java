@@ -1,12 +1,13 @@
-package com.medikids.medikids_osorio_backend.process.service;
+package com.medikids.medikids.process.service;
 
-import com.medikids.medikids_osorio_backend.expose.model.PacienteRequest;
-import com.medikids.medikids_osorio_backend.process.domain.Paciente;
-import com.medikids.medikids_osorio_backend.process.dto.PacienteDto;
-import com.medikids.medikids_osorio_backend.process.repository.PacienteRepository;
-import com.medikids.medikids_osorio_backend.utils.helper.PacienteHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.medikids.medikids.expose.model.PacienteRequest;
+import com.medikids.medikids.process.domain.Paciente;
+import com.medikids.medikids.process.dto.PacienteDto;
+import com.medikids.medikids.process.repository.PacienteRepository;
+import com.medikids.medikids.utils.helper.PacienteHelper;
 
 import java.util.List;
 import java.util.Optional;

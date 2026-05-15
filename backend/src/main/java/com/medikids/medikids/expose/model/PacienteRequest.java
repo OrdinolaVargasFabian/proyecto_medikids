@@ -1,4 +1,4 @@
-package com.medikids.medikids_osorio_backend.expose.model;
+package com.medikids.medikids.expose.model;
 
 import lombok.Getter;
 import lombok.Setter;
