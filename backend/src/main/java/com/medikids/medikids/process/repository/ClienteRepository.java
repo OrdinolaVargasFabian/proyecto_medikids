@@ -6,4 +6,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 // La libreria provee a las consultas, no es necesario hacerlas.
-public interface ClienteRepository extends JpaRepository<Cliente, Long> {}
+public interface ClienteRepository extends JpaRepository<Cliente, Long> {
+
+    // Consulta personalizada para buscar por dni
+    public java.util.Optional<Cliente> findByDni(String dni);
+}

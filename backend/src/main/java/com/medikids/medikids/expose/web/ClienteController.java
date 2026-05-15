@@ -19,12 +19,12 @@ public class ClienteController {
     @Autowired
     private final ClienteService clienteService;
 
-    @GetMapping("/all")
+    @GetMapping("")
     public List<ClienteDto> all() {
         return clienteService.getAll();
     }
 
-    @GetMapping("/getBy/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ClienteDto> getById(@PathVariable int id) {
         ClienteDto clienteDto = clienteService.getById(id);
         if (Objects.nonNull(clienteDto)) {
@@ -34,12 +34,12 @@ public class ClienteController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    @PostMapping("/save")
+    @PostMapping("/guardar")
     public ClienteDto save(@RequestBody ClienteRequest cliente) {
         return clienteService.save(cliente);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/actualizar/{id}")
     public ResponseEntity<ClienteDto> update(@PathVariable int id, @RequestBody ClienteRequest cliente) {
         ClienteDto clienteDto = clienteService.update(id, cliente);
         if (Objects.nonNull(clienteDto)) {
@@ -48,4 +48,20 @@ public class ClienteController {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
+
+    // filtros por nombre o apllido
+    @GetMapping("/nombre/{nombre}")
+    public List<ClienteDto> getByNombre(@PathVariable String nombre) {
+        return clienteService.getByNombre(nombre);
+    }
+
+    @GetMapping("/dni/{dni}")
+    public ResponseEntity<ClienteDto> getByDni(@PathVariable String dni) {
+        ClienteDto clienteDto = clienteService.getByDni(dni);
+        if (Objects.nonNull(clienteDto)) {
+            return ResponseEntity.ok(clienteDto);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
 }
