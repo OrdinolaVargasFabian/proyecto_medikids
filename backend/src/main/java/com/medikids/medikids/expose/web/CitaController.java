@@ -1,5 +1,6 @@
 package com.medikids.medikids.expose.web;
 
+import com.medikids.medikids.expose.model.AsistenciaRequest;
 import com.medikids.medikids.expose.model.CItaRequest;
 import com.medikids.medikids.process.dto.CitaDto;
 import com.medikids.medikids.process.service.CitaService;
@@ -48,4 +49,23 @@ public class CitaController {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
+
+    // Obtiene todas las citas de un paciente (hijo del cliente)
+    @GetMapping("/paciente/{id_paciente}")
+    public List<CitaDto> getByPaciente(@PathVariable int id_paciente) {
+        return citaService.getByPaciente(id_paciente);
+    }
+
+    // Marca únicamente la asistencia de una cita (operación atómica para la HU)
+    @PatchMapping("/{id}/asistencia")
+    public ResponseEntity<CitaDto> marcarAsistencia(
+            @PathVariable int id,
+            @RequestBody AsistenciaRequest request) {
+        CitaDto citaDto = citaService.marcarAsistencia(id, request);
+        if (Objects.nonNull(citaDto)) {
+            return ResponseEntity.ok(citaDto);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
 }
+

@@ -1,5 +1,6 @@
 package com.medikids.medikids.process.service;
 
+import com.medikids.medikids.expose.model.AsistenciaRequest;
 import com.medikids.medikids.expose.model.CItaRequest;
 import com.medikids.medikids.process.domain.Cita;
 import com.medikids.medikids.process.dto.CitaDto;
@@ -44,4 +45,20 @@ public class CitaService {
         }
         return null;
     }
+
+    // Obtiene todas las citas de un paciente (hijo del cliente)
+    public List<CitaDto> getByPaciente(int id_paciente) {
+        return CitaHelper.mapAll(citaRepository.findByIdPaciente(id_paciente));
+    }
+
+    // Marca únicamente la asistencia de una cita (operación atómica para la HU)
+    public CitaDto marcarAsistencia(int id, AsistenciaRequest request) {
+        Optional<Cita> cita = citaRepository.findById((long) id);
+        if (cita.isPresent()) {
+            cita.get().setAsistencia(request.getAsistencia());
+            return CitaHelper.mapCita(citaRepository.save(cita.get()));
+        }
+        return null;
+    }
 }
+
