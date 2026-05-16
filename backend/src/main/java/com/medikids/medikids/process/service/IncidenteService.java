@@ -1,6 +1,7 @@
 package com.medikids.medikids.process.service;
 
 import com.medikids.medikids.expose.model.IncidenteRequest;
+import com.medikids.medikids.expose.model.IncidenteRespuestaRequest;
 import com.medikids.medikids.process.domain.Incidente;
 import com.medikids.medikids.process.dto.IncidenteDto;
 import com.medikids.medikids.process.repository.IncidenteRepository;
@@ -48,4 +49,16 @@ public class IncidenteService {
         }
         return null;
     }
+
+    public IncidenteDto responder(int id, IncidenteRespuestaRequest request) {
+        Optional<Incidente> incidenteUpdate = incidenteRepository.findById((long) id);
+        if (incidenteUpdate.isPresent()) {
+            incidenteUpdate.get().setRespuesta_admin(request.getRespuesta_admin());
+            return IncidenteHelper.mapIncidente(
+                    incidenteRepository.save(incidenteUpdate.get())
+            );
+        }
+        return null;
+    }
+
 }
