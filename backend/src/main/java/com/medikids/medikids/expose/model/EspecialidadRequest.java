@@ -7,13 +7,11 @@ import java.io.Serializable;
 
 @Setter
 @Getter
-public class MedicoRequest implements Serializable {
+public class EspecialidadRequest implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private int id_medico;
-    private String nro_colegiatura;
-    private String url_foto;
-    private String estado;
-    private UsuarioRequest usuario;
     private int id_especialidad;
+    private String nombre_especialidad;
+    private String descripcion;
+    private Double precio;
 }

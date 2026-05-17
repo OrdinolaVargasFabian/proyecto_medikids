@@ -2,6 +2,7 @@ package com.medikids.medikids.utils.helpers;
 
 import com.medikids.medikids.expose.model.ClienteRequest;
 import com.medikids.medikids.process.domain.Cliente;
+import com.medikids.medikids.process.domain.Usuario;
 import com.medikids.medikids.process.dto.ClienteDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -19,7 +20,7 @@ public class ClienteHelper implements Serializable {
     public static ClienteDto mapCliente(Cliente cliente) {
         return ClienteDto.builder()
                 .id_cliente(cliente.getId_cliente())
-                .id_usuario(cliente.getId_usuario())
+                .id_usuario(cliente.getUsuario() != null ? cliente.getUsuario().getId_usuario() : 0)
                 .dni_responsable(cliente.getDni_responsable())
                 .direccion(cliente.getDireccion())
                 .build();
@@ -29,7 +30,7 @@ public class ClienteHelper implements Serializable {
     public static Cliente buildCliente(ClienteRequest cliente) {
         return Cliente.builder()
                 .id_cliente(cliente.getId_cliente())
-                .id_usuario(cliente.getId_usuario())
+                .usuario(cliente.getId_usuario() != 0 ? Usuario.builder().id_usuario(cliente.getId_usuario()).build() : null)
                 .dni_responsable(cliente.getDni_responsable())
                 .direccion(cliente.getDireccion())
                 .build();
@@ -40,7 +41,7 @@ public class ClienteHelper implements Serializable {
         return clientes.stream()
                 .map(cliente -> ClienteDto.builder()
                         .id_cliente(cliente.getId_cliente())
-                        .id_usuario(cliente.getId_usuario())
+                .id_usuario(cliente.getUsuario() != null ? cliente.getUsuario().getId_usuario() : 0)
                         .dni_responsable(cliente.getDni_responsable())
                         .direccion(cliente.getDireccion())
                         .build())
@@ -52,7 +53,7 @@ public class ClienteHelper implements Serializable {
         List<ClienteDto> clientes = clientePage.getContent().stream()
                 .map(cliente -> ClienteDto.builder()
                         .id_cliente(cliente.getId_cliente())
-                        .id_usuario(cliente.getId_usuario())
+                .id_usuario(cliente.getUsuario() != null ? cliente.getUsuario().getId_usuario() : 0)
                         .dni_responsable(cliente.getDni_responsable())
                         .direccion(cliente.getDireccion())
                         .build())

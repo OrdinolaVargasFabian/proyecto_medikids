@@ -2,6 +2,7 @@ package com.medikids.medikids.utils.helpers;
 
 import com.medikids.medikids.expose.model.MedicoRequest;
 import com.medikids.medikids.process.domain.Medico;
+import com.medikids.medikids.process.domain.Usuario;
 import com.medikids.medikids.process.dto.MedicoDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,7 +24,7 @@ public class MedicoHelper implements Serializable {
                 .nro_colegiatura(medico.getNro_colegiatura())
                 .url_foto(medico.getUrl_foto())
                 .estado(medico.getEstado().name())
-                .id_usuario(medico.getId_usuario())
+                .id_usuario(medico.getUsuario() != null ? medico.getUsuario().getId_usuario() : 0)
                 .id_especialidad(medico.getId_especialidad())
                 .build();
     }
@@ -35,7 +36,7 @@ public class MedicoHelper implements Serializable {
                 .nro_colegiatura(medico.getNro_colegiatura())
                 .url_foto(medico.getUrl_foto())
                 .estado(Medico.EstadoMedico.valueOf(medico.getEstado()))
-                .id_usuario(medico.getId_usuario())
+                .usuario(medico.getUsuario() != null ? Usuario.builder().id_usuario(medico.getUsuario().getId_usuario()).build() : null)
                 .id_especialidad(medico.getId_especialidad())
                 .build();
     }
@@ -48,7 +49,7 @@ public class MedicoHelper implements Serializable {
                         .nro_colegiatura(m.getNro_colegiatura())
                         .url_foto(m.getUrl_foto())
                         .estado(m.getEstado().name())
-                        .id_usuario(m.getId_usuario())
+                .id_usuario(m.getUsuario() != null ? m.getUsuario().getId_usuario() : 0)
                         .id_especialidad(m.getId_especialidad())
                         .build())
                 .collect(Collectors.toList());
@@ -63,7 +64,7 @@ public class MedicoHelper implements Serializable {
                         .nro_colegiatura(m.getNro_colegiatura())
                         .url_foto(m.getUrl_foto())
                         .estado(m.getEstado().name())
-                        .id_usuario(m.getId_usuario())
+                    .id_usuario(m.getUsuario() != null ? m.getUsuario().getId_usuario() : 0)
                         .id_especialidad(m.getId_especialidad())
                         .build())
                 .collect(Collectors.toList());

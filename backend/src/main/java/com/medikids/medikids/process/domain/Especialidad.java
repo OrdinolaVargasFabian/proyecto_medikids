@@ -12,6 +12,7 @@ import lombok.*;
 @Builder
 @Table(name = "especialidad")
 public class Especialidad {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
@@ -22,4 +23,13 @@ public class Especialidad {
 
     @Column(length = 255)
     private String descripcion;
+}
+    @Column(name = "nombre_especialidad", nullable = false, length = 100)
+    private String nombre_especialidad;
+
+    @Column(name = "descripcion", columnDefinition = "TEXT")
+    private String descripcion;
+
+    @Column(name = "precio")
+    private Double precio;
 }

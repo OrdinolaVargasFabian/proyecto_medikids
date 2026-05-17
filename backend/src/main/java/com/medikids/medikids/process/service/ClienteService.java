@@ -2,6 +2,7 @@ package com.medikids.medikids.process.service;
 
 import com.medikids.medikids.expose.model.ClienteRequest;
 import com.medikids.medikids.process.domain.Cliente;
+import com.medikids.medikids.process.domain.Usuario;
 import com.medikids.medikids.process.dto.ClienteDto;
 import com.medikids.medikids.process.repository.ClienteRepository;
 import com.medikids.medikids.utils.helpers.ClienteHelper;
@@ -44,4 +45,19 @@ public class ClienteService {
         }
         return null;
     }
+
+    public ClienteDto getByDni(String dni) {
+        Optional<Cliente> cliente = clienteRepository.findByDni(dni);
+        return cliente.map(ClienteHelper::mapCliente).orElse(null);
+    }
+
+    public List<ClienteDto> getByNombre(String nombre) {
+        return ClienteHelper.mapAll(
+            clienteRepository.findAll().stream()
+                .filter(cliente -> cliente.getUsuario().getNombres().toLowerCase().contains(nombre.toLowerCase())
+                || cliente.getUsuario().getApellidos().toLowerCase().contains(nombre.toLowerCase()))
+                .toList()
+        );
+    }
+
 }

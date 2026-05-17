@@ -14,3 +14,10 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     @Query("SELECT c FROM Cliente c WHERE c.id_usuario = :idUsuario")
     Optional<Cliente> findByIdUsuario(@Param("idUsuario") int idUsuario);
 }
+
+    // Busca un cliente por su DNI del responsable
+    // nativeQuery=true evita conflictos del parser JPQL con el campo dni_responsable
+    @Query(value = "SELECT * FROM Cliente WHERE dni_responsable = :dni", nativeQuery = true)
+    Optional<Cliente> findByDni(@Param("dni") String dni);
+}
+
