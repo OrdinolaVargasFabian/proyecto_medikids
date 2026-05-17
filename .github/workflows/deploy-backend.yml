@@ -20,11 +20,12 @@ jobs:
         distribution: 'corretto'
 
     - name: Build with Maven
+      working-directory: ./backend
       run: mvn clean package -DskipTests
 
     - name: Generate deployment package
       run: |
-        mv target/*.jar application.jar
+        mv backend/target/*.jar application.jar
 
     - name: Get current timestamp
       id: timestamp
