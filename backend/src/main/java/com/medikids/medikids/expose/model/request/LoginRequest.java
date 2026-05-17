@@ -1,4 +1,4 @@
-package com.medikids.medikids.expose.model;
+package com.medikids.medikids.expose.model.request;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,9 +7,9 @@ import java.io.Serializable;
 
 @Setter
 @Getter
-public class VerifyCodeRequest implements Serializable {
+public class LoginRequest implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String email;
-    private String code;
+    private String password;
 }

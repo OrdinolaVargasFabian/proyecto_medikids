@@ -18,5 +18,8 @@ public class IncidenteDto implements Serializable {
     private String descripcion;
     private String respuesta_admin;
     private LocalDateTime fecha_registro;
-    private int id_medico;
+    private int id_medico; // FK
+
+    // Datos enriquecidos de la FK id_medico
+    private MedicoDto medico;
 }

@@ -1,21 +1,19 @@
-package com.medikids.medikids.expose.model;
+package com.medikids.medikids.expose.model.request;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
 public class PagoRequest implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private int id_pago;
     private double monto;
     private String metodo_pago;
-    private String estado;
-    private LocalDate fecha_pago;
+    private String estado_transaccion;
+    private LocalDateTime fecha_pago;
     private int id_cita;
-    
 }

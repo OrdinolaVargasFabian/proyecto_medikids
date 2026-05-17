@@ -1,31 +1,37 @@
 package com.medikids.medikids.process.domain;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Setter
+@Getter
+@ToString
+@Builder
 @Table(name = "pago")
 public class Pago {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_pago")
-    private Integer idPago;
+    @Column(nullable = false)
+    private int id_pago;
 
-    private Double monto;
+    @Column(nullable = false)
+    private double monto;
 
-    @Column(name = "metodo_pago")
-    private String metodoPago;
+    @Column(name = "metodo_pago", nullable = false)
+    private String metodo_pago;
 
-    @Column(name = "estado_transaccion")
-    private String estadoTransaccion;
+    @Column(name = "estado_transaccion", nullable = false)
+    private String estado_transaccion;
 
-    @Column(name = "fecha_pago")
-    private LocalDateTime fechaPago;
+    @Column(name = "fecha_pago", nullable = false)
+    private LocalDateTime fecha_pago;
 
-    @Column(name = "id_cita")
-    private Integer idCita;
+    @Column(name = "id_cita", nullable = false)
+    private int id_cita;
 }

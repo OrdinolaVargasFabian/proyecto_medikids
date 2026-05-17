@@ -1,4 +1,4 @@
-package com.medikids.medikids.expose.model;
+package com.medikids.medikids.expose.model.request;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -10,10 +10,9 @@ import java.io.Serializable;
 public class MedicoRequest implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private int id_medico;
     private String nro_colegiatura;
     private String url_foto;
     private String estado;
-    private UsuarioRequest usuario;
+    private int id_usuario;
     private int id_especialidad;
 }

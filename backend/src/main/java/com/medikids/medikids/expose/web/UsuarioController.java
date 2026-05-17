@@ -1,6 +1,6 @@
 package com.medikids.medikids.expose.web;
 
-import com.medikids.medikids.expose.model.UsuarioRequest;
+import com.medikids.medikids.expose.model.request.UsuarioRequest;
 import com.medikids.medikids.process.dto.UsuarioDto;
 import com.medikids.medikids.process.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,7 +30,6 @@ public class UsuarioController {
         if (Objects.nonNull(usuarioDto)) {
             return ResponseEntity.ok(usuarioDto);
         }
-
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
@@ -46,7 +44,6 @@ public class UsuarioController {
         if (Objects.nonNull(usuarioDto)) {
             return ResponseEntity.ok(usuarioDto);
         }
-
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 

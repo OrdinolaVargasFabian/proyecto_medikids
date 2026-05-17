@@ -16,7 +16,6 @@ import java.time.LocalDate;
 public class HistorialClinico {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private int id_historial_clinico;
 

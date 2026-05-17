@@ -13,6 +13,10 @@ import lombok.*;
 @Table(name = "medico")
 public class Medico {
 
+    public enum EstadoMedico {
+        activo, inactivo
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
@@ -28,15 +32,12 @@ public class Medico {
     @Column(name = "estado")
     private EstadoMedico estado;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
+    @Column(name = "id_usuario", nullable = false)
+    private int id_usuario;
 
     @Column(name = "id_especialidad", nullable = false)
     private int id_especialidad;
 
-    public enum EstadoMedico {
-        activo,
-        inactivo
-    }
+    @Column(name = "activo", nullable = false)
+    private char activo;
 }

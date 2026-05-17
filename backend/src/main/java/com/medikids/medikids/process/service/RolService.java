@@ -1,6 +1,6 @@
 package com.medikids.medikids.process.service;
 
-import com.medikids.medikids.expose.model.RolRequest;
+import com.medikids.medikids.expose.model.request.RolRequest;
 import com.medikids.medikids.process.domain.Rol;
 import com.medikids.medikids.process.dto.RolDto;
 import com.medikids.medikids.process.repository.RolRepository;

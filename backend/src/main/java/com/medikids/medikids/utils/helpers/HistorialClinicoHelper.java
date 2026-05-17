@@ -1,6 +1,6 @@
 package com.medikids.medikids.utils.helpers;
 
-import com.medikids.medikids.expose.model.HistorialClinicoRequest;
+import com.medikids.medikids.expose.model.request.HistorialClinicoRequest;
 import com.medikids.medikids.process.domain.HistorialClinico;
 import com.medikids.medikids.process.dto.HistorialClinicoDto;
 import org.springframework.data.domain.Page;
@@ -33,9 +33,9 @@ public class HistorialClinicoHelper implements Serializable {
                 .diagnostico(historialClinico.getDiagnostico())
                 .tratamiento(historialClinico.getTratamiento())
                 .observaciones(historialClinico.getObservaciones())
-                .fecha_registro(historialClinico.getFechaRegistro())
-                .id_cita(historialClinico.getIdCita())
-                .id_paciente(historialClinico.getIdPaciente())
+                .fecha_registro(historialClinico.getFecha_registro())
+                .id_cita(historialClinico.getId_cita())
+                .id_paciente(historialClinico.getId_paciente())
                 .build();
     }
 

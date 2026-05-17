@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 // La librería provee las consultas básicas, no es necesario implementarlas.
-public interface PacienteRepository extends JpaRepository<Paciente, Long> {
+public interface PacienteRepository extends JpaRepository<Paciente, Integer> {
 }

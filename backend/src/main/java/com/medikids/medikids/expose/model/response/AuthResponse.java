@@ -1,4 +1,4 @@
-package com.medikids.medikids.expose.model;
+package com.medikids.medikids.expose.model.response;
 
 import com.medikids.medikids.process.dto.UsuarioDto;
 import lombok.Builder;

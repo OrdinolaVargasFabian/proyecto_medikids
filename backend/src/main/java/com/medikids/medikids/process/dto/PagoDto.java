@@ -13,10 +13,13 @@ import java.time.LocalDateTime;
 public class PagoDto implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private Integer idPago;
-    private Double monto;
-    private String metodoPago;
-    private String estadoTransaccion;
-    private LocalDateTime fechaPago;
-    private Integer idCita;
+    private int id_pago;
+    private double monto;
+    private String metodo_pago;
+    private String estado_transaccion;
+    private LocalDateTime fecha_pago;
+    private int id_cita; // FK
+
+    // Datos enriquecidos de la FK id_cita
+    private CitaDto cita;
 }

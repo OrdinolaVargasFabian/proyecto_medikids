@@ -1,7 +1,7 @@
 package com.medikids.medikids.expose.web;
 
-import com.medikids.medikids.expose.model.IncidenteRequest;
-import com.medikids.medikids.expose.model.IncidenteRespuestaRequest;
+import com.medikids.medikids.expose.model.request.IncidenteRequest;
+import com.medikids.medikids.expose.model.request.IncidenteRespuestaRequest;
 import com.medikids.medikids.process.dto.IncidenteDto;
 import com.medikids.medikids.process.service.IncidenteService;
 import lombok.RequiredArgsConstructor;
@@ -57,5 +57,4 @@ public class IncidenteController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
-
 }

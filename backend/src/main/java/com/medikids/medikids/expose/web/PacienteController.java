@@ -1,6 +1,6 @@
 package com.medikids.medikids.expose.web;
 
-import com.medikids.medikids.expose.model.PacienteRequest;
+import com.medikids.medikids.expose.model.request.PacienteRequest;
 import com.medikids.medikids.process.dto.PacienteDto;
 import com.medikids.medikids.process.service.PacienteService;
 import lombok.RequiredArgsConstructor;
