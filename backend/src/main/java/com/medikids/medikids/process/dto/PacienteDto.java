@@ -17,5 +17,8 @@ public class PacienteDto implements Serializable {
     private String nombre_completo;
     private String dni_menor;
     private LocalDate fecha_nacimiento;
-    private int id_cliente;
+    private int id_cliente; // FK
+
+    // Datos enriquecidos de la FK id_cliente
+    private ClienteDto cliente;
 }

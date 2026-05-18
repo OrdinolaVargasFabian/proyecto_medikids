@@ -1,4 +1,4 @@
-package com.medikids.medikids.expose.model;
+package com.medikids.medikids.expose.model.request;
 
 import lombok.Getter;
 import lombok.Setter;

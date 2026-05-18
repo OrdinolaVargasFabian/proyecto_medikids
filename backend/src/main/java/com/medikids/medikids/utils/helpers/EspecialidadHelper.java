@@ -1,6 +1,6 @@
 package com.medikids.medikids.utils.helpers;
 
-import com.medikids.medikids.expose.model.EspecialidadRequest;
+import com.medikids.medikids.expose.model.request.EspecialidadRequest;
 import com.medikids.medikids.process.domain.Especialidad;
 import com.medikids.medikids.process.dto.EspecialidadDto;
 import org.springframework.data.domain.Page;
@@ -19,7 +19,7 @@ public class EspecialidadHelper implements Serializable {
     public static EspecialidadDto mapEspecialidad(Especialidad especialidad) {
         return EspecialidadDto.builder()
                 .id_especialidad(especialidad.getId_especialidad())
-                .nombre_especialidad(especialidad.getNombre_especialidad())
+                .nombre(especialidad.getNombre())
                 .descripcion(especialidad.getDescripcion())
                 .precio(especialidad.getPrecio())
                 .build();
@@ -27,8 +27,7 @@ public class EspecialidadHelper implements Serializable {
 
     public static Especialidad buildEspecialidad(EspecialidadRequest especialidad) {
         return Especialidad.builder()
-                .id_especialidad(especialidad.getId_especialidad())
-                .nombre_especialidad(especialidad.getNombre_especialidad())
+                .nombre(especialidad.getNombre())
                 .descripcion(especialidad.getDescripcion())
                 .precio(especialidad.getPrecio())
                 .build();

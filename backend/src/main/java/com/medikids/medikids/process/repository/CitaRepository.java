@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 // La libreria provee a las consultas, no es necesario hacerlas.
-public interface CitaRepository extends JpaRepository<Cita, Long> {
+public interface CitaRepository extends JpaRepository<Cita, Integer> {
 
     // Busca todas las citas asociadas a un paciente (hijo del cliente)
     // nativeQuery=true usa SQL puro para evitar conflictos del parser JPQL con snake_case

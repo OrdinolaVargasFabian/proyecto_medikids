@@ -1,6 +1,6 @@
 package com.medikids.medikids.process.service;
 
-import com.medikids.medikids.expose.model.AuthResponse;
+import com.medikids.medikids.expose.model.response.AuthResponse;
 import com.medikids.medikids.process.domain.Usuario;
 import com.medikids.medikids.process.repository.UsuarioRepository;
 import com.medikids.medikids.utils.helpers.UsuarioHelper;
@@ -39,34 +39,28 @@ public class AuthService {
      * @return AuthResponse con mensaje de éxito o null si credenciales inválidas
      */
     public AuthResponse login(String email, String password) {
-        // Buscar usuario por email
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
 
         if (usuarioOpt.isEmpty()) {
-            return null; // Usuario no encontrado
+            return null;
         }
 
         Usuario usuario = usuarioOpt.get();
 
-        // Verificar que el usuario esté activo
         if (usuario.getVisible() != '1') {
-            return null; // Usuario desactivado
+            return null;
         }
 
-        // Verificar password con BCrypt
         if (!passwordEncoder.matches(password, usuario.getPassword())) {
-            return null; // Password incorrecto
+            return null;
         }
 
-        // Generar código de 6 dígitos
         String codigo = generarCodigo6Digitos();
 
-        // Guardar código y expiración en BD
         usuario.setCodigoVerificacion(codigo);
         usuario.setCodigoExpiracion(new Date(System.currentTimeMillis() + codigoExpiracionMs));
         usuarioRepository.save(usuario);
 
-        // Enviar código por email
         emailService.enviarCodigo2FA(email, codigo);
 
         return AuthResponse.builder()
@@ -90,31 +84,25 @@ public class AuthService {
 
         Usuario usuario = usuarioOpt.get();
 
-        // Validar que existe un código de verificación
         if (usuario.getCodigoVerificacion() == null || usuario.getCodigoExpiracion() == null) {
-            return null; // No se ha solicitado verificación
+            return null;
         }
 
-        // Validar que el código no ha expirado
         if (new Date().after(usuario.getCodigoExpiracion())) {
-            // Limpiar código expirado
             usuario.setCodigoVerificacion(null);
             usuario.setCodigoExpiracion(null);
             usuarioRepository.save(usuario);
-            return null; // Código expirado
+            return null;
         }
 
-        // Validar que el código coincida
         if (!usuario.getCodigoVerificacion().equals(code)) {
-            return null; // Código incorrecto
+            return null;
         }
 
-        // Código válido: limpiar campos de verificación
         usuario.setCodigoVerificacion(null);
         usuario.setCodigoExpiracion(null);
         usuarioRepository.save(usuario);
 
-        // Generar JWT token
         String token = jwtService.generateToken(usuario);
 
         return AuthResponse.builder()
@@ -129,7 +117,7 @@ public class AuthService {
      */
     private String generarCodigo6Digitos() {
         SecureRandom random = new SecureRandom();
-        int codigo = 100000 + random.nextInt(900000); // Rango: 100000 - 999999
+        int codigo = 100000 + random.nextInt(900000);
         return String.valueOf(codigo);
     }
 

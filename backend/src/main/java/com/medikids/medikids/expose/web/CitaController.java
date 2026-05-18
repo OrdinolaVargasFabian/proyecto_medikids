@@ -1,7 +1,6 @@
 package com.medikids.medikids.expose.web;
 
-import com.medikids.medikids.expose.model.AsistenciaRequest;
-import com.medikids.medikids.expose.model.CItaRequest;
+import com.medikids.medikids.expose.model.request.CitaRequest;
 import com.medikids.medikids.process.dto.CitaDto;
 import com.medikids.medikids.process.service.CitaService;
 import lombok.RequiredArgsConstructor;
@@ -31,22 +30,20 @@ public class CitaController {
         if (Objects.nonNull(citaDto)) {
             return ResponseEntity.ok(citaDto);
         }
-
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     @PostMapping("/save")
-    public CitaDto save(@RequestBody CItaRequest cita) {
+    public CitaDto save(@RequestBody CitaRequest cita) {
         return citaService.save(cita);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<CitaDto> update(@PathVariable int id, @RequestBody CItaRequest cita) {
+    public ResponseEntity<CitaDto> update(@PathVariable int id, @RequestBody CitaRequest cita) {
         CitaDto citaDto = citaService.update(id, cita);
         if (Objects.nonNull(citaDto)) {
             return ResponseEntity.ok(citaDto);
         }
-
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
@@ -56,16 +53,13 @@ public class CitaController {
         return citaService.getByPaciente(id_paciente);
     }
 
-    // Marca únicamente la asistencia de una cita (operación atómica para la HU)
+    // Marca únicamente la asistencia de una cita (0: No, 1: Sí)
     @PatchMapping("/{id}/asistencia")
-    public ResponseEntity<CitaDto> marcarAsistencia(
-            @PathVariable int id,
-            @RequestBody AsistenciaRequest request) {
-        CitaDto citaDto = citaService.marcarAsistencia(id, request);
+    public ResponseEntity<CitaDto> marcarAsistencia(@PathVariable int id, @RequestParam char asistencia) {
+        CitaDto citaDto = citaService.marcarAsistencia(id, asistencia);
         if (Objects.nonNull(citaDto)) {
             return ResponseEntity.ok(citaDto);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }
-

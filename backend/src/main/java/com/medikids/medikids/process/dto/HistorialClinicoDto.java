@@ -18,6 +18,10 @@ public class HistorialClinicoDto implements Serializable {
     private String tratamiento;
     private String observaciones;
     private LocalDate fecha_registro;
-    private Integer id_cita;
-    private Integer id_paciente;
+    private int id_cita; // FK
+    private int id_paciente; // FK
+
+    // Datos enriquecidos de las FKs
+    private CitaDto cita;
+    private PacienteDto paciente;
 }

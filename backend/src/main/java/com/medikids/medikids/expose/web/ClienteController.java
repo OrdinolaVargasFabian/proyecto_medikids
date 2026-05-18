@@ -1,6 +1,6 @@
 package com.medikids.medikids.expose.web;
 
-import com.medikids.medikids.expose.model.ClienteRequest;
+import com.medikids.medikids.expose.model.request.ClienteRequest;
 import com.medikids.medikids.process.dto.ClienteDto;
 import com.medikids.medikids.process.service.ClienteService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,6 @@ public class ClienteController {
         if (Objects.nonNull(clienteDto)) {
             return ResponseEntity.ok(clienteDto);
         }
-
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
@@ -40,12 +39,10 @@ public class ClienteController {
         if (Objects.nonNull(clienteDto)) {
             return ResponseEntity.ok(clienteDto);
         }
-
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     @PostMapping("/save")
-    @PostMapping("/guardar")
     public ClienteDto save(@RequestBody ClienteRequest cliente) {
         return clienteService.save(cliente);
     }
@@ -56,11 +53,10 @@ public class ClienteController {
         if (Objects.nonNull(clienteDto)) {
             return ResponseEntity.ok(clienteDto);
         }
-
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    // filtros por nombre o apllido
+    // filtros por nombre o apellido
     @GetMapping("/nombre/{nombre}")
     public List<ClienteDto> getByNombre(@PathVariable String nombre) {
         return clienteService.getByNombre(nombre);
@@ -74,5 +70,4 @@ public class ClienteController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
-
 }

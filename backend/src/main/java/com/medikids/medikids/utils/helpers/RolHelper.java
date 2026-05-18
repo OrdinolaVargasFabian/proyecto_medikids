@@ -1,6 +1,6 @@
 package com.medikids.medikids.utils.helpers;
 
-import com.medikids.medikids.expose.model.RolRequest;
+import com.medikids.medikids.expose.model.request.RolRequest;
 import com.medikids.medikids.process.domain.Rol;
 import com.medikids.medikids.process.dto.RolDto;
 import org.springframework.data.domain.Page;
@@ -25,7 +25,6 @@ public class RolHelper implements Serializable {
 
     public static Rol buildRol(RolRequest rol) {
         return Rol.builder()
-                .id_rol(rol.getId_rol())
                 .nombre_rol(rol.getNombre_rol())
                 .build();
     }

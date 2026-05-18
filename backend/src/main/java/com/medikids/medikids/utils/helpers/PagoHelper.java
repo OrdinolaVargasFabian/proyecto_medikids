@@ -1,5 +1,6 @@
 package com.medikids.medikids.utils.helpers;
 
+import com.medikids.medikids.expose.model.request.PagoRequest;
 import com.medikids.medikids.process.domain.Pago;
 import com.medikids.medikids.process.dto.PagoDto;
 import org.springframework.data.domain.Page;
@@ -17,12 +18,22 @@ public class PagoHelper implements Serializable {
 
     public static PagoDto mapPago(Pago pago) {
         return PagoDto.builder()
-                .idPago(pago.getIdPago())
+                .id_pago(pago.getId_pago())
                 .monto(pago.getMonto())
-                .metodoPago(pago.getMetodoPago())
-                .estadoTransaccion(pago.getEstadoTransaccion())
-                .fechaPago(pago.getFechaPago())
-                .idCita(pago.getIdCita())
+                .metodo_pago(pago.getMetodo_pago())
+                .estado_transaccion(pago.getEstado_transaccion())
+                .fecha_pago(pago.getFecha_pago())
+                .id_cita(pago.getId_cita())
+                .build();
+    }
+
+    public static Pago buildPago(PagoRequest pago) {
+        return Pago.builder()
+                .monto(pago.getMonto())
+                .metodo_pago(pago.getMetodo_pago())
+                .estado_transaccion(pago.getEstado_transaccion())
+                .fecha_pago(pago.getFecha_pago())
+                .id_cita(pago.getId_cita())
                 .build();
     }
 

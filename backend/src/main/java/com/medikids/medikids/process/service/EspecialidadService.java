@@ -1,13 +1,11 @@
 package com.medikids.medikids.process.service;
 
-import com.medikids.medikids.process.domain.Especialidad;
-import com.medikids.medikids.process.repository.EspecialidadRepository;
-import jakarta.annotation.PostConstruct;
-import com.medikids.medikids.expose.model.EspecialidadRequest;
+import com.medikids.medikids.expose.model.request.EspecialidadRequest;
 import com.medikids.medikids.process.domain.Especialidad;
 import com.medikids.medikids.process.dto.EspecialidadDto;
 import com.medikids.medikids.process.repository.EspecialidadRepository;
 import com.medikids.medikids.utils.helpers.EspecialidadHelper;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,14 +17,6 @@ public class EspecialidadService {
 
     @Autowired
     private EspecialidadRepository especialidadRepository;
-
-    public List<Especialidad> getAll() {
-        return especialidadRepository.findAll();
-    }
-
-    public Especialidad getById(int id) {
-        return especialidadRepository.findById((long) id).orElse(null);
-    }
 
     @PostConstruct
     public void seed() {
@@ -41,7 +31,7 @@ public class EspecialidadService {
                 Especialidad.builder().nombre("Psicología Infantil").descripcion("Salud mental y emocional infantil").build()
         ));
     }
-}
+
     public List<EspecialidadDto> getAll() {
         return EspecialidadHelper.mapAll(especialidadRepository.findAll());
     }
@@ -60,7 +50,7 @@ public class EspecialidadService {
     public EspecialidadDto update(int id, EspecialidadRequest especialidad) {
         Optional<Especialidad> especialidadUpdate = especialidadRepository.findById(id);
         if (especialidadUpdate.isPresent()) {
-            especialidadUpdate.get().setNombre_especialidad(especialidad.getNombre_especialidad());
+            especialidadUpdate.get().setNombre(especialidad.getNombre());
             especialidadUpdate.get().setDescripcion(especialidad.getDescripcion());
             especialidadUpdate.get().setPrecio(especialidad.getPrecio());
 

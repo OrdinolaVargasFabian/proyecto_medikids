@@ -1,8 +1,8 @@
 package com.medikids.medikids.expose.web;
 
-import com.medikids.medikids.expose.model.AuthResponse;
-import com.medikids.medikids.expose.model.LoginRequest;
-import com.medikids.medikids.expose.model.VerifyCodeRequest;
+import com.medikids.medikids.expose.model.response.AuthResponse;
+import com.medikids.medikids.expose.model.request.LoginRequest;
+import com.medikids.medikids.expose.model.request.VerifyCodeRequest;
 import com.medikids.medikids.process.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

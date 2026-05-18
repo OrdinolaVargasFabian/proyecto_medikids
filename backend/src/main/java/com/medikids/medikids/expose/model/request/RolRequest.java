@@ -1,7 +1,8 @@
-package com.medikids.medikids.expose.model;
+package com.medikids.medikids.expose.model.request;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import java.io.Serializable;
 
 @Setter
@@ -9,7 +10,5 @@ import java.io.Serializable;
 public class RolRequest implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private int id_rol;
     private String nombre_rol;
-    
 }
