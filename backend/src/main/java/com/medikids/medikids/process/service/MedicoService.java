@@ -77,8 +77,22 @@ public class MedicoService {
         if (medicoOpt.isEmpty()) return null;
 
         Medico medico = medicoOpt.get();
-        medico.setActivo(medico.getActivo() == '1' ? '0' : '1');
+        if (medico.getActivo() == '1') {
+            medico.setActivo('0');
+            medico.setEstado(EstadoMedico.inactivo);
+        } else {
+            medico.setActivo('1');
+            medico.setEstado(EstadoMedico.activo);
+        }
         return enriquecer(MedicoHelper.mapMedico(medicoRepository.save(medico)));
+    }
+
+    public boolean delete(int id) {
+        if (medicoRepository.existsById(id)) {
+            medicoRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
     public List<MedicoDto> getByEspecialidad(String especialidad) {

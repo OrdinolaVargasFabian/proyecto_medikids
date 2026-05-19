@@ -36,7 +36,7 @@ const StatCounter = ({ targetValue, label, index }) => {
       initial={{ opacity: 0, y: 30 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.12, ease: "easeOut" }}
-      className="group p-8 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/15 hover:bg-white/20 hover:border-white/30 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-center shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
+      className="group p-8 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/15 hover:bg-white/20 hover:border-white/30 hover:-translate-y-1 transition-all duration-200 flex flex-col items-center justify-center text-center shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
     >
       <div className="text-5xl md:text-6xl font-black text-white mb-3 tracking-tighter">
         {prefix}{formattedCount}{suffix}
@@ -77,7 +77,7 @@ export const ImpactSection = () => {
             initial={{ opacity: 0, x: -40 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="space-y-8"
+            className="space-y-8 text-center max-w-lg mx-auto"
           >
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-white">
               Que más pequeños vivan{" "}
@@ -87,14 +87,16 @@ export const ImpactSection = () => {
               </span>{" "}
               para alegrar sus hogares.
             </h2>
-            <p className="text-xl text-white/80 max-w-md leading-relaxed font-medium">
+            <p className="text-xl text-white/80 max-w-md mx-auto leading-relaxed font-medium">
               En Medikids combinamos trato humano con excelencia médica para darte la tranquilidad que tu familia merece.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 justify-items-center">
             {stats.map((stat, index) => (
-              <StatCounter key={stat.label} targetValue={stat.value} label={stat.label} index={index} />
+              <div key={stat.label} className="w-full max-w-[260px]">
+                <StatCounter targetValue={stat.value} label={stat.label} index={index} />
+              </div>
             ))}
           </div>
         </div>

@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { login as loginApi, verify2FA, registerUser, registerClient } from "../../services/api";
+import { login as loginApi, verify2FA, registerUser, registerClient, resend2FA } from "../../services/api";
+import registerImg from "../../assets/images/register.webp";
+import loginImg from "../../assets/images/login.webp";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -9,11 +11,44 @@ export const LoginPage = () => {
   const [tab, setTab] = useState("login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [verifyEmail, setVerifyEmail] = useState("");
   const [code, setCode] = useState("");
+  
+  useEffect(() => {
+    let timer;
+    if (resendCooldown > 0) {
+      timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
+  useEffect(() => {
+    if (!resendSuccess) return;
+    const t = setTimeout(() => {
+      setResendSuccess(false);
+      setResendCooldown(5);
+    }, 2000);
+    return () => clearTimeout(t);
+  }, [resendSuccess]);
+
+  const handleResend = async () => {
+    setLoading(true);
+    setError("");
+    setResendSuccess(false);
+    try {
+      await resend2FA(verifyEmail);
+      setResendSuccess(true);
+    } catch (err) {
+      setError("Error al reenviar el código");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [regNombres, setRegNombres] = useState("");
   const [regApellidos, setRegApellidos] = useState("");
@@ -22,6 +57,15 @@ export const LoginPage = () => {
   const [regConfirm, setRegConfirm] = useState("");
   const [regTelefono, setRegTelefono] = useState("");
   const [regDni, setRegDni] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRegPassword, setShowRegPassword] = useState(false);
+  const [showRegConfirm, setShowRegConfirm] = useState(false);
+
+  const EyeIcon = ({ visible }) =>
+    visible
+      ? <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+      : <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>;
 
   const goToDashboard = (usuario) => {
     const rol = usuario?.id_rol;
@@ -109,42 +153,27 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="h-dvh w-full font-sans selection:bg-medi-900 selection:text-white overflow-hidden">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={tab}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className={`w-full h-full flex ${tab === "register" ? "flex-row-reverse" : ""}`}
-        >
-          <div className="w-full lg:w-1/2 h-full flex flex-col justify-center items-center p-2 sm:p-8 bg-gradient-to-br from-medi-50 via-white to-medi-100">
+    <div className="w-full h-dvh font-sans selection:bg-medi-900 selection:text-white overflow-hidden">
+      <div className="w-full h-full flex">
+        <div className={`w-full lg:w-1/2 h-full overflow-y-auto flex flex-col justify-center items-center p-4 sm:p-8 bg-gradient-to-br from-medi-50 via-white to-medi-100 ${tab === "register" ? "lg:order-2" : ""}`}>
+          <AnimatePresence mode="wait">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="w-full max-w-[260px] sm:max-w-md flex flex-col gap-1 sm:gap-6"
+              key={tab}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="w-full max-w-md flex flex-col gap-6"
             >
-              <div className="bg-white/80 backdrop-blur-xl rounded-xl sm:rounded-[2.5rem] shadow-[0_24px_60px_rgba(184,202,118,0.2)] border border-medi-200/60 p-2 sm:p-10 relative">
+              <div className="bg-white/80 backdrop-blur-xl rounded-2xl sm:rounded-[2.5rem] shadow-[0_24px_60px_rgba(184,202,118,0.2)] border border-medi-200/60 p-6 sm:p-10 relative">
                 <div className="hidden sm:block absolute -top-20 -right-20 w-60 h-60 rounded-full bg-medi-200/30 blur-3xl pointer-events-none" />
                 <div className="hidden sm:block absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-medi-100/40 blur-3xl pointer-events-none" />
 
-                <div className="flex justify-center w-full mb-0 sm:mb-4 relative z-10">
-                  <Link
-                    to="/"
-                    className="flex flex-col items-start text-left leading-[0.9] font-black text-medi-500 tracking-tighter text-xl sm:text-5xl hover:opacity-80 transition-opacity drop-shadow-sm"
-                  >
-                    <span>medi</span>
-                    <span>kids</span>
-                  </Link>
-                </div>
-
-                <div className="text-center mb-0.5 sm:mb-6 relative z-10">
-                  <h2 className="text-sm sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
-                    {tab === "verify" ? "Verificación" : "¡Bienvenido!"}
+                <div className="text-center mb-6 relative z-10">
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
+                    {tab === "verify" ? "Verificación" : tab === "login" ? "Inicia Sesión" : "Regístrate"}
                   </h2>
-                  <p className="text-gray-500 font-medium mt-0 sm:mt-1 text-[8px] sm:text-sm">
+                  <p className="text-gray-500 font-medium mt-1 text-sm">
                     {tab === "login"
                       ? "Accede a tu cuenta para continuar"
                       : tab === "verify"
@@ -154,10 +183,10 @@ export const LoginPage = () => {
                 </div>
 
                 {tab !== "verify" && (
-                  <div className="flex w-full bg-medi-100/60 rounded-lg sm:rounded-2xl mb-0.5 sm:mb-6 relative z-10">
+                  <div className="flex w-full bg-medi-100/60 rounded-xl sm:rounded-2xl mb-6 relative z-10">
                     <button
-                      onClick={() => { setTab("login"); setError(""); }}
-                      className={`flex-1 py-2.5 text-center font-bold text-sm rounded-xl transition-all duration-200 ${
+                      onClick={() => { setTab("login"); setError(""); setRegNombres(""); setRegApellidos(""); setRegEmail(""); setRegPassword(""); setRegConfirm(""); }}
+                      className={`flex-1 py-2.5 text-center font-bold text-sm rounded-lg transition-all duration-200 ${
                         tab === "login"
                           ? "bg-white text-medi-700 shadow-sm"
                           : "text-medi-500 hover:text-medi-700"
@@ -166,8 +195,8 @@ export const LoginPage = () => {
                       Iniciar Sesión
                     </button>
                     <button
-                      onClick={() => { setTab("register"); setError(""); }}
-                      className={`flex-1 py-2.5 text-center font-bold text-sm rounded-xl transition-all duration-200 ${
+                      onClick={() => { setTab("register"); setError(""); setEmail(""); setPassword(""); }}
+                      className={`flex-1 py-2.5 text-center font-bold text-sm rounded-lg transition-all duration-200 ${
                         tab === "register"
                           ? "bg-white text-medi-700 shadow-sm"
                           : "text-medi-500 hover:text-medi-700"
@@ -179,7 +208,7 @@ export const LoginPage = () => {
                 )}
 
                 {error && (
-                  <div className="mb-2 sm:mb-4 p-2 sm:p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs sm:text-sm font-medium text-center relative z-10">
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-medium text-center relative z-10">
                     {error}
                   </div>
                 )}
@@ -193,10 +222,10 @@ export const LoginPage = () => {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 30 }}
                       transition={{ duration: 0.25 }}
-                      className="space-y-1 sm:space-y-4 relative z-10"
+                      className="space-y-4 relative z-10"
                     >
                       <div>
-                        <label htmlFor="email" className="block text-[9px] sm:text-sm font-bold text-gray-700 mb-0 sm:mb-1.5 pl-1">
+                        <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-1.5 pl-1">
                           Correo electrónico
                         </label>
                         <input
@@ -206,32 +235,39 @@ export const LoginPage = () => {
                           required
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          placeholder="tu@correo.com"
-                          className="w-full px-2 sm:px-5 py-1.5 sm:py-3.5 bg-white border border-gray-200 rounded-lg sm:rounded-2xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-[10px] sm:text-sm text-gray-900 placeholder-gray-400 font-medium shadow-sm"
+                          className="w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-white border border-gray-200 rounded-xl sm:rounded-2xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-sm text-gray-900 font-medium shadow-sm"
                         />
                       </div>
 
                       <div>
-                        <label htmlFor="password" className="block text-[9px] sm:text-sm font-bold text-gray-700 mb-0 sm:mb-1.5 pl-1">
+                        <label htmlFor="password" className="block text-sm font-bold text-gray-700 mb-1.5 pl-1">
                           Contraseña
                         </label>
-                        <input
-                          id="password"
-                          name="password"
-                          type="password"
-                          required
+                        <div className="relative">
+                          <input
+                            id="password"
+                            name="password"
+                            type={showPassword ? "text" : "password"}
+                            required
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          placeholder="********"
-                          className="w-full px-2 sm:px-5 py-1.5 sm:py-3.5 bg-white border border-gray-200 rounded-lg sm:rounded-2xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-[10px] sm:text-sm text-gray-900 placeholder-gray-400 font-medium shadow-sm"
-                        />
+                          className="w-full px-4 sm:px-5 py-3 sm:py-3.5 pr-12 bg-white border border-gray-200 rounded-xl sm:rounded-2xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-sm text-gray-900 font-medium shadow-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            <EyeIcon visible={showPassword} />
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="pt-0 sm:pt-2">
+                      <div className="pt-2">
                         <button
                           type="submit"
                           disabled={loading}
-                          className="w-full flex items-center justify-center gap-2 py-1.5 sm:py-4 px-2 sm:px-4 rounded-lg sm:rounded-2xl shadow-lg text-[10px] sm:text-sm font-bold text-white bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 active:scale-[0.98] transition-all disabled:opacity-60"
+                          className="w-full flex items-center justify-center gap-2 py-3 sm:py-4 px-4 rounded-xl sm:rounded-2xl shadow-lg text-sm font-bold text-white bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 active:scale-[0.98] transition-all disabled:opacity-60"
                         >
                           {loading ? "Verificando..." : "Continuar"}
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4">
@@ -248,16 +284,16 @@ export const LoginPage = () => {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 30 }}
                       transition={{ duration: 0.25 }}
-                      className="space-y-1 sm:space-y-4 relative z-10"
+                      className="space-y-4 relative z-10"
                     >
-                      <div className="text-center mb-0 sm:mb-2">
-                        <p className="text-[9px] sm:text-sm text-gray-500">
+                      <div className="text-center mb-2">
+                        <p className="text-sm text-gray-500">
                           Código enviado a <strong className="text-gray-700">{verifyEmail}</strong>
                         </p>
                       </div>
 
                       <div>
-                        <label htmlFor="code" className="block text-[9px] sm:text-sm font-bold text-gray-700 mb-0 sm:mb-1.5 pl-1">
+                        <label htmlFor="code" className="block text-sm font-bold text-gray-700 mb-1.5 pl-1">
                           Código de verificación
                         </label>
                         <input
@@ -268,16 +304,15 @@ export const LoginPage = () => {
                           maxLength={6}
                           value={code}
                           onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                          placeholder="123456"
-                          className="w-full px-2 sm:px-5 py-1.5 sm:py-3.5 bg-white border border-gray-200 rounded-lg sm:rounded-2xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-[10px] sm:text-sm text-gray-900 placeholder-gray-400 font-medium shadow-sm text-center text-lg sm:text-2xl tracking-[0.5em]"
+                          className="w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-white border border-gray-200 rounded-xl sm:rounded-2xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-sm text-gray-900 font-medium shadow-sm text-center text-lg sm:text-2xl tracking-[0.5em]"
                         />
                       </div>
 
-                      <div className="pt-0 sm:pt-2">
+                      <div className="pt-2">
                         <button
                           type="submit"
                           disabled={loading || code.length !== 6}
-                          className="w-full flex items-center justify-center gap-2 py-1.5 sm:py-4 px-2 sm:px-4 rounded-lg sm:rounded-2xl shadow-lg text-[10px] sm:text-sm font-bold text-white bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 active:scale-[0.98] transition-all disabled:opacity-60"
+                          className="w-full flex items-center justify-center gap-2 py-3 sm:py-4 px-4 rounded-xl sm:rounded-2xl shadow-lg text-sm font-bold text-white bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 active:scale-[0.98] transition-all disabled:opacity-60"
                         >
                           {loading ? "Verificando..." : "Verificar"}
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4">
@@ -289,8 +324,23 @@ export const LoginPage = () => {
                       <div className="text-center">
                         <button
                           type="button"
+                          onClick={handleResend}
+                          disabled={resendCooldown > 0 || loading || resendSuccess}
+                          className="text-sm text-medi-500 hover:text-medi-700 font-medium disabled:text-gray-400"
+                        >
+                          {resendSuccess
+                            ? "Código reenviado ✓"
+                            : resendCooldown > 0
+                              ? `Reenviar en ${resendCooldown}s`
+                              : "Reenviar código"}
+                        </button>
+                      </div>
+
+                      <div className="text-center">
+                        <button
+                          type="button"
                           onClick={() => { setTab("login"); setError(""); }}
-                          className="text-xs sm:text-sm text-medi-500 hover:text-medi-700 font-medium"
+                          className="text-sm text-gray-400 hover:text-gray-600 font-medium"
                         >
                           ← Volver al inicio de sesión
                         </button>
@@ -304,11 +354,11 @@ export const LoginPage = () => {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -20 }}
                       transition={{ duration: 0.25 }}
-                      className="space-y-1 relative z-10"
+                      className="space-y-4 relative z-10"
                     >
-                      <div className="grid grid-cols-2 gap-1 sm:gap-3">
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label htmlFor="reg-nombres" className="block text-xs font-bold text-gray-700 mb-1 pl-1">
+                          <label htmlFor="reg-nombres" className="block text-sm font-bold text-gray-700 mb-1 pl-1">
                             Nombres
                           </label>
                           <input
@@ -317,12 +367,11 @@ export const LoginPage = () => {
                             required
                             value={regNombres}
                             onChange={(e) => setRegNombres(e.target.value)}
-                            placeholder="Tu Nombre"
-                            className="w-full px-2 sm:px-4 py-1 sm:py-2.5 bg-white border border-gray-200 rounded-lg sm:rounded-xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-[10px] sm:text-sm text-gray-900 placeholder-gray-400 font-medium shadow-sm"
+                            className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-sm text-gray-900 font-medium shadow-sm"
                           />
                         </div>
                         <div>
-                          <label htmlFor="reg-apellidos" className="block text-[9px] sm:text-xs font-bold text-gray-700 mb-0 sm:mb-1 pl-1">
+                          <label htmlFor="reg-apellidos" className="block text-sm font-bold text-gray-700 mb-1 pl-1">
                             Apellidos
                           </label>
                           <input
@@ -331,14 +380,13 @@ export const LoginPage = () => {
                             required
                             value={regApellidos}
                             onChange={(e) => setRegApellidos(e.target.value)}
-                            placeholder="Tus Apellidos"
-                            className="w-full px-2 sm:px-4 py-1 sm:py-2.5 bg-white border border-gray-200 rounded-lg sm:rounded-xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-[10px] sm:text-sm text-gray-900 placeholder-gray-400 font-medium shadow-sm"
+                            className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-sm text-gray-900 font-medium shadow-sm"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label htmlFor="reg-email" className="block text-[9px] sm:text-xs font-bold text-gray-700 mb-0 sm:mb-1 pl-1">
+                        <label htmlFor="reg-email" className="block text-sm font-bold text-gray-700 mb-1 pl-1">
                           Correo electrónico
                         </label>
                         <input
@@ -347,76 +395,62 @@ export const LoginPage = () => {
                           required
                           value={regEmail}
                           onChange={(e) => setRegEmail(e.target.value)}
-                          placeholder="tu@correo.com"
-                          className="w-full px-2 sm:px-4 py-1 sm:py-2.5 bg-white border border-gray-200 rounded-lg sm:rounded-xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-[10px] sm:text-sm text-gray-900 placeholder-gray-400 font-medium shadow-sm"
+                          className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-sm text-gray-900 font-medium shadow-sm"
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-1 sm:gap-3">
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label htmlFor="reg-telefono" className="block text-[9px] sm:text-xs font-bold text-gray-700 mb-0 sm:mb-1 pl-1">
-                            Teléfono
-                          </label>
-                          <input
-                            id="reg-telefono"
-                            type="tel"
-                            value={regTelefono}
-                            onChange={(e) => setRegTelefono(e.target.value.replace(/\D/g, ""))}
-                            placeholder="999888777"
-                            className="w-full px-2 sm:px-4 py-1 sm:py-2.5 bg-white border border-gray-200 rounded-lg sm:rounded-xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-[10px] sm:text-sm text-gray-900 placeholder-gray-400 font-medium shadow-sm"
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="reg-dni" className="block text-[9px] sm:text-xs font-bold text-gray-700 mb-0 sm:mb-1 pl-1">
-                            DNI
-                          </label>
-                          <input
-                            id="reg-dni"
-                            type="text"
-                            value={regDni}
-                            onChange={(e) => setRegDni(e.target.value.replace(/\D/g, ""))}
-                            placeholder="12345678"
-                            className="w-full px-2 sm:px-4 py-1 sm:py-2.5 bg-white border border-gray-200 rounded-lg sm:rounded-xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-[10px] sm:text-sm text-gray-900 placeholder-gray-400 font-medium shadow-sm"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-1 sm:gap-3">
-                        <div>
-                          <label htmlFor="reg-password" className="block text-[9px] sm:text-xs font-bold text-gray-700 mb-0 sm:mb-1 pl-1">
+                          <label htmlFor="reg-password" className="block text-sm font-bold text-gray-700 mb-1 pl-1">
                             Contraseña
                           </label>
-                          <input
-                            id="reg-password"
-                            type="password"
-                            required
-                            value={regPassword}
-                            onChange={(e) => setRegPassword(e.target.value)}
-                            placeholder="Mín. 6"
-                            className="w-full px-2 sm:px-4 py-1 sm:py-2.5 bg-white border border-gray-200 rounded-lg sm:rounded-xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-[10px] sm:text-sm text-gray-900 placeholder-gray-400 font-medium shadow-sm"
-                          />
+                          <div className="relative">
+                            <input
+                              id="reg-password"
+                              type={showRegPassword ? "text" : "password"}
+                              required
+                              value={regPassword}
+                              onChange={(e) => setRegPassword(e.target.value)}
+                              className="w-full px-4 py-2.5 pr-11 bg-white border border-gray-200 rounded-xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-sm text-gray-900 font-medium shadow-sm"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowRegPassword(!showRegPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              <EyeIcon visible={showRegPassword} />
+                            </button>
+                          </div>
                         </div>
                         <div>
-                          <label htmlFor="reg-confirm" className="block text-[9px] sm:text-xs font-bold text-gray-700 mb-0 sm:mb-1 pl-1">
+                          <label htmlFor="reg-confirm" className="block text-sm font-bold text-gray-700 mb-1 pl-1">
                             Confirmar
                           </label>
-                          <input
-                            id="reg-confirm"
-                            type="password"
-                            required
-                            value={regConfirm}
-                            onChange={(e) => setRegConfirm(e.target.value)}
-                            placeholder="Repite"
-                            className="w-full px-2 sm:px-4 py-1 sm:py-2.5 bg-white border border-gray-200 rounded-lg sm:rounded-xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-[10px] sm:text-sm text-gray-900 placeholder-gray-400 font-medium shadow-sm"
-                          />
+                          <div className="relative">
+                            <input
+                              id="reg-confirm"
+                              type={showRegConfirm ? "text" : "password"}
+                              required
+                              value={regConfirm}
+                              onChange={(e) => setRegConfirm(e.target.value)}
+                              className="w-full px-4 py-2.5 pr-11 bg-white border border-gray-200 rounded-xl focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all text-sm text-gray-900 font-medium shadow-sm"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowRegConfirm(!showRegConfirm)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              <EyeIcon visible={showRegConfirm} />
+                            </button>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="pt-0 sm:pt-1">
+                      <div className="pt-2">
                         <button
                           type="submit"
                           disabled={loading}
-                          className="w-full flex items-center justify-center gap-2 py-1.5 sm:py-3 px-2 sm:px-4 rounded-lg sm:rounded-xl shadow-lg text-[10px] sm:text-sm font-bold text-white bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 active:scale-[0.98] transition-all disabled:opacity-60"
+                          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl shadow-lg text-sm font-bold text-white bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 active:scale-[0.98] transition-all disabled:opacity-60"
                         >
                           {loading ? "Registrando..." : "Crear Cuenta"}
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4">
@@ -429,16 +463,26 @@ export const LoginPage = () => {
                 </AnimatePresence>
               </div>
             </motion.div>
+            </AnimatePresence>
           </div>
 
-          <motion.div
-            layout="position"
-            transition={{ type: "spring", stiffness: 200, damping: 25, duration: 0.5 }}
-            className="hidden lg:flex w-1/2 h-full bg-white items-center justify-center"
+          <div
+            className={`hidden lg:flex w-1/2 h-full bg-white items-center justify-center overflow-hidden ${tab === "register" ? "lg:order-1" : ""}`}
           >
-          </motion.div>
-        </motion.div>
-      </AnimatePresence>
-    </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={tab}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
+                <img src={tab === "register" ? registerImg : loginImg} alt={tab === "register" ? "Registro" : "Inicio de sesión"} className="w-full h-full object-cover" />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
   );
 };

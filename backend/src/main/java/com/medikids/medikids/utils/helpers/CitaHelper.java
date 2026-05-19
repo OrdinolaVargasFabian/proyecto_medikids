@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,8 @@ public class CitaHelper implements Serializable {
                 .id_horario(cita.getId_horario())
                 .id_medico(cita.getId_medico())
                 .id_paciente(cita.getId_paciente())
+                .fecha_cita(cita.getFecha_cita() != null ? cita.getFecha_cita().toString() : null)
+                .hora_cita(cita.getHora_cita())
                 .build();
     }
 
@@ -40,6 +43,8 @@ public class CitaHelper implements Serializable {
                 .id_horario(cita.getId_horario())
                 .id_medico(cita.getId_medico())
                 .id_paciente(cita.getId_paciente())
+                .fecha_cita(cita.getFecha_cita() != null ? LocalDate.parse(cita.getFecha_cita()) : null)
+                .hora_cita(cita.getHora_cita())
                 .build();
     }
 

@@ -1,36 +1,47 @@
 import { useRef, useEffect, useState } from "react";
 import { motion, useInView } from "framer-motion";
 
+import M1 from "../../../assets/images/M1.webp";
+import M2 from "../../../assets/images/M2.webp";
+import M3 from "../../../assets/images/M3.webp";
+import H1 from "../../../assets/images/H1.webp";
+import H2 from "../../../assets/images/H2.webp";
+
 const testimonials = [
   {
     name: "Valeria Cárdenas",
     role: "Mamá de Mateo (4 años)",
     text: "La atención en MediKids es excepcional. Mi hijo solía tenerle pánico a los médicos, pero el trato de los pediatras aquí es tan empático y lleno de paciencia que ahora viene feliz. ¡Gracias por tanta dedicación!",
     rating: 5,
+    image: M1,
   },
   {
     name: "Carlos Mendoza",
     role: "Papá de Sofía (7 años)",
     text: "Fuimos por una emergencia a medianoche y la rapidez con la que nos atendieron fue increíble. El equipo de guardia no solo estabilizó a mi hija rápido, sino que nos transmitieron mucha calma en un momento difícil.",
     rating: 5,
+    image: H1,
   },
   {
     name: "Andrea Luciana",
     role: "Mamá de gemelos (1 año)",
     text: "El portal para padres me ha salvado la vida. Poder ver las vacunas, las próximas citas y los resultados de laboratorio desde mi celular sin tener que llamar o hacer filas no tiene precio. Totalmente recomendado.",
     rating: 5,
+    image: M2,
   },
   {
     name: "Roberto Aliaga",
     role: "Papá de Lucas (10 años)",
     text: "Llevamos a nuestro hijo al odontopediatra por primera vez y el consultorio estaba diseñado especialmente para no asustarlos. Todo el procedimiento fue sin dolor y súper didáctico.",
     rating: 5,
+    image: H2,
   },
   {
     name: "Mariana Silva",
     role: "Mamá de Emma (2 meses)",
     text: "Como madre primeriza tenía muchísimas dudas. El control de niño sano aquí es súper completo, me explican cada percentil de crecimiento con calma y responden a todas mis preguntas sin apuros.",
     rating: 5,
+    image: M3,
   },
 ];
 
@@ -131,8 +142,8 @@ export const TestimonialsSection = () => {
                 transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
                 className="group flex-none w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] snap-start flex flex-col items-center text-center bg-white p-10 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-hidden"
               >
-                <div className="w-24 h-24 rounded-full bg-gray-50 mb-4 flex items-center justify-center relative z-10 ring-4 ring-gray-50 group-hover:ring-medi-50 shadow-md transition-all duration-200">
-                  <span className="text-gray-400 text-xs uppercase font-bold tracking-widest">[FOTO]</span>
+                <div className="w-24 h-24 rounded-full bg-gray-50 mb-4 flex items-center justify-center relative z-10 ring-4 ring-gray-50 group-hover:ring-medi-50 shadow-md transition-all duration-200 overflow-hidden">
+                  <img src={testimony.image} alt={testimony.name} className="w-full h-full object-cover" />
                 </div>
 
                 <StarRating />

@@ -36,6 +36,12 @@ public class PacienteService {
                 .collect(Collectors.toList());
     }
 
+    public List<PacienteDto> getByIdCliente(int idCliente) {
+        return PacienteHelper.mapAll(pacienteRepository.findByIdCliente(idCliente)).stream()
+                .map(this::enriquecer)
+                .collect(Collectors.toList());
+    }
+
     public PacienteDto getById(int id) {
         Optional<Paciente> paciente = pacienteRepository.findById(id);
         return paciente.map(p -> enriquecer(PacienteHelper.mapPaciente(p))).orElse(null);
