@@ -25,6 +25,11 @@ public class PacienteController {
         return pacienteService.getAll();
     }
 
+    @GetMapping("/cliente/{idCliente}")
+    public List<PacienteDto> byCliente(@PathVariable int idCliente) {
+        return pacienteService.getByIdCliente(idCliente);
+    }
+
     @GetMapping("/getBy/{id}")
     public ResponseEntity<PacienteDto> getById(@PathVariable int id) {
         PacienteDto pacienteDto = pacienteService.getById(id);

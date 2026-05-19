@@ -97,6 +97,13 @@ public class MedicoController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Object> delete(@PathVariable int id) {
+        if (medicoService.delete(id))
+            return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
     @GetMapping("/especialidad/{especialidad}")
     public List<MedicoDto> getByEspecialidad(@PathVariable String especialidad) {
         return medicoService.getByEspecialidad(especialidad);

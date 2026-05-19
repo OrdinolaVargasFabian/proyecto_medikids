@@ -1,6 +1,7 @@
 package com.medikids.medikids.expose.web;
 
 import com.medikids.medikids.expose.model.request.UsuarioRequest;
+import com.medikids.medikids.expose.model.request.PasswordRequest;
 import com.medikids.medikids.process.dto.UsuarioDto;
 import com.medikids.medikids.process.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,14 @@ public class UsuarioController {
             return ResponseEntity.ok(usuarioDto);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    @PutMapping("/password/{id}")
+    public ResponseEntity<Void> changePassword(@PathVariable int id, @RequestBody PasswordRequest request) {
+        if (usuarioService.changePassword(id, request.getCurrentPassword(), request.getNewPassword())) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
     @DeleteMapping("/delete/{id}")

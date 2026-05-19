@@ -3,6 +3,9 @@ package com.medikids.medikids.expose.model.request;
 import lombok.Getter;
 import lombok.Setter;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 
 @Setter
@@ -17,4 +20,6 @@ public class CitaRequest implements Serializable {
     private int id_horario;
     private int id_medico;
     private int id_paciente;
+    private String fecha_cita;
+    private String hora_cita;
 }

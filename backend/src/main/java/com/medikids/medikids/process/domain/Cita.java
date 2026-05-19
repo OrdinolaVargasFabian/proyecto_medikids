@@ -3,6 +3,7 @@ package com.medikids.medikids.process.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -44,6 +45,12 @@ public class Cita {
 
     @Column(nullable = false)
     private int id_paciente;
+
+    @Column(name = "fecha_cita")
+    private LocalDate fecha_cita;
+
+    @Column(name = "hora_cita", length = 10)
+    private String hora_cita;
 
     @PrePersist
     protected void onCreate() {

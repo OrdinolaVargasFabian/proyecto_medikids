@@ -112,9 +112,24 @@ public class AuthService {
                 .build();
     }
 
-    /**
-     * Genera un código numérico aleatorio de 6 dígitos usando SecureRandom.
-     */
+    public AuthResponse resend2FA(String email) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+        if (usuarioOpt.isEmpty()) return null;
+
+        Usuario usuario = usuarioOpt.get();
+        String codigo = generarCodigo6Digitos();
+
+        usuario.setCodigoVerificacion(codigo);
+        usuario.setCodigoExpiracion(new Date(System.currentTimeMillis() + codigoExpiracionMs));
+        usuarioRepository.save(usuario);
+
+        emailService.enviarCodigo2FA(email, codigo);
+
+        return AuthResponse.builder()
+                .message("Código reenviado al correo: " + ocultarEmail(email))
+                .build();
+    }
+
     private String generarCodigo6Digitos() {
         SecureRandom random = new SecureRandom();
         int codigo = 100000 + random.nextInt(900000);

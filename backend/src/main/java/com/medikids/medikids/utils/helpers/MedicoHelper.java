@@ -25,6 +25,7 @@ public class MedicoHelper implements Serializable {
                 .id_usuario(medico.getId_usuario())
                 .id_especialidad(medico.getId_especialidad())
                 .activo(medico.getActivo())
+                .estado(medico.getEstado() != null ? medico.getEstado().name() : "activo")
                 .build();
     }
 

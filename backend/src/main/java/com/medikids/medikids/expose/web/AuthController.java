@@ -56,4 +56,18 @@ public class AuthController {
                         .message("Código de verificación inválido o expirado")
                         .build());
     }
+
+    @PostMapping("/resend-2fa")
+    public ResponseEntity<AuthResponse> resend2FA(@RequestBody com.medikids.medikids.expose.model.request.LoginRequest request) {
+        AuthResponse response = authService.resend2FA(request.getEmail());
+
+        if (Objects.nonNull(response)) {
+            return ResponseEntity.ok(response);
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(AuthResponse.builder()
+                        .message("No se pudo reenviar el código")
+                        .build());
+    }
 }
