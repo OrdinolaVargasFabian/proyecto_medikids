@@ -3,6 +3,9 @@ package com.medikids.medikids.process.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.sql.Time;
+import java.util.Date;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -10,8 +13,8 @@ import lombok.*;
 @Getter
 @ToString
 @Builder
-@Table(name = "horario_atencion")
-public class HorarioAtencion {
+@Table(name = "horario")
+public class Horario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,14 +22,17 @@ public class HorarioAtencion {
     private int id_horario;
 
     @Column(nullable = false)
-    private String dia;
+    private Date fecha;
 
     @Column(name = "hora_inicio", nullable = false)
-    private String hora_inicio;
+    private Time hora_inicio;
 
     @Column(name = "hora_fin", nullable = false)
-    private String hora_fin;
+    private Time hora_fin;
 
-    @Column(nullable = false)
-    private String estado;
+    @Column(name = "disponible", nullable = false)
+    private char disponible;
+
+    @Column(name = "id_medico", nullable = false)
+    private int id_medico;
 }
