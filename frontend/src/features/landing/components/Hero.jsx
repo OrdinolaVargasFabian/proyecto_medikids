@@ -130,7 +130,7 @@ export const Hero = () => {
             <img
               src={heroImg}
               alt="Médico atendiendo a un niño"
-              className="absolute inset-0 w-full h-full object-cover block"
+              className="absolute inset-0 w-full h-full object-cover block select-none pointer-events-none"
             />
 
             <motion.div

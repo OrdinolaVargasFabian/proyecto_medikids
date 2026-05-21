@@ -17,8 +17,9 @@ dist-ssr
 .env.local
 .env.*.local
 
-# Agent skills (reinstalables via skills-lock.json)
+# Agent skills y claude (reinstalables via skills-lock.json)
 .agents/
+CLAUDE.md
 
 # Editor directories and files
 .vscode/*
