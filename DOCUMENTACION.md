@@ -89,12 +89,12 @@ Cómo está estructurado el sistema:
 ## Stack tecnológico
 
 - Lenguajes:
-	- Java 17 (backend)
+	- Java 21 (backend)
 	- JavaScript / JSX (frontend)
 
 - Frameworks y plataformas:
 	- Backend: Spring Boot (versión definida en `pom.xml`, starter-parent 4.x)
-	- Frontend: React (v19) con Vite como build tool
+	- Frontend: React con Vite como build tool (Node version 24)
 
 - Base de datos:
 	- MySQL (driver `mysql-connector-j` en el backend)
