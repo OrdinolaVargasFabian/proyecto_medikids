@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { getClienteByUserId, getChildrenByClientId, getDoctors, getAppointmentsByPatient } from "../../../services/api";
+import { getClienteByUserId, getChildrenByClientId, getDoctors, getAppointmentsByClientId } from "../../../services/api";
 
 const quickActions = [
   { label: "Agendar Cita", to: "/padres/agendar", icon: "M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z", color: "from-medi-400 to-medi-500" },
@@ -29,22 +29,31 @@ export const DashboardHome = () => {
 
   useEffect(() => {
     if (!usuario) { setLoading(false); return; }
-    Promise.all([
-      getClienteByUserId(usuario.id_usuario)
-        .then((cliente) => getChildrenByClientId(cliente.id_cliente)),
-      getDoctors(),
-    ])
-      .then(([childrenData, doctorsData]) => {
+    let cancelled = false;
+    const cachedId = localStorage.getItem("cliente_id");
+    const promise = cachedId
+      ? Promise.resolve(Number(cachedId))
+      : getClienteByUserId(usuario.id_usuario).then((c) => {
+          localStorage.setItem("cliente_id", String(c.id_cliente));
+          return c.id_cliente;
+        });
+    promise
+      .then((idCliente) => Promise.all([
+        getChildrenByClientId(idCliente),
+        getAppointmentsByClientId(idCliente),
+        getDoctors(),
+      ]))
+      .then(([childrenData, apptsData, doctorsData]) => {
+        if (cancelled) return;
         setChildren(childrenData);
+        setAppointments(apptsData);
         setActiveDoctorsCount(doctorsData.filter((d) => d.activo === "1" && d.estado === "activo").length);
-        return Promise.all(childrenData.map((child) => getAppointmentsByPatient(child.id_paciente)));
-      })
-      .then((apptsByChild) => {
-        const all = apptsByChild.flat();
-        setAppointments(all);
       })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
   }, [usuario]);
 
   const upcoming = useMemo(

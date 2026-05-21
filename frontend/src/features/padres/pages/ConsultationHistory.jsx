@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getClienteByUserId, getChildrenByClientId, getAppointmentsByPatient } from "../../../services/api";
+import { getClienteByUserId, getChildrenByClientId, getAppointmentsByClientId } from "../../../services/api";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
@@ -29,19 +29,30 @@ export const ConsultationHistory = () => {
 
   useEffect(() => {
     if (!usuario) { setLoading(false); return; }
-    getClienteByUserId(usuario.id_usuario)
-      .then((cliente) => getChildrenByClientId(cliente.id_cliente))
-      .then((childrenData) => {
+    let cancelled = false;
+    const cachedId = localStorage.getItem("cliente_id");
+    const promise = cachedId
+      ? Promise.resolve(Number(cachedId))
+      : getClienteByUserId(usuario.id_usuario).then((c) => {
+          localStorage.setItem("cliente_id", String(c.id_cliente));
+          return c.id_cliente;
+        });
+    promise
+      .then((idCliente) => Promise.all([
+        getChildrenByClientId(idCliente),
+        getAppointmentsByClientId(idCliente),
+      ]))
+      .then(([childrenData, apptsData]) => {
+        if (cancelled) return;
         setChildren(childrenData);
-        return Promise.all(childrenData.map((child) => getAppointmentsByPatient(child.id_paciente)));
-      })
-      .then((apptsByChild) => {
-        const all = apptsByChild.flat();
-        setAppointments(all);
-        if (all.length > 0) setSelected(all[0]);
+        setAppointments(apptsData);
+        if (apptsData.length > 0) setSelected(apptsData[0]);
       })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
   }, [usuario]);
 
   const filtered = useMemo(() => {

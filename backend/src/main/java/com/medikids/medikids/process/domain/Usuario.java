@@ -12,7 +12,7 @@ import java.util.Date;
 @Getter
 @ToString
 @Builder
-@Table(name = "Usuario")
+@Table(name = "usuario")
 public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { getClienteByUserId, getChildrenByClientId, getDoctors, getSpecialties, saveAppointment } from "../../../services/api";
+import { getClienteByUserId, getChildrenByClientId, getDoctors, getSpecialties, getHorariosByMedico, saveAppointment } from "../../../services/api";
 
 const colors = [
   { from: "from-pink-400", to: "to-rose-500" },
@@ -39,6 +39,8 @@ export const BookAppointment = () => {
   const [selectedChild, setSelectedChild] = useState(null);
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [horarios, setHorarios] = useState([]);
+  const [selectedHorario, setSelectedHorario] = useState(null);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [motivo, setMotivo] = useState("");
@@ -56,7 +58,7 @@ export const BookAppointment = () => {
   const canGoNext = () => {
     if (step === 1) return !!selectedChild;
     if (step === 2) return !!selectedSpecialty && !!selectedDoctor;
-    if (step === 3) return !!date && !!time && !!motivo;
+    if (step === 3) return !!selectedHorario && !!motivo;
     return true;
   };
 
@@ -67,7 +69,12 @@ export const BookAppointment = () => {
 
   const formatDateDisplay = (d) => {
     if (!d) return "";
-    return new Date(d + "T00:00:00").toLocaleDateString("es-PE", {
+    if (typeof d === "string" && d.includes("-")) {
+      return new Date(d + "T00:00:00").toLocaleDateString("es-PE", {
+        day: "2-digit", month: "long", year: "numeric",
+      });
+    }
+    return new Date(d).toLocaleDateString("es-PE", {
       day: "2-digit", month: "long", year: "numeric",
     });
   };
@@ -89,6 +96,13 @@ export const BookAppointment = () => {
       .finally(() => setLoading(false));
   }, [usuario]);
 
+  useEffect(() => {
+    if (!selectedDoctor) { setHorarios([]); return; }
+    getHorariosByMedico(selectedDoctor.id_medico)
+      .then((data) => setHorarios(data.filter((h) => h.disponible === "1")))
+      .catch(() => {});
+  }, [selectedDoctor]);
+
   const handleSave = async () => {
     setSaving(true);
     setMessage("");
@@ -98,7 +112,7 @@ export const BookAppointment = () => {
         estado: "Pendiente",
         asistencia: "0",
         comentarios: "",
-        id_horario: 0,
+        id_horario: selectedHorario.id_horario,
         id_medico: selectedDoctor.id_medico,
         id_paciente: selectedChild.id_paciente,
         fecha_cita: date,
@@ -110,6 +124,8 @@ export const BookAppointment = () => {
         setSelectedChild(null);
         setSelectedSpecialty("");
         setSelectedDoctor(null);
+        setHorarios([]);
+        setSelectedHorario(null);
         setDate("");
         setTime("");
         setMotivo("");
@@ -237,7 +253,7 @@ export const BookAppointment = () => {
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Especialidad</label>
                   <select value={selectedSpecialty}
-                    onChange={(e) => { setSelectedSpecialty(e.target.value); setSelectedDoctor(null); }}
+                    onChange={(e) => { setSelectedSpecialty(e.target.value); setSelectedDoctor(null); setHorarios([]); setSelectedHorario(null); }}
                     className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all appearance-none">
                     <option value="">Selecciona una especialidad</option>
                     {specialties.map((s) => (
@@ -280,21 +296,64 @@ export const BookAppointment = () => {
 
         {step === 3 && (
           <div className="space-y-6">
-            <h3 className="text-xl font-extrabold text-gray-900">Fecha y Hora</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Fecha</label>
-                <input type="date" value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all" />
+            <h3 className="text-xl font-extrabold text-gray-900">Selecciona un Turno Disponible</h3>
+            {horarios.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-400 font-medium">No hay horarios disponibles para este médico.</p>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Hora</label>
-                <input type="time" value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all" />
+            ) : (
+              <div className="space-y-3">
+                {horarios.map((h) => {
+                  const fecha = new Date(h.fecha);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const isPast = fecha < today;
+                  const isSelected = selectedHorario?.id_horario === h.id_horario;
+                  return (
+                    <button
+                      key={h.id_horario}
+                      type="button"
+                      disabled={isPast}
+                      onClick={() => {
+                        setSelectedHorario(h);
+                        const d = new Date(h.fecha);
+                        const y = d.getFullYear();
+                        const m = String(d.getMonth() + 1).padStart(2, "0");
+                        const dia = String(d.getDate()).padStart(2, "0");
+                        setDate(`${y}-${m}-${dia}`);
+                        setTime(h.hora_inicio?.substring(0, 5) || "");
+                      }}
+                      className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all ${
+                        isSelected
+                          ? "border-medi-500 bg-medi-50 shadow-md"
+                          : isPast
+                          ? "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed"
+                          : "border-gray-100 hover:border-medi-300 hover:bg-medi-50/50"
+                      }`}
+                    >
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-extrabold ${
+                        isSelected ? "bg-medi-500 text-white" : "bg-medi-100 text-medi-600"
+                      }`}>
+                        {fecha.toLocaleDateString("es", { day: "2-digit" })}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-bold text-gray-900">
+                          {fecha.toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" })}
+                        </div>
+                        <div className="text-sm text-gray-500 font-medium">
+                          {h.hora_inicio?.substring(0, 5) || ""} - {h.hora_fin?.substring(0, 5) || ""}
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6 text-medi-600 shrink-0">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-            </div>
+            )}
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Motivo de la Consulta</label>
               <textarea rows={4} value={motivo}
@@ -332,11 +391,11 @@ export const BookAppointment = () => {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500 font-medium">Fecha</span>
-                <span className="font-bold text-gray-900">{formatDateDisplay(date)}</span>
+                <span className="font-bold text-gray-900">{selectedHorario ? formatDateDisplay(selectedHorario.fecha) : "—"}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Hora</span>
-                <span className="font-bold text-gray-900">{time}</span>
+                <span className="text-gray-500 font-medium">Horario</span>
+                <span className="font-bold text-gray-900">{selectedHorario ? `${selectedHorario.hora_inicio?.substring(0, 5)} - ${selectedHorario.hora_fin?.substring(0, 5)}` : "—"}</span>
               </div>
               {motivo && (
                 <div className="pt-2 border-t border-medi-100">

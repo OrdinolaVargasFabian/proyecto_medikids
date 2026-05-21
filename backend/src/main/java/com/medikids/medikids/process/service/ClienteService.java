@@ -9,9 +9,10 @@ import com.medikids.medikids.utils.helpers.ClienteHelper;
 import com.medikids.medikids.utils.helpers.UsuarioHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,7 +23,6 @@ public class ClienteService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // Enriquece un ClienteDto con los datos de su Usuario
     private ClienteDto enriquecer(ClienteDto dto) {
         usuarioRepository.findById(dto.getId_usuario()).ifPresent(usuario ->
                 dto.setUsuario(UsuarioHelper.mapUsuario(usuario))
@@ -30,10 +30,29 @@ public class ClienteService {
         return dto;
     }
 
+    private List<ClienteDto> enriquecerBatch(List<Cliente> clientes) {
+        if (clientes.isEmpty()) return Collections.emptyList();
+
+        List<ClienteDto> dtos = ClienteHelper.mapAll(clientes);
+
+        Set<Integer> usuarioIds = new HashSet<>();
+        for (Cliente c : clientes) {
+            usuarioIds.add(c.getUsuario().getId_usuario());
+        }
+
+        var usuarioMap = usuarioRepository.findAllById(usuarioIds).stream()
+                .collect(Collectors.toMap(u -> u.getId_usuario(), UsuarioHelper::mapUsuario));
+
+        for (ClienteDto dto : dtos) {
+            dto.setUsuario(usuarioMap.get(dto.getId_usuario()));
+        }
+
+        return dtos;
+    }
+
+    @Transactional(readOnly = true)
     public List<ClienteDto> getAll() {
-        return ClienteHelper.mapAll(clienteRepository.findAll()).stream()
-                .map(this::enriquecer)
-                .collect(Collectors.toList());
+        return enriquecerBatch(clienteRepository.findAll());
     }
 
     public ClienteDto getById(int id) {
