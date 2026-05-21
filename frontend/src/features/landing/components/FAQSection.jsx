@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRef, useState } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
+import imgFaq from "../../../assets/images/ImgFAQ.avif";
 
 const faqs = [
   { question: "¿Cómo agendo una cita para mi hijo?", answer: "Puedes agendar fácilmente a través de nuestro Portal de Padres, llamando a nuestra central telefónica o enviándonos un mensaje por WhatsApp. Nuestro equipo te confirmará el horario al instante." },
@@ -9,24 +10,36 @@ const faqs = [
 ];
 
 export const FAQSection = () => {
-  const [activeIndex, setActiveIndex] = useState(null);
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "0px" });
+  const [activeIndex, setActiveIndex] = useState(0);
   const handleToggle = (index) => setActiveIndex(activeIndex === index ? null : index);
 
   return (
-    <section className="w-full bg-transparent py-24 overflow-hidden" id="faq">
+    <section ref={ref} className="w-full bg-transparent py-20 overflow-hidden" id="faq">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <div className="flex flex-col">
-            <div className="flex flex-col items-start text-left mb-10">
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-[1.1] mb-4">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 1.0, delay: 0.3, ease: "easeOut" }}
+              className="flex flex-col items-center text-center lg:items-start lg:text-left mb-10"
+            >
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight leading-[1.1] mb-4">
                 Resolvemos tus <span className="text-medi-500">dudas</span>
               </h2>
               <p className="text-lg sm:text-xl text-gray-500 max-w-2xl leading-relaxed font-medium">
                 Encuentra respuestas rápidas a las preguntas más comunes sobre nuestras citas y servicios médicos.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="flex flex-col gap-4">
+            <motion.div
+              initial={{ opacity: 0, y: 60 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 1.0, delay: 0.45, ease: "easeOut" }}
+              className="flex flex-col gap-4"
+            >
               {faqs.map((faq, index) => {
                 const isOpen = activeIndex === index;
                 return (
@@ -42,16 +55,16 @@ export const FAQSection = () => {
                         isOpen ? "bg-medi-400 text-white" : "bg-white text-gray-800 hover:bg-gray-50"
                       }`}
                     >
-                      <span className="font-bold pr-8">{faq.question}</span>
+                      <span className="font-bold pr-8 text-lg">{faq.question}</span>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         strokeWidth={2.5}
                         stroke="currentColor"
-                        className={`w-5 h-5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                        className={`w-[26px] h-[26px] transition-transform duration-300 ${isOpen ? "rotate-45" : "rotate-0"}`}
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 5v14M5 12h14" />
                       </svg>
                     </button>
 
@@ -65,7 +78,7 @@ export const FAQSection = () => {
                           transition={{ duration: 0.25, ease: "easeInOut" }}
                           className="overflow-hidden"
                         >
-                          <div className="p-6 text-gray-500 leading-relaxed font-medium border-t border-gray-50">
+                          <div className="px-6 py-4 text-gray-500 leading-relaxed font-medium border-t border-gray-50">
                             {faq.answer}
                           </div>
                         </motion.div>
@@ -74,17 +87,17 @@ export const FAQSection = () => {
                   </div>
                 );
               })}
-            </div>
+            </motion.div>
           </div>
 
-          <div className="relative w-full h-[400px] sm:h-[500px] hidden lg:block">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-white rounded-full shadow-xl flex items-center justify-center z-20">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16 text-medi-400">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3" />
-              </svg>
-            </div>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 1.0, delay: 0.3, ease: "easeOut" }}
+            className="relative w-full h-[520px] hidden lg:flex items-end justify-center"
+          >
+            <img src={imgFaq} alt="Preguntas frecuentes" className="max-w-full max-h-[93%] object-contain" />
+          </motion.div>
         </div>
       </div>
     </section>

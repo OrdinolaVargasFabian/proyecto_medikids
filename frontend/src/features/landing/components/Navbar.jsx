@@ -67,10 +67,10 @@ export const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between">
         <Link
           to="/"
-          className="flex-shrink-0 flex flex-col leading-[0.9] font-black text-medi-400 tracking-tighter text-2xl min-[931px]:text-3xl hover:opacity-80 transition-opacity"
+          className="flex-shrink-0 flex flex-col font-black text-medi-400 tracking-tighter text-2xl min-[931px]:text-3xl hover:opacity-80 transition-opacity leading-none"
         >
           <span>medi</span>
-          <span>kids</span>
+          <span className="-mt-2">kids</span>
         </Link>
 
         <nav className="flex max-[930px]:hidden gap-6 lg:gap-8">
