@@ -7,14 +7,15 @@ import com.medikids.medikids.process.dto.MedicoDto;
 import com.medikids.medikids.process.repository.EspecialidadRepository;
 import com.medikids.medikids.process.repository.MedicoRepository;
 import com.medikids.medikids.process.repository.UsuarioRepository;
+import com.medikids.medikids.utils.config.SimpleCache;
 import com.medikids.medikids.utils.helpers.EspecialidadHelper;
 import com.medikids.medikids.utils.helpers.MedicoHelper;
 import com.medikids.medikids.utils.helpers.UsuarioHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,7 +30,10 @@ public class MedicoService {
     @Autowired
     private EspecialidadRepository especialidadRepository;
 
-    // Enriquece un MedicoDto con los datos de su Usuario y Especialidad
+    @Autowired
+    private SimpleCache<String, List<MedicoDto>> medicoListCache;
+
+    // Enriquece un solo MedicoDto (usado para getById, save, update)
     private MedicoDto enriquecer(MedicoDto dto) {
         usuarioRepository.findById(dto.getId_usuario()).ifPresent(usuario ->
                 dto.setUsuario(UsuarioHelper.mapUsuario(usuario))
@@ -40,10 +44,39 @@ public class MedicoService {
         return dto;
     }
 
+    // Enriquece una lista de MedicoDto en batch
+    private List<MedicoDto> enriquecerBatch(List<Medico> medicos) {
+        if (medicos.isEmpty()) return Collections.emptyList();
+
+        List<MedicoDto> dtos = MedicoHelper.mapAll(medicos);
+
+        Set<Integer> usuarioIds = new HashSet<>();
+        Set<Integer> especialidadIds = new HashSet<>();
+        for (Medico m : medicos) {
+            usuarioIds.add(m.getId_usuario());
+            especialidadIds.add(m.getId_especialidad());
+        }
+
+        var usuarioMap = usuarioRepository.findAllById(usuarioIds).stream()
+                .collect(Collectors.toMap(u -> u.getId_usuario(), UsuarioHelper::mapUsuario));
+
+        var especialidadMap = especialidadRepository.findAllById(especialidadIds).stream()
+                .collect(Collectors.toMap(e -> e.getId_especialidad(), EspecialidadHelper::mapEspecialidad));
+
+        for (MedicoDto dto : dtos) {
+            dto.setUsuario(usuarioMap.get(dto.getId_usuario()));
+            dto.setEspecialidad(especialidadMap.get(dto.getId_especialidad()));
+        }
+
+        return dtos;
+    }
+
     public List<MedicoDto> getAll() {
-        return MedicoHelper.mapAll(medicoRepository.findAll()).stream()
-                .map(this::enriquecer)
-                .collect(Collectors.toList());
+        List<MedicoDto> cached = medicoListCache.get("all");
+        if (cached != null) return cached;
+        List<MedicoDto> result = enriquecerBatch(medicoRepository.findAll());
+        medicoListCache.put("all", result);
+        return result;
     }
 
     public MedicoDto getById(int id) {
@@ -52,9 +85,11 @@ public class MedicoService {
     }
 
     public MedicoDto save(MedicoRequest medico) {
-        return enriquecer(MedicoHelper.mapMedico(
+        MedicoDto result = enriquecer(MedicoHelper.mapMedico(
                 medicoRepository.save(MedicoHelper.buildMedico(medico))
         ));
+        medicoListCache.invalidate("all");
+        return result;
     }
 
     public MedicoDto update(int id, MedicoRequest medico) {
@@ -65,9 +100,11 @@ public class MedicoService {
             medicoUpdate.get().setEstado(EstadoMedico.valueOf(medico.getEstado()));
             medicoUpdate.get().setId_especialidad(medico.getId_especialidad());
 
-            return enriquecer(MedicoHelper.mapMedico(
+            MedicoDto result = enriquecer(MedicoHelper.mapMedico(
                     medicoRepository.save(medicoUpdate.get())
             ));
+            medicoListCache.invalidate("all");
+            return result;
         }
         return null;
     }
@@ -84,12 +121,15 @@ public class MedicoService {
             medico.setActivo('1');
             medico.setEstado(EstadoMedico.activo);
         }
-        return enriquecer(MedicoHelper.mapMedico(medicoRepository.save(medico)));
+        MedicoDto result = enriquecer(MedicoHelper.mapMedico(medicoRepository.save(medico)));
+        medicoListCache.invalidate("all");
+        return result;
     }
 
     public boolean delete(int id) {
         if (medicoRepository.existsById(id)) {
             medicoRepository.deleteById(id);
+            medicoListCache.invalidate("all");
             return true;
         }
         return false;

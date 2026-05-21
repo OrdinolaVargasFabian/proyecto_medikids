@@ -2,13 +2,21 @@ package com.medikids.medikids.process.service;
 
 import com.medikids.medikids.expose.model.request.CitaRequest;
 import com.medikids.medikids.process.domain.Cita;
+import com.medikids.medikids.process.domain.Especialidad;
+import com.medikids.medikids.process.domain.Medico;
+import com.medikids.medikids.process.domain.Paciente;
+import com.medikids.medikids.process.domain.Usuario;
 import com.medikids.medikids.process.dto.CitaDto;
+import com.medikids.medikids.process.dto.EspecialidadDto;
 import com.medikids.medikids.process.dto.MedicoDto;
+import com.medikids.medikids.process.dto.PacienteDto;
+import com.medikids.medikids.process.dto.UsuarioDto;
 import com.medikids.medikids.process.repository.CitaRepository;
 import com.medikids.medikids.process.repository.EspecialidadRepository;
 import com.medikids.medikids.process.repository.MedicoRepository;
 import com.medikids.medikids.process.repository.PacienteRepository;
 import com.medikids.medikids.process.repository.UsuarioRepository;
+import com.medikids.medikids.utils.config.SimpleCache;
 import com.medikids.medikids.utils.helpers.CitaHelper;
 import com.medikids.medikids.utils.helpers.EspecialidadHelper;
 import com.medikids.medikids.utils.helpers.MedicoHelper;
@@ -18,8 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,7 +47,13 @@ public class CitaService {
     @Autowired
     private EspecialidadRepository especialidadRepository;
 
-    // Enriquece un CitaDto con los datos de su Medico y Paciente
+    @Autowired
+    private SimpleCache<Integer, Medico> medicoEntityCache;
+
+    @Autowired
+    private SimpleCache<Integer, Usuario> usuarioEntityCache;
+
+    // Enriquece un solo CitaDto (usado para getById, save, update)
     private CitaDto enriquecer(CitaDto dto) {
         medicoRepository.findById(dto.getId_medico()).ifPresent(medico -> {
             MedicoDto medicoDto = MedicoHelper.mapMedico(medico);
@@ -57,10 +71,85 @@ public class CitaService {
         return dto;
     }
 
+    // Enriquece una lista de CitaDto en batch (reduce N+1 a 5 consultas totales)
+    private List<CitaDto> enriquecerBatch(List<Cita> citas) {
+        if (citas.isEmpty()) return Collections.emptyList();
+
+        List<CitaDto> dtos = CitaHelper.mapAll(citas);
+
+        Set<Integer> medicoIds = new HashSet<>();
+        Set<Integer> pacienteIds = new HashSet<>();
+        for (CitaDto dto : dtos) {
+            medicoIds.add(dto.getId_medico());
+            pacienteIds.add(dto.getId_paciente());
+        }
+
+        Set<Integer> medicoIdsToFetch = new HashSet<>();
+        Map<Integer, Medico> medicoEntities = new HashMap<>();
+        for (Integer mid : medicoIds) {
+            Medico cached = medicoEntityCache.get(mid);
+            if (cached != null) {
+                medicoEntities.put(mid, cached);
+            } else {
+                medicoIdsToFetch.add(mid);
+            }
+        }
+        if (!medicoIdsToFetch.isEmpty()) {
+            for (Medico m : medicoRepository.findAllById(medicoIdsToFetch)) {
+                medicoEntities.putIfAbsent(m.getId_medico(), m);
+                medicoEntityCache.put(m.getId_medico(), m);
+            }
+        }
+
+        Set<Integer> usuarioIds = new HashSet<>();
+        Set<Integer> especialidadIds = new HashSet<>();
+        for (Medico m : medicoEntities.values()) {
+            usuarioIds.add(m.getId_usuario());
+            especialidadIds.add(m.getId_especialidad());
+        }
+
+        Set<Integer> usuarioIdsToFetch = new HashSet<>();
+        Map<Integer, Usuario> usuarioEntities = new HashMap<>();
+        for (Integer uid : usuarioIds) {
+            Usuario cached = usuarioEntityCache.get(uid);
+            if (cached != null) {
+                usuarioEntities.put(uid, cached);
+            } else {
+                usuarioIdsToFetch.add(uid);
+            }
+        }
+        if (!usuarioIdsToFetch.isEmpty()) {
+            for (Usuario u : usuarioRepository.findAllById(usuarioIdsToFetch)) {
+                usuarioEntities.putIfAbsent(u.getId_usuario(), u);
+                usuarioEntityCache.put(u.getId_usuario(), u);
+            }
+        }
+
+        Map<Integer, UsuarioDto> usuarioMap = usuarioEntities.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> UsuarioHelper.mapUsuario(e.getValue())));
+
+        Map<Integer, EspecialidadDto> especialidadMap = especialidadRepository.findAllById(especialidadIds).stream()
+                .collect(Collectors.toMap(Especialidad::getId_especialidad, EspecialidadHelper::mapEspecialidad));
+
+        Map<Integer, PacienteDto> pacienteMap = pacienteRepository.findAllById(pacienteIds).stream()
+                .collect(Collectors.toMap(Paciente::getId_paciente, PacienteHelper::mapPaciente));
+
+        for (CitaDto dto : dtos) {
+            Medico medico = medicoEntities.get(dto.getId_medico());
+            if (medico != null) {
+                MedicoDto medicoDto = MedicoHelper.mapMedico(medico);
+                medicoDto.setUsuario(usuarioMap.get(medico.getId_usuario()));
+                medicoDto.setEspecialidad(especialidadMap.get(medico.getId_especialidad()));
+                dto.setMedico(medicoDto);
+            }
+            dto.setPaciente(pacienteMap.get(dto.getId_paciente()));
+        }
+
+        return dtos;
+    }
+
     public List<CitaDto> getAll() {
-        return CitaHelper.mapAll(citaRepository.findAll()).stream()
-                .map(this::enriquecer)
-                .collect(Collectors.toList());
+        return enriquecerBatch(citaRepository.findAll());
     }
 
     public CitaDto getById(int id) {
@@ -89,14 +178,14 @@ public class CitaService {
         return null;
     }
 
-    // Obtiene todas las citas de un paciente (hijo del cliente)
     public List<CitaDto> getByPaciente(int id_paciente) {
-        return CitaHelper.mapAll(citaRepository.findByIdPaciente(id_paciente)).stream()
-                .map(this::enriquecer)
-                .collect(Collectors.toList());
+        return enriquecerBatch(citaRepository.findByIdPaciente(id_paciente));
     }
 
-    // Marca únicamente la asistencia de una cita (0: No, 1: Sí)
+    public List<CitaDto> getByCliente(int idCliente) {
+        return enriquecerBatch(citaRepository.findByCliente(idCliente));
+    }
+
     public CitaDto marcarAsistencia(int id, char asistencia) {
         Optional<Cita> cita = citaRepository.findById(id);
         if (cita.isPresent()) {

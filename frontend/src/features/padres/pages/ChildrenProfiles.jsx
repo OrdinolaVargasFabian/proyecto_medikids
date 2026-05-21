@@ -44,8 +44,15 @@ export const ChildrenProfiles = () => {
   useEffect(() => {
     if (!usuario) return;
     setLoading(true);
-    getClienteByUserId(usuario.id_usuario)
-      .then((cliente) => getChildrenByClientId(cliente.id_cliente))
+    const cachedId = localStorage.getItem("cliente_id");
+    const promise = cachedId
+      ? Promise.resolve(Number(cachedId))
+      : getClienteByUserId(usuario.id_usuario).then((c) => {
+          localStorage.setItem("cliente_id", String(c.id_cliente));
+          return c.id_cliente;
+        });
+    promise
+      .then((idCliente) => getChildrenByClientId(idCliente))
       .then((data) => setChildren(data))
       .catch(() => setError("Error al cargar los perfiles"))
       .finally(() => setLoading(false));
@@ -53,15 +60,30 @@ export const ChildrenProfiles = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    setError("");
+
+    const dniDuplicado = children.some((c) => c.dni_menor === form.dni_menor);
+    if (dniDuplicado) {
+      setError("El DNI ingresado ya corresponde a un hijo registrado.");
+      return;
+    }
+
     setSaving(true);
     try {
-      const cliente = await getClienteByUserId(usuario.id_usuario);
-      const nuevo = await createChild({ ...form, id_cliente: cliente.id_cliente });
+      const cachedId = localStorage.getItem("cliente_id");
+      const idCliente = cachedId
+        ? Number(cachedId)
+        : (await getClienteByUserId(usuario.id_usuario)).id_cliente;
+      const nuevo = await createChild({ ...form, id_cliente: idCliente });
       setChildren((prev) => [...prev, nuevo]);
       setShowModal(false);
       setForm({ nombre_completo: "", dni_menor: "", fecha_nacimiento: "" });
-    } catch {
-      setError("Error al crear el perfil");
+    } catch (err) {
+      const msg =
+        err?.response?.status === 409
+          ? err.response.data?.error || "El DNI ya se encuentra registrado en el sistema."
+          : "Error al crear el perfil. Inténtalo nuevamente.";
+      setError(msg);
     } finally {
       setSaving(false);
     }

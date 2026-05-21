@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 
 const padresNav = [
   { label: "Panel Principal", path: "/padres", icon: "M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" },
@@ -26,6 +26,7 @@ const ROLE_LABELS = {
 };
 
 export const DashboardLayout = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -51,12 +52,25 @@ export const DashboardLayout = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("usuario");
+    localStorage.removeItem("cliente_id");
     navigate("/login");
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden font-sans">
-      <aside className="w-64 bg-gradient-to-b from-medi-600 via-medi-700 to-medi-800 text-white flex flex-col shadow-2xl z-20">
+    <div className="min-h-screen bg-gray-100 font-sans">
+      {/* Overlay móvil */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-20 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-gradient-to-b from-medi-600 via-medi-700 to-medi-800 text-white flex flex-col shadow-2xl transition-transform duration-300 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div className="h-24 flex items-center justify-center border-b border-white/10">
           <Link
             to="/"
@@ -74,6 +88,7 @@ export const DashboardLayout = () => {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
                   isActive
                     ? "bg-white/20 text-white shadow-md backdrop-blur-sm"
@@ -102,11 +117,21 @@ export const DashboardLayout = () => {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-20 bg-white/80 backdrop-blur-xl border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-10">
-          <h1 className="text-xl font-bold text-gray-800">
-            {navItems.find((i) => i.path === location.pathname)?.label || "Panel Principal"}
-          </h1>
+      <div className="lg:ml-64 flex flex-col min-h-screen">
+        <header className="sticky top-0 z-10 h-16 lg:h-20 bg-white/80 backdrop-blur-xl border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 shadow-sm">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden w-10 h-10 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              </svg>
+            </button>
+            <h1 className="text-xl font-bold text-gray-800">
+              {navItems.find((i) => i.path === location.pathname)?.label || "Panel Principal"}
+            </h1>
+          </div>
 
           <div className="flex items-center gap-4">
             <button className="w-10 h-10 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center transition-colors relative">
@@ -125,7 +150,7 @@ export const DashboardLayout = () => {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-8 relative">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>
