@@ -2,6 +2,7 @@ package com.medikids.medikids.process.service;
 
 import com.medikids.medikids.expose.model.response.AuthResponse;
 import com.medikids.medikids.process.domain.Usuario;
+import com.medikids.medikids.process.service.IpAutorizadaService;
 import com.medikids.medikids.process.repository.UsuarioRepository;
 import com.medikids.medikids.utils.helpers.UsuarioHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class AuthService {
     private JwtService jwtService;
 
     @Autowired
+    private IpAutorizadaService ipAutorizadaService;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Value("${codigo.2fa.expiration}")
@@ -38,7 +42,7 @@ public class AuthService {
      * @param password Contraseña del usuario
      * @return AuthResponse con mensaje de éxito o null si credenciales inválidas
      */
-    public AuthResponse login(String email, String password) {
+    public AuthResponse login(String email, String password, String ipCliente) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
 
         if (usuarioOpt.isEmpty()) {
@@ -52,6 +56,10 @@ public class AuthService {
         }
 
         if (!passwordEncoder.matches(password, usuario.getPassword())) {
+            return null;
+        }
+
+        if (!ipAutorizadaService.isIpAutorizada(usuario.getId_usuario(), ipCliente)) {
             return null;
         }
 
