@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { PublicLayout } from '../../layouts/PublicLayout';
-import { DashboardLayout } from '../../layouts/DashboardLayout'; 
+import { DashboardLayout } from '../../layouts/DashboardLayout';
+import { PrivateRoute } from '../../layouts/PrivateRoute';
 import { LandingPage } from '../../features/landing';
 import { LoginPage } from '../../features/auth';
 import {
@@ -38,48 +39,53 @@ export const router = createBrowserRouter([
   },
 
   {
-    element: <DashboardLayout />,
+    element: <PrivateRoute />,
     children: [
       {
-        path: '/padres',
-        element: <DashboardHome />
-      },
-      {
-        path: '/padres/hijos',
-        element: <ChildrenProfiles />
-      },
-      {
-        path: '/padres/historial',
-        element: <ConsultationHistory />
-      },
-      {
-        path: '/padres/perfil',
-        element: <MyProfile />
-      },
-      {
-        path: '/padres/agendar',
-        element: <BookAppointment />
-      },
-      {
-        path: '/doctor',
-        element: <DoctorDashboard />
-      },
-      {
-        path: '/doctor/paciente/:id',
-        element: <PatientHistory />
-      },
-      {
-        path: '/doctor/incidencias',
-        element: <DoctorIncidents />
-      },
-      {
-        path: '/admin',
-        element: <AdminDashboard />
-      },
-      {
-        path: '/admin/medicos',
-        element: <DoctorsList />
-      },
+        element: <DashboardLayout />,
+        children: [
+          {
+            path: '/padres',
+            element: <DashboardHome />
+          },
+          {
+            path: '/padres/hijos',
+            element: <ChildrenProfiles />
+          },
+          {
+            path: '/padres/historial',
+            element: <ConsultationHistory />
+          },
+          {
+            path: '/padres/perfil',
+            element: <MyProfile />
+          },
+          {
+            path: '/padres/agendar',
+            element: <BookAppointment />
+          },
+          {
+            path: '/doctor',
+            element: <DoctorDashboard />
+          },
+          {
+            path: '/doctor/paciente/:id',
+            element: <PatientHistory />
+          },
+          {
+            path: '/doctor/incidencias',
+            element: <DoctorIncidents />
+          },
+          {
+            path: '/admin',
+            element: <AdminDashboard />
+          },
+          {
+            path: '/admin/medicos',
+            element: <DoctorsList />
+          },
+        ]
+      }
     ]
   }
 ]);

@@ -53,6 +53,12 @@ public class CitaController {
         return citaService.getByPaciente(id_paciente);
     }
 
+    // Obtiene todas las citas de todos los hijos de un cliente (una sola consulta)
+    @GetMapping("/cliente/{idCliente}")
+    public List<CitaDto> getByCliente(@PathVariable int idCliente) {
+        return citaService.getByCliente(idCliente);
+    }
+
     // Marca únicamente la asistencia de una cita (0: No, 1: Sí)
     @PatchMapping("/{id}/asistencia")
     public ResponseEntity<CitaDto> marcarAsistencia(@PathVariable int id, @RequestParam char asistencia) {

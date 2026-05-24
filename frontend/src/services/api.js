@@ -18,9 +18,12 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && !error.config.url.includes('/auth/')) {
+    const status = error.response?.status;
+    const url = error.config?.url || '';
+    if ((status === 401 || status === 403) && !url.includes('/auth/')) {
       localStorage.removeItem('token');
       localStorage.removeItem('usuario');
+      localStorage.removeItem('cliente_id');
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -96,7 +99,13 @@ export const saveAppointment = (data) =>
 export const getAppointmentsByPatient = (idPaciente) =>
   api.get(`/cita/paciente/${idPaciente}`).then((r) => r.data);
 
+export const getAppointmentsByClientId = (idCliente) =>
+  api.get(`/cita/cliente/${idCliente}`).then((r) => r.data);
+
 export const getHorarios = () =>
   api.get('/horarios').then((r) => r.data);
+
+export const getHorariosByMedico = (idMedico) =>
+  api.get(`/horarios/medico/${idMedico}`).then((r) => r.data);
 
 export default api;
