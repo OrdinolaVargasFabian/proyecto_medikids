@@ -3,6 +3,7 @@ package com.medikids.medikids.process.service;
 import com.medikids.medikids.expose.model.request.CitaRequest;
 import com.medikids.medikids.process.domain.Cita;
 import com.medikids.medikids.process.domain.Especialidad;
+import com.medikids.medikids.process.domain.Horario;
 import com.medikids.medikids.process.domain.Medico;
 import com.medikids.medikids.process.domain.Paciente;
 import com.medikids.medikids.process.domain.Usuario;
@@ -13,6 +14,7 @@ import com.medikids.medikids.process.dto.PacienteDto;
 import com.medikids.medikids.process.dto.UsuarioDto;
 import com.medikids.medikids.process.repository.CitaRepository;
 import com.medikids.medikids.process.repository.EspecialidadRepository;
+import com.medikids.medikids.process.repository.HorarioRepository;
 import com.medikids.medikids.process.repository.MedicoRepository;
 import com.medikids.medikids.process.repository.PacienteRepository;
 import com.medikids.medikids.process.repository.UsuarioRepository;
@@ -24,6 +26,7 @@ import com.medikids.medikids.utils.helpers.PacienteHelper;
 import com.medikids.medikids.utils.helpers.UsuarioHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -52,6 +55,9 @@ public class CitaService {
 
     @Autowired
     private SimpleCache<Integer, Usuario> usuarioEntityCache;
+
+    @Autowired
+    private HorarioRepository horarioRepository;
 
     // Enriquece un solo CitaDto (usado para getById, save, update)
     private CitaDto enriquecer(CitaDto dto) {
@@ -157,10 +163,26 @@ public class CitaService {
         return cita.map(c -> enriquecer(CitaHelper.mapCita(c))).orElse(null);
     }
 
+    @Transactional
     public CitaDto save(CitaRequest cita) {
-        return enriquecer(CitaHelper.mapCita(citaRepository.save(CitaHelper.buildCita(cita))));
-    }
+        Horario horario = horarioRepository.findById(cita.getId_horario())
+                .orElseThrow(() -> new RuntimeException("Horario no encontrado: " + cita.getId_horario()));
 
+        if (horario.getDisponible() != '1') {
+            throw new RuntimeException("El horario seleccionado ya no está disponible");
+        }
+
+        if (cita.getFecha_cita() == null || cita.getFecha_cita().contains("NaN")) {
+            cita.setFecha_cita(LocalDate.now().toString());
+        }
+
+        Cita saved = citaRepository.save(CitaHelper.buildCita(cita));
+
+        horario.setDisponible('0');
+        horarioRepository.save(horario);
+
+        return enriquecer(CitaHelper.mapCita(saved));
+    }
     public CitaDto update(int id, CitaRequest cita) {
         Optional<Cita> citaUpdate = citaRepository.findById(id);
         if (citaUpdate.isPresent()) {
@@ -186,7 +208,7 @@ public class CitaService {
         return enriquecerBatch(citaRepository.findByCliente(idCliente));
     }
 
-    public CitaDto marcarAsistencia(int id, char asistencia) {
+    public CitaDto marcarAsistencia(int id, Character asistencia) {
         Optional<Cita> cita = citaRepository.findById(id);
         if (cita.isPresent()) {
             cita.get().setAsistencia(asistencia);

@@ -15,7 +15,7 @@ public class CitaRequest implements Serializable {
 
     private String motivo;
     private String estado;
-    private char asistencia; // 0: No | 1: Sí
+    private Character asistencia; // 0: No | 1: Sí
     private String comentarios;
     private int id_horario;
     private int id_medico;

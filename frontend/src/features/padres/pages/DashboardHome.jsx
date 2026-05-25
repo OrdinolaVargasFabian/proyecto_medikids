@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { getClienteByUserId, getChildrenByClientId, getDoctors, getAppointmentsByClientId } from "../../../services/api";
+import { useChildren, useCitas, useDoctores } from "../../../hooks/useApiData";
+import { DashboardHomeSkeleton } from "../../../app/components/skeletons/DashboardHomeSkeleton";
 
 const quickActions = [
   { label: "Agendar Cita", to: "/padres/agendar", icon: "M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z", color: "from-medi-400 to-medi-500" },
@@ -22,39 +23,23 @@ export const DashboardHome = () => {
     catch { return null; }
   }, []);
 
-  const [loading, setLoading] = useState(true);
-  const [children, setChildren] = useState([]);
-  const [appointments, setAppointments] = useState([]);
-  const [activeDoctorsCount, setActiveDoctorsCount] = useState(0);
+  const clientId = useMemo(() => {
+    try { return Number(localStorage.getItem("cliente_id")); }
+    catch { return null; }
+  }, []);
 
-  useEffect(() => {
-    if (!usuario) { setLoading(false); return; }
-    let cancelled = false;
-    const cachedId = localStorage.getItem("cliente_id");
-    const promise = cachedId
-      ? Promise.resolve(Number(cachedId))
-      : getClienteByUserId(usuario.id_usuario).then((c) => {
-          localStorage.setItem("cliente_id", String(c.id_cliente));
-          return c.id_cliente;
-        });
-    promise
-      .then((idCliente) => Promise.all([
-        getChildrenByClientId(idCliente),
-        getAppointmentsByClientId(idCliente),
-        getDoctors(),
-      ]))
-      .then(([childrenData, apptsData, doctorsData]) => {
-        if (cancelled) return;
-        setChildren(childrenData);
-        setAppointments(apptsData);
-        setActiveDoctorsCount(doctorsData.filter((d) => d.activo === "1" && d.estado === "activo").length);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [usuario]);
+  const { data: childrenData = [], isLoading: loadingChildren } = useChildren(clientId);
+  const { data: citasData = [], isLoading: loadingCitas } = useCitas(clientId);
+  const { data: doctoresData = [], isLoading: loadingDoctores } = useDoctores();
+
+  const children = childrenData;
+  const appointments = citasData;
+  const loading = loadingChildren || loadingCitas || loadingDoctores;
+
+  const activeDoctorsCount = useMemo(
+    () => doctoresData.filter((d) => d.activo === "1" && d.estado === "activo").length,
+    [doctoresData]
+  );
 
   const upcoming = useMemo(
     () => appointments.filter((a) => a.estado === "Pendiente"),
@@ -74,14 +59,7 @@ export const DashboardHome = () => {
   ], [children.length, upcoming.length, completedCount, activeDoctorsCount]);
 
   if (loading) {
-    return (
-      <div className="space-y-8">
-        <div className="bg-gradient-to-br from-medi-400 via-medi-500 to-medi-600 rounded-3xl p-8 h-32 animate-pulse" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) => <div key={i} className="bg-white rounded-2xl border border-gray-100 h-24 animate-pulse" />)}
-        </div>
-      </div>
-    );
+    return <DashboardHomeSkeleton />;
   }
 
   return (

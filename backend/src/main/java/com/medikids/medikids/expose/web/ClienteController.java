@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,11 +21,13 @@ public class ClienteController {
     private final ClienteService clienteService;
 
     @GetMapping("")
+    @PreAuthorize("@permiso.has('cliente:read')")
     public List<ClienteDto> all() {
         return clienteService.getAll();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("@permiso.has('cliente:read')")
     public ResponseEntity<ClienteDto> getById(@PathVariable int id) {
         ClienteDto clienteDto = clienteService.getById(id);
         if (Objects.nonNull(clienteDto)) {
@@ -34,6 +37,7 @@ public class ClienteController {
     }
 
     @GetMapping("/usuario/{idUsuario}")
+    @PreAuthorize("@permiso.has('cliente:read')")
     public ResponseEntity<ClienteDto> getByIdUsuario(@PathVariable int idUsuario) {
         ClienteDto clienteDto = clienteService.getByIdUsuario(idUsuario);
         if (Objects.nonNull(clienteDto)) {
@@ -48,6 +52,7 @@ public class ClienteController {
     }
 
     @PutMapping("/actualizar/{id}")
+    @PreAuthorize("@permiso.has('cliente:write')")
     public ResponseEntity<ClienteDto> update(@PathVariable int id, @RequestBody ClienteRequest cliente) {
         ClienteDto clienteDto = clienteService.update(id, cliente);
         if (Objects.nonNull(clienteDto)) {
@@ -58,11 +63,13 @@ public class ClienteController {
 
     // filtros por nombre o apellido
     @GetMapping("/nombre/{nombre}")
+    @PreAuthorize("@permiso.has('cliente:read')")
     public List<ClienteDto> getByNombre(@PathVariable String nombre) {
         return clienteService.getByNombre(nombre);
     }
 
     @GetMapping("/dni/{dni}")
+    @PreAuthorize("@permiso.has('cliente:read')")
     public ResponseEntity<ClienteDto> getByDni(@PathVariable String dni) {
         ClienteDto clienteDto = clienteService.getByDni(dni);
         if (Objects.nonNull(clienteDto)) {

@@ -72,6 +72,19 @@ public class UsuarioService {
         return null;
     }
 
+    public UsuarioDto updateProfile(int id, UsuarioRequest usuario) {
+        Optional<Usuario> usuarioUpdate = usuarioRepository.findById(id);
+        if (usuarioUpdate.isPresent()) {
+            usuarioUpdate.get().setNombres(usuario.getNombres());
+            usuarioUpdate.get().setApellidos(usuario.getApellidos());
+            usuarioUpdate.get().setEmail(usuario.getEmail());
+            usuarioUpdate.get().setTelefono(usuario.getTelefono());
+            usuarioUpdate.get().setFecha_modificado(new Date());
+            return enriquecer(UsuarioHelper.mapUsuario(usuarioRepository.save(usuarioUpdate.get())));
+        }
+        return null;
+    }
+
     public boolean changePassword(int id, String currentPassword, String newPassword) {
         Optional<Usuario> usuario = usuarioRepository.findById(id);
         if (usuario.isPresent() && passwordEncoder.matches(currentPassword, usuario.get().getPassword())) {

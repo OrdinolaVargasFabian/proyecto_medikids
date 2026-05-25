@@ -32,7 +32,7 @@ public class Cita {
     private String estado;
 
     @Column(nullable = true)
-    private char asistencia;
+    private Character asistencia;
 
     @Column(nullable = true)
     private String comentarios;

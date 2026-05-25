@@ -55,10 +55,10 @@ export const Navbar = () => {
 
   return (
     <motion.header
-      initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className={`w-full sticky top-0 z-50 relative transition-all duration-300 ${
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.7, ease: "easeInOut" }}
+      className={`w-full sticky top-0 z-50 transition-all duration-300 ${
         scrolled
           ? "bg-white/85 backdrop-blur-xl shadow-lg border-b border-medi-100/60"
           : "bg-transparent max-[930px]:bg-white/90 backdrop-blur-none max-[930px]:backdrop-blur-xl border-b border-transparent max-[930px]:border-medi-100/30"

@@ -13,7 +13,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -26,38 +28,50 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // Obtener el header Authorization
         String authHeader = request.getHeader("Authorization");
 
-        // Si no hay header o no empieza con "Bearer ", continuar sin autenticación
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Extraer el token (quitar "Bearer ")
         String token = authHeader.substring(7);
 
         try {
-            // Extraer el email del token
             String email = jwtService.extractEmail(token);
 
-            // Si el email es válido y no hay autenticación previa en el contexto
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                // Validar el token
                 if (jwtService.validateToken(token, email)) {
-                    // Crear autenticación y establecerla en el contexto de seguridad
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(email, null, new ArrayList<>());
+                    Map<String, Object> claims = jwtService.extractAllClaims(token);
+                    Integer idRol = (Integer) claims.get("id_rol");
 
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    String role = switch (idRol != null ? idRol : 0) {
+                        case 1 -> "ROLE_CLIENTE";
+                        case 2 -> "ROLE_MEDICO";
+                        case 3 -> "ROLE_ADMIN";
+                        default -> "ROLE_USER";
+                    };
+
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                email, null,
+                                org.springframework.security.core.authority.AuthorityUtils.createAuthorityList(role)
+                            );
+
+                    Object webDetails = new WebAuthenticationDetailsSource().buildDetails(request);
+                    Object rawPermisos = claims.get("permisos");
+                    List<String> permisos = (rawPermisos instanceof List) ? (List<String>) rawPermisos : List.of();
+                    Map<String, Object> extendedDetails = new HashMap<>();
+                    extendedDetails.put("web", webDetails);
+                    extendedDetails.put("permisos", permisos);
+                    extendedDetails.put("id", claims.get("id"));
+                    authToken.setDetails(extendedDetails);
 
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (Exception e) {
-            // Token inválido: continuar sin autenticación (será rechazado por Spring Security)
             logger.error("Error al validar JWT token: " + e.getMessage());
         }
 

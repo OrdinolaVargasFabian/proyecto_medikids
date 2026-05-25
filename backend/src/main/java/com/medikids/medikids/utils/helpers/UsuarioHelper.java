@@ -28,6 +28,7 @@ public class UsuarioHelper implements Serializable {
                 .fecha_registro(usuario.getFecha_registro())
                 .fecha_modificado(usuario.getFecha_modificado())
                 .visible(usuario.getVisible())
+                .activo(usuario.getActivo())
                 .build();
     }
 

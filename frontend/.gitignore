@@ -33,9 +33,4 @@ CLAUDE.md
 *.sw?
 
 
-pnpm-lock.yaml
-
-# Environment variables – do NOT commit secrets
-.env
-.env.local
-.env.*.local
+pnpm-lock.yaml

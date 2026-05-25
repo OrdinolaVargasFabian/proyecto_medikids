@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,11 +21,13 @@ public class CitaController {
     private final CitaService citaService;
 
     @GetMapping("/all")
+    @PreAuthorize("@permiso.has('cita:read')")
     public List<CitaDto> all() {
         return citaService.getAll();
     }
 
     @GetMapping("/getBy/{id}")
+    @PreAuthorize("@permiso.has('cita:read')")
     public ResponseEntity<CitaDto> getById(@PathVariable int id) {
         CitaDto citaDto = citaService.getById(id);
         if (Objects.nonNull(citaDto)) {
@@ -34,11 +37,13 @@ public class CitaController {
     }
 
     @PostMapping("/save")
+    @PreAuthorize("@permiso.has('cita:write')")
     public CitaDto save(@RequestBody CitaRequest cita) {
         return citaService.save(cita);
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("@permiso.has('cita:write')")
     public ResponseEntity<CitaDto> update(@PathVariable int id, @RequestBody CitaRequest cita) {
         CitaDto citaDto = citaService.update(id, cita);
         if (Objects.nonNull(citaDto)) {
@@ -49,19 +54,22 @@ public class CitaController {
 
     // Obtiene todas las citas de un paciente (hijo del cliente)
     @GetMapping("/paciente/{id_paciente}")
+    @PreAuthorize("@permiso.has('cita:read')")
     public List<CitaDto> getByPaciente(@PathVariable int id_paciente) {
         return citaService.getByPaciente(id_paciente);
     }
 
     // Obtiene todas las citas de todos los hijos de un cliente (una sola consulta)
     @GetMapping("/cliente/{idCliente}")
+    @PreAuthorize("@permiso.has('cita:read')")
     public List<CitaDto> getByCliente(@PathVariable int idCliente) {
         return citaService.getByCliente(idCliente);
     }
 
     // Marca únicamente la asistencia de una cita (0: No, 1: Sí)
     @PatchMapping("/{id}/asistencia")
-    public ResponseEntity<CitaDto> marcarAsistencia(@PathVariable int id, @RequestParam char asistencia) {
+    @PreAuthorize("@permiso.has('cita:asistencia')")
+    public ResponseEntity<CitaDto> marcarAsistencia(@PathVariable int id, @RequestParam Character asistencia) {
         CitaDto citaDto = citaService.marcarAsistencia(id, asistencia);
         if (Objects.nonNull(citaDto)) {
             return ResponseEntity.ok(citaDto);

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,16 +22,19 @@ public class PacienteController {
     private final PacienteService pacienteService;
 
     @GetMapping("/all")
+    @PreAuthorize("@permiso.has('paciente:read')")
     public List<PacienteDto> all() {
         return pacienteService.getAll();
     }
 
     @GetMapping("/cliente/{idCliente}")
+    @PreAuthorize("@permiso.has('paciente:read')")
     public List<PacienteDto> byCliente(@PathVariable int idCliente) {
         return pacienteService.getByIdCliente(idCliente);
     }
 
     @GetMapping("/getBy/{id}")
+    @PreAuthorize("@permiso.has('paciente:read')")
     public ResponseEntity<PacienteDto> getById(@PathVariable int id) {
         PacienteDto pacienteDto = pacienteService.getById(id);
         if (Objects.nonNull(pacienteDto)) {
@@ -40,11 +44,13 @@ public class PacienteController {
     }
 
     @PostMapping("/save")
+    @PreAuthorize("@permiso.has('paciente:write')")
     public PacienteDto save(@RequestBody PacienteRequest paciente) {
         return pacienteService.save(paciente);
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("@permiso.has('paciente:write')")
     public ResponseEntity<PacienteDto> update(@PathVariable int id, @RequestBody PacienteRequest paciente) {
         PacienteDto pacienteDto = pacienteService.update(id, paciente);
         if (Objects.nonNull(pacienteDto)) {
