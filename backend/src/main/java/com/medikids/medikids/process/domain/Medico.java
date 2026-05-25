@@ -17,6 +17,10 @@ public class Medico {
         activo, inactivo
     }
 
+    public enum Genero {
+        masculino, femenino, otro
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
@@ -29,6 +33,10 @@ public class Medico {
     private String url_foto;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "genero", length = 20)
+    private Genero genero;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "estado")
     private EstadoMedico estado;
 
@@ -39,5 +47,5 @@ public class Medico {
     private int id_especialidad;
 
     @Column(name = "activo", nullable = false)
-    private char activo;
+    private Character activo;
 }

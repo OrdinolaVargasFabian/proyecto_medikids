@@ -17,7 +17,7 @@ public class CitaDto implements Serializable {
     private String motivo;
     private Date fecha_registro;
     private String estado;
-    private char asistencia; //0: NO | 1:Sí
+    private Character asistencia; //0: NO | 1:Sí
     private String comentarios;
     private int id_horario;
     private int id_medico; // FK

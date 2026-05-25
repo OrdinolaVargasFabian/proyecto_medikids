@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.sql.Time;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Setter
 @Getter
@@ -15,7 +15,7 @@ public class HorarioDto implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private int id_horario;
-    private Date fecha;
+    private LocalDate fecha;
     private Time hora_inicio;
     private Time hora_fin;
     private char disponible;

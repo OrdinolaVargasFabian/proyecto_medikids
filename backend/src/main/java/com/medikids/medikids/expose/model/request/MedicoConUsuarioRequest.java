@@ -17,6 +17,7 @@ public class MedicoConUsuarioRequest implements Serializable {
     private int telefono;
     private String nro_colegiatura;
     private String url_foto;
+    private String genero;
     private String estado;
     private int id_especialidad;
 }

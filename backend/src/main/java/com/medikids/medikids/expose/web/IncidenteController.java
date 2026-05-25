@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,11 +23,13 @@ public class IncidenteController {
     private final IncidenteService incidenteService;
 
     @GetMapping("/all")
+    @PreAuthorize("@permiso.has('incidente:read')")
     public List<IncidenteDto> all() {
         return incidenteService.getAll();
     }
 
     @GetMapping("/getBy/{id}")
+    @PreAuthorize("@permiso.has('incidente:read')")
     public ResponseEntity<IncidenteDto> getById(@PathVariable int id) {
         IncidenteDto incidenteDto = incidenteService.getById(id);
         if (Objects.nonNull(incidenteDto)) {
@@ -36,11 +39,13 @@ public class IncidenteController {
     }
 
     @PostMapping("/save")
+    @PreAuthorize("@permiso.has('incidente:write')")
     public IncidenteDto save(@RequestBody IncidenteRequest incidente) {
         return incidenteService.save(incidente);
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("@permiso.has('incidente:write')")
     public ResponseEntity<IncidenteDto> update(@PathVariable int id, @RequestBody IncidenteRequest incidente) {
         IncidenteDto incidenteDto = incidenteService.update(id, incidente);
         if (Objects.nonNull(incidenteDto)) {
@@ -50,6 +55,7 @@ public class IncidenteController {
     }
 
     @PatchMapping("/responder/{id}")
+    @PreAuthorize("@permiso.has('incidente:respond')")
     public ResponseEntity<IncidenteDto> responder(@PathVariable int id, @RequestBody IncidenteRespuestaRequest request) {
         IncidenteDto incidenteDto = incidenteService.responder(id, request);
         if (Objects.nonNull(incidenteDto)) {

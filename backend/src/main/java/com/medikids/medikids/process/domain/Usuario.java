@@ -41,6 +41,9 @@ public class Usuario {
     private Date fecha_modificado;
 
     @Column(nullable = false)
+    private Boolean activo;
+
+    @Column(nullable = false)
     private char visible; //1: Sí, 0: No
 
     // ── Campos para 2FA ──
@@ -56,6 +59,7 @@ public class Usuario {
         Date ahora = new Date();
         this.fecha_registro = ahora;
         this.fecha_modificado = ahora;
+        this.activo = true;
         this.visible = '1';
     }
 

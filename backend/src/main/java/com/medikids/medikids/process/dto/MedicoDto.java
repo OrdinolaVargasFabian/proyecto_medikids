@@ -15,6 +15,7 @@ public class MedicoDto implements Serializable {
     private int id_medico;
     private String nro_colegiatura;
     private String url_foto;
+    private String genero;
     private int id_usuario; // FK
     private int id_especialidad; // FK
     private char activo; // 0: No | 1: Sí

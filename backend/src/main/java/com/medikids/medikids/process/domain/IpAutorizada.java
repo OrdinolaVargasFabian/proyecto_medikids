@@ -2,8 +2,7 @@ package com.medikids.medikids.process.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
@@ -12,47 +11,46 @@ import java.util.Date;
 @Getter
 @ToString
 @Builder
-@Table(name = "IP_autorizada")
+@Table(name = "ip_autorizada")
 public class IpAutorizada {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false)
-    private int id_ip_autorizada;
+    @Column(name = "id_ip_autorizada")
+    private Integer idIpAutorizada;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario", nullable = false)
-    @ToString.Exclude
-    private Usuario usuario;
-
-    @Column(name = "ip", nullable = false, length = 45)
+    @Column(nullable = false, length = 45)
     private String ip;
 
-    @Column(name = "descripcion", nullable = true, length = 150)
+    @Column(length = 150)
     private String descripcion;
 
-    @Column(name = "activo", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
-    @Builder.Default
-    private boolean activo = true;
+    @Column(nullable = false, length = 1)
+    private String visible;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "fecha_registro", nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
-    private Date fecha_registro;
+    @Column(nullable = false)
+    private Integer idUsuario;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "fecha_modificado", nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
-    private Date fecha_modificado;
+    @Column(nullable = false)
+    private Boolean activo;
+
+    @Column(nullable = false)
+    private LocalDateTime fechaRegistro;
+
+    @Column(nullable = false)
+    private LocalDateTime fechaModificado;
 
     @PrePersist
     protected void onCreate() {
-        Date ahora = new Date();
-        this.fecha_registro = ahora;
-        this.fecha_modificado = ahora;
-        this.activo = true;
+        LocalDateTime ahora = LocalDateTime.now();
+        this.fechaRegistro = ahora;
+        this.fechaModificado = ahora;
+        if (this.visible == null) this.visible = "1";
+        if (this.activo == null) this.activo = true;
     }
 
     @PreUpdate
     protected void onUpdate() {
-        this.fecha_modificado = new Date();
+        this.fechaModificado = LocalDateTime.now();
     }
 }

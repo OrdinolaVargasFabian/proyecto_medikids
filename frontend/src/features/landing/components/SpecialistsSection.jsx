@@ -3,13 +3,13 @@ import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
-import doc1 from "../../../assets/images/doc1.webp";
-import doc2 from "../../../assets/images/doc2.webp";
-import doc3 from "../../../assets/images/doc3.webp";
-import doc4 from "../../../assets/images/doc4.webp";
-import dra1 from "../../../assets/images/dra1.webp";
-import dra2 from "../../../assets/images/dra2.webp";
-import dra3 from "../../../assets/images/dra3.webp";
+import doc1 from "../../../assets/images/doc1.avif";
+import doc2 from "../../../assets/images/doc2.avif";
+import doc3 from "../../../assets/images/doc3.avif";
+import doc4 from "../../../assets/images/doc4.avif";
+import dra1 from "../../../assets/images/dra1.avif";
+import dra2 from "../../../assets/images/dra2.avif";
+import dra3 from "../../../assets/images/dra3.avif";
 
 const specialists = [
   { name: "Dr. Philip Bailey", specialty: "Pediatría General", img: doc1 },

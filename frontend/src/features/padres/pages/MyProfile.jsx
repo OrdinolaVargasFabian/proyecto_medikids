@@ -1,6 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { getClienteByUserId, updateUser, updateClient, changePassword } from "../../../services/api";
+import { useProfile, queryKeys } from "../../../hooks/useApiData";
+import { updateMyProfile, updateClient, changePassword } from "../../../services/api";
+import { MyProfileSkeleton } from "../../../app/components/skeletons/MyProfileSkeleton";
 
 const EyeIcon = ({ visible }) =>
   visible
@@ -54,16 +57,17 @@ const PasswordField = ({ id, label, value, onChange, visible, onToggle, placehol
 );
 
 export const MyProfile = () => {
-  const usuario = useMemo(() => {
+  const [usuario, setUsuario] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("usuario"));
     } catch {
       return null;
     }
-  }, []);
+  });
 
-  const [cliente, setCliente] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: cliente, isLoading: loading } = useProfile(usuario?.id_usuario);
+
   const [saving, setSaving] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
@@ -102,15 +106,11 @@ export const MyProfile = () => {
     setEmail(usuario.email || "");
     setTelefono(usuario.telefono ? String(usuario.telefono) : "");
 
-    getClienteByUserId(usuario.id_usuario)
-      .then((c) => {
-        setCliente(c);
-        setDni(c.dni_responsable ? String(c.dni_responsable) : "");
-        setDireccion(c.direccion || "");
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [usuario]);
+    if (cliente) {
+      setDni(cliente.dni_responsable ? String(cliente.dni_responsable) : "");
+      setDireccion(cliente.direccion || "");
+    }
+  }, [usuario, cliente]);
 
   useEffect(() => {
     if (!message.text) return;
@@ -133,7 +133,7 @@ export const MyProfile = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updateUser(usuario.id_usuario, {
+      await updateMyProfile({
         id_rol: usuario.id_rol,
         nombres,
         apellidos,
@@ -143,6 +143,7 @@ export const MyProfile = () => {
 
       const updatedUser = { ...usuario, nombres, apellidos, email, telefono: telefono ? parseInt(telefono, 10) : 0 };
       localStorage.setItem("usuario", JSON.stringify(updatedUser));
+      setUsuario(updatedUser);
 
       if (cliente) {
         await updateClient(cliente.id_cliente, {
@@ -152,6 +153,7 @@ export const MyProfile = () => {
         });
       }
 
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile(usuario.id_usuario) });
       setMessage({ text: "Datos actualizados correctamente", type: "success" });
     } catch {
       setMessage({ text: "Error al guardar los cambios", type: "error" });
@@ -192,25 +194,7 @@ export const MyProfile = () => {
 
         <div className="flex-1 min-w-0 space-y-6">
 
-          {loading ? (
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 lg:p-12">
-              <div className="animate-pulse space-y-6">
-                <div className="flex items-center gap-5">
-                  <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-gray-100" />
-                  <div className="space-y-2 flex-1">
-                    <div className="h-5 bg-gray-100 rounded-lg w-48" />
-                    <div className="h-3 bg-gray-100 rounded-lg w-24" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="h-12 bg-gray-100 rounded-2xl" />
-                  ))}
-                </div>
-                <div className="h-12 bg-gray-100 rounded-2xl w-40" />
-              </div>
-            </div>
-          ) : (
+          {loading ? <MyProfileSkeleton /> : (
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="bg-gradient-to-br from-medi-400 to-medi-600 p-5 sm:p-6 lg:p-8 text-white flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-6 text-center sm:text-left">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl sm:text-3xl font-extrabold shadow-inner shrink-0">
