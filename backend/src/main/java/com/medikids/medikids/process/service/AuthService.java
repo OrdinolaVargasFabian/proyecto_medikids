@@ -2,6 +2,7 @@ package com.medikids.medikids.process.service;
 
 import com.medikids.medikids.expose.model.response.AuthResponse;
 import com.medikids.medikids.process.domain.Usuario;
+import com.medikids.medikids.process.service.IpAutorizadaService;
 import com.medikids.medikids.process.repository.UsuarioRepository;
 import com.medikids.medikids.utils.helpers.UsuarioHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class AuthService {
     private JwtService jwtService;
 
     @Autowired
+    private IpAutorizadaService ipAutorizadaService;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -45,7 +49,7 @@ public class AuthService {
      * Login SIN 2FA: valida credenciales y retorna JWT directamente.
      * Rechaza usuarios con rol=3 (deben usar la ruta administrativa secreta).
      */
-    public AuthResponse login(String email, String password) {
+    public AuthResponse login(String email, String password, String ipCliente) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
 
         if (usuarioOpt.isEmpty()) {
@@ -125,6 +129,10 @@ public class AuthService {
         }
 
         if (!passwordEncoder.matches(password, usuario.getPassword())) {
+            return null;
+        }
+
+        if (!ipAutorizadaService.isIpAutorizada(usuario.getId_usuario(), ipCliente)) {
             return null;
         }
 

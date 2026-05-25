@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Objects;
 
 @RestController
@@ -26,8 +27,8 @@ public class AuthController {
      * y se envía al correo del usuario.
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request.getEmail(), request.getPassword());
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
+        AuthResponse response = authService.login(request.getEmail(), request.getPassword(), extraerIpCliente(httpServletRequest));
 
         if (Objects.nonNull(response)) {
             return ResponseEntity.ok(response);
@@ -35,7 +36,7 @@ public class AuthController {
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(AuthResponse.builder()
-                        .message("Credenciales inválidas o usuario desactivado")
+                .message("Credenciales inválidas, usuario desactivado o IP no autorizada")
                         .build());
     }
 
@@ -69,5 +70,19 @@ public class AuthController {
                 .body(AuthResponse.builder()
                         .message("No se pudo reenviar el código")
                         .build());
+    }
+
+    private String extraerIpCliente(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null && !forwardedFor.isBlank()) {
+            return forwardedFor.split(",")[0].trim();
+        }
+
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) {
+            return realIp.trim();
+        }
+
+        return request.getRemoteAddr();
     }
 }
