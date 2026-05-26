@@ -208,6 +208,14 @@ public class CitaService {
         return enriquecerBatch(citaRepository.findByCliente(idCliente));
     }
 
+    public List<CitaDto> getByMedico(int idMedico) {
+        return enriquecerBatch(citaRepository.findByIdMedico(idMedico));
+    }
+
+    public List<Integer> getCitaIdsByCliente(int idCliente) {
+        return citaRepository.findCitaIdsByCliente(idCliente);
+    }
+
     public CitaDto marcarAsistencia(int id, Character asistencia) {
         Optional<Cita> cita = citaRepository.findById(id);
         if (cita.isPresent()) {

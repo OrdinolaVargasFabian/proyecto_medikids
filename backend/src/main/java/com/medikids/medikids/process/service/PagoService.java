@@ -38,4 +38,10 @@ public class PagoService {
     public PagoDto guardarPago(PagoRequest pago) {
         return enriquecer(PagoHelper.mapPago(pagoRepository.save(PagoHelper.buildPago(pago))));
     }
+
+    public List<PagoDto> listarPagosPorCliente(int idCliente) {
+        return PagoHelper.mapAll(pagoRepository.findByCliente(idCliente)).stream()
+                .map(this::enriquecer)
+                .collect(Collectors.toList());
+    }
 }

@@ -25,12 +25,17 @@ public class UsuarioController {
 
     @GetMapping("/all")
     @PreAuthorize("@permiso.has('usuario:read')")
-    public List<UsuarioDto> all() {
-        return usuarioService.getAll();
+    public List<UsuarioDto> all(Authentication auth) {
+        Map<String, Object> details = (Map<String, Object>) auth.getDetails();
+        int role = (int) details.get("id_rol");
+        if (role == 3 || role == 4) {
+            return usuarioService.getAll();
+        }
+        return List.of();
     }
 
     @GetMapping("/getBy/{id}")
-    @PreAuthorize("@permiso.has('usuario:read')")
+    @PreAuthorize("@permiso.has('usuario:read') and @owner.sameUser(#id)")
     public ResponseEntity<UsuarioDto> getById(@PathVariable int id) {
         UsuarioDto usuarioDto = usuarioService.getById(id);
         if (Objects.nonNull(usuarioDto)) {

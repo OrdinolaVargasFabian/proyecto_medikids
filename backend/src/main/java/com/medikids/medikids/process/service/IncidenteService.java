@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.medikids.medikids.process.repository.IncidenteRepository;
+
 @Service
 public class IncidenteService {
 
@@ -35,6 +37,12 @@ public class IncidenteService {
 
     public List<IncidenteDto> getAll() {
         return IncidenteHelper.mapAll(incidenteRepository.findAll()).stream()
+                .map(this::enriquecer)
+                .collect(Collectors.toList());
+    }
+
+    public List<IncidenteDto> getByMedico(int idMedico) {
+        return IncidenteHelper.mapAll(incidenteRepository.findByIdMedico(idMedico)).stream()
                 .map(this::enriquecer)
                 .collect(Collectors.toList());
     }
