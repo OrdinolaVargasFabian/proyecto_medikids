@@ -12,6 +12,7 @@ public class MedicoRequest implements Serializable {
 
     private String nro_colegiatura;
     private String url_foto;
+    private String genero;
     private String estado;
     private int id_usuario;
     private int id_especialidad;

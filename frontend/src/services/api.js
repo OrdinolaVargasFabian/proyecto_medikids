@@ -51,6 +51,9 @@ export const getClienteByUserId = (idUsuario) =>
 export const updateUser = (id, data) =>
   api.put(`/usuario/update/${id}`, data).then((r) => r.data);
 
+export const updateMyProfile = (data) =>
+  api.put('/usuario/profile', data).then((r) => r.data);
+
 export const updateClient = (id, data) =>
   api.put(`/cliente/actualizar/${id}`, data).then((r) => r.data);
 
@@ -62,6 +65,9 @@ export const getDoctors = () =>
 
 export const getDoctorById = (id) =>
   api.get(`/medico/getBy/${id}`).then((r) => r.data);
+
+export const getDoctorByUserId = (idUsuario) =>
+  api.get(`/medico/usuario/${idUsuario}`).then((r) => r.data);
 
 export const saveDoctor = (data) =>
   api.post('/medico/save', data).then((r) => r.data);
@@ -107,5 +113,53 @@ export const getHorarios = () =>
 
 export const getHorariosByMedico = (idMedico) =>
   api.get(`/horarios/medico/${idMedico}`).then((r) => r.data);
+
+// ── Admin ──
+export const getAllAppointments = () =>
+  api.get('/cita/all').then((r) => r.data);
+
+export const getAllPatients = () =>
+  api.get('/paciente/all').then((r) => r.data);
+
+export const getAllUsers = () =>
+  api.get('/usuario/all').then((r) => r.data);
+
+export const getAllIncidents = () =>
+  api.get('/incidente/all').then((r) => r.data);
+
+export const respondToIncident = (id, data) =>
+  api.patch(`/incidente/responder/${id}`, data).then((r) => r.data);
+
+export const getAllPayments = () =>
+  api.get('/pagos').then((r) => r.data);
+
+// ── Admin: Roles y Permisos ──
+export const getRoles = () =>
+  api.get('/admin/roles').then((r) => r.data);
+
+export const getPermisosDeRol = (idRol) =>
+  api.get(`/admin/roles/${idRol}/permisos`).then((r) => r.data);
+
+export const getAllPermisos = () =>
+  api.get('/admin/permisos').then((r) => r.data);
+
+export const asignarPermisoARol = (idRol, idPermiso) =>
+  api.post(`/admin/roles/${idRol}/permisos`, { idPermiso }).then((r) => r.data);
+
+export const removerPermisoDeRol = (idRol, idPermiso) =>
+  api.delete(`/admin/roles/${idRol}/permisos/${idPermiso}`).then((r) => r.data);
+
+// ── Admin: Gestión de Usuarios ──
+export const crearAdmin = (data) =>
+  api.post('/admin/usuarios', data).then((r) => r.data);
+
+export const actualizarRolUsuario = (id, idRol) =>
+  api.put(`/admin/usuarios/${id}/rol`, { idRol }).then((r) => r.data);
+
+export const cambiarStatusUsuario = (id, activo) =>
+  api.put(`/admin/usuarios/${id}/status`, { activo }).then((r) => r.data);
+
+export const getUsers = () =>
+  api.get('/usuario/all').then((r) => r.data);
 
 export default api;

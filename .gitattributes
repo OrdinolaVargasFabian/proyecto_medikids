@@ -3,3 +3,4 @@ frontend/tailwind.config.js linguist-detectable=false
 frontend/vite.config.js linguist-detectable=false
 frontend/eslint.config.js linguist-detectable=false
 frontend/postcss.config.js linguist-detectable=false
+*.msi

@@ -20,5 +20,11 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
     // Busca todas las citas de todos los hijos de un cliente (JOIN con paciente)
     @Query(value = "SELECT c.* FROM cita c INNER JOIN paciente p ON c.id_paciente = p.id_paciente WHERE p.id_cliente = :idCliente", nativeQuery = true)
     List<Cita> findByCliente(@Param("idCliente") int idCliente);
+
+    @Query(value = "SELECT * FROM cita WHERE id_medico = :idMedico", nativeQuery = true)
+    List<Cita> findByIdMedico(@Param("idMedico") int idMedico);
+
+    @Query(value = "SELECT c.id_cita FROM cita c INNER JOIN paciente p ON c.id_paciente = p.id_paciente WHERE p.id_cliente = :idCliente", nativeQuery = true)
+    List<Integer> findCitaIdsByCliente(@Param("idCliente") int idCliente);
 }
 

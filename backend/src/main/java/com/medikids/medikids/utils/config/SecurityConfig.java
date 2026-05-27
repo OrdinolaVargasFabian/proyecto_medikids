@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -20,10 +21,14 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Autowired
+    private IpAuthorizationFilter ipAuthorizationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,14 +37,16 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // ── Endpoints públicos (SOLO los necesarios para autenticación) ──
+                        // ── Endpoints públicos ──
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/admin/discover", "/admin/admin-hash/verify", "/admin/auth/login").permitAll()
                         .requestMatchers("/usuario/save").permitAll()
                         .requestMatchers("/cliente/save").permitAll()
-                        // ── Todo lo demás requiere JWT ──
+                        // ── Todo lo demás requiere JWT + @PreAuthorize (permisos atómicos) ──
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(ipAuthorizationFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }

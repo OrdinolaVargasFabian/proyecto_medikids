@@ -4,11 +4,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 
-import M1 from "../../../assets/images/M1.webp";
-import M2 from "../../../assets/images/M2.webp";
-import M3 from "../../../assets/images/M3.webp";
-import H1 from "../../../assets/images/H1.webp";
-import H2 from "../../../assets/images/H2.webp";
+import M1 from "../../../assets/images/M1.avif";
+import M2 from "../../../assets/images/M2.avif";
+import M3 from "../../../assets/images/M3.avif";
+import H1 from "../../../assets/images/H1.avif";
+import H2 from "../../../assets/images/H2.avif";
 
 const testimonials = [
   {

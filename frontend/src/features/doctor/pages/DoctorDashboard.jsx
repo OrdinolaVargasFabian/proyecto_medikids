@@ -63,9 +63,21 @@ export const DoctorDashboard = () => {
 
   return (
     <div className="space-y-8">
-      <div className="bg-gradient-to-br from-medi-400 via-medi-500 to-medi-600 rounded-3xl p-8 text-white shadow-lg">
-        <h2 className="text-3xl font-extrabold tracking-tight">Panel del Médico</h2>
-        <p className="text-medi-100 mt-2 text-lg font-medium">Gestiona tus citas y pacientes del día.</p>
+      {/* Cabecera y stats */}
+      <div className="flex items-center justify-between">
+        <div className="bg-gradient-to-br from-medi-400 via-medi-500 to-medi-600 rounded-3xl p-8 text-white shadow-lg flex-1">
+          <h2 className="text-3xl font-extrabold tracking-tight">Panel del Médico</h2>
+          <p className="text-medi-100 mt-2 text-lg font-medium">Gestiona tus citas y pacientes del día.</p>
+        </div>
+        <Link
+          to="/doctor/horarios"
+          className="ml-6 flex flex-col items-center justify-center p-6 bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-medi-600"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="font-bold text-sm">Gestionar Horarios</span>
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

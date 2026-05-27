@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -30,23 +31,33 @@ public class MedicoController {
     private final UsuarioService usuarioService;
 
     @GetMapping("/all")
+    @PreAuthorize("@permiso.has('medico:read')")
     public List<MedicoDto> all() {
         return medicoService.getAll();
     }
 
     @GetMapping("/getBy/{id}")
+    @PreAuthorize("@permiso.has('medico:read')")
     public ResponseEntity<MedicoDto> getById(@PathVariable int id) {
         MedicoDto dto = medicoService.getById(id);
-        if (Objects.nonNull(dto)) return ResponseEntity.ok(dto);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/usuario/{idUsuario}")
+    @PreAuthorize("@permiso.has('medico:read')")
+    public ResponseEntity<MedicoDto> getByIdUsuario(@PathVariable int idUsuario) {
+        MedicoDto dto = medicoService.getByIdUsuario(idUsuario);
+        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/save")
+    @PreAuthorize("@permiso.has('medico:write')")
     public MedicoDto save(@RequestBody MedicoRequest request) {
         return medicoService.save(request);
     }
 
     @PostMapping("/saveWithUser")
+    @PreAuthorize("@permiso.has('medico:write')")
     public ResponseEntity<Map<String, Object>> saveWithUser(@RequestBody MedicoConUsuarioRequest request) {
         try {
             UsuarioRequest userReq = new UsuarioRequest();
@@ -62,6 +73,7 @@ public class MedicoController {
             MedicoRequest medicoReq = new MedicoRequest();
             medicoReq.setNro_colegiatura(request.getNro_colegiatura());
             medicoReq.setUrl_foto(request.getUrl_foto() != null ? request.getUrl_foto() : "");
+            medicoReq.setGenero(request.getGenero() != null ? request.getGenero() : null);
             medicoReq.setEstado(request.getEstado() != null ? request.getEstado() : "activo");
             medicoReq.setId_usuario(usuario.getId_usuario());
             medicoReq.setId_especialidad(request.getId_especialidad());
@@ -84,6 +96,7 @@ public class MedicoController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("@permiso.has('medico:write')")
     public ResponseEntity<MedicoDto> update(@PathVariable int id, @RequestBody MedicoRequest request) {
         MedicoDto dto = medicoService.update(id, request);
         if (Objects.nonNull(dto)) return ResponseEntity.ok(dto);
@@ -91,6 +104,7 @@ public class MedicoController {
     }
 
     @PutMapping("/toggle-status/{id}")
+    @PreAuthorize("@permiso.has('medico:toggle-status')")
     public ResponseEntity<MedicoDto> toggleStatus(@PathVariable int id) {
         MedicoDto dto = medicoService.toggleStatus(id);
         if (Objects.nonNull(dto)) return ResponseEntity.ok(dto);
@@ -98,6 +112,7 @@ public class MedicoController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("@permiso.has('medico:delete')")
     public ResponseEntity<Object> delete(@PathVariable int id) {
         if (medicoService.delete(id))
             return ResponseEntity.ok().build();
@@ -105,6 +120,7 @@ public class MedicoController {
     }
 
     @GetMapping("/especialidad/{especialidad}")
+    @PreAuthorize("@permiso.has('medico:read')")
     public List<MedicoDto> getByEspecialidad(@PathVariable String especialidad) {
         return medicoService.getByEspecialidad(especialidad);
     }

@@ -34,7 +34,22 @@ public class CitaHelper implements Serializable {
     }
 
     // Convierte una cita "request" a "domain"
+    // Convierte una cita "request" a "domain"
     public static Cita buildCita(CitaRequest cita) {
+        LocalDate parsedDate = null;
+
+        if (cita.getFecha_cita() != null && !cita.getFecha_cita().isEmpty()) {
+            try {
+                // Intentamos parsear la fecha normalmente
+                parsedDate = LocalDate.parse(cita.getFecha_cita());
+            } catch (Exception e) {
+                // Si falla (por ejemplo porque viene "NaN-NaN-NaN"),
+                // imprimimos el error en consola pero NO detenemos la ejecución.
+                System.err.println("Error al parsear fecha: " + cita.getFecha_cita() + ". Usando fecha actual.");
+                parsedDate = LocalDate.now();
+            }
+        }
+
         return Cita.builder()
                 .motivo(cita.getMotivo())
                 .estado(cita.getEstado())
@@ -43,7 +58,7 @@ public class CitaHelper implements Serializable {
                 .id_horario(cita.getId_horario())
                 .id_medico(cita.getId_medico())
                 .id_paciente(cita.getId_paciente())
-                .fecha_cita(cita.getFecha_cita() != null ? LocalDate.parse(cita.getFecha_cita()) : null)
+                .fecha_cita(parsedDate)
                 .hora_cita(cita.getHora_cita())
                 .build();
     }

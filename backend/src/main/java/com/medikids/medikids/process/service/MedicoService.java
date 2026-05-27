@@ -71,6 +71,11 @@ public class MedicoService {
         return dtos;
     }
 
+    public MedicoDto getByIdUsuario(int idUsuario) {
+        Optional<Medico> medico = medicoRepository.findByIdUsuario(idUsuario);
+        return medico.map(m -> enriquecer(MedicoHelper.mapMedico(m))).orElse(null);
+    }
+
     public List<MedicoDto> getAll() {
         List<MedicoDto> cached = medicoListCache.get("all");
         if (cached != null) return cached;
@@ -97,6 +102,7 @@ public class MedicoService {
         if (medicoUpdate.isPresent()) {
             medicoUpdate.get().setNro_colegiatura(medico.getNro_colegiatura());
             medicoUpdate.get().setUrl_foto(medico.getUrl_foto());
+            medicoUpdate.get().setGenero(medico.getGenero() != null ? Medico.Genero.valueOf(medico.getGenero()) : null);
             medicoUpdate.get().setEstado(EstadoMedico.valueOf(medico.getEstado()));
             medicoUpdate.get().setId_especialidad(medico.getId_especialidad());
 

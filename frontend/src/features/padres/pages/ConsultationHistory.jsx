@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getClienteByUserId, getChildrenByClientId, getAppointmentsByClientId } from "../../../services/api";
+import { useChildren, useCitas } from "../../../hooks/useApiData";
+import { ConsultationHistorySkeleton } from "../../../app/components/skeletons/ConsultationHistorySkeleton";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
@@ -21,39 +22,25 @@ export const ConsultationHistory = () => {
     catch { return null; }
   }, []);
 
-  const [children, setChildren] = useState([]);
-  const [appointments, setAppointments] = useState([]);
+  const clientId = useMemo(() => {
+    try { return Number(localStorage.getItem("cliente_id")); }
+    catch { return null; }
+  }, []);
+
+  const { data: children = [], isLoading: loadingChildren } = useChildren(clientId);
+  const { data: citas = [], isLoading: loadingCitas } = useCitas(clientId);
+
+  const appointments = citas;
+  const loading = loadingChildren || loadingCitas;
+
   const [filter, setFilter] = useState("todos");
   const [selected, setSelected] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!usuario) { setLoading(false); return; }
-    let cancelled = false;
-    const cachedId = localStorage.getItem("cliente_id");
-    const promise = cachedId
-      ? Promise.resolve(Number(cachedId))
-      : getClienteByUserId(usuario.id_usuario).then((c) => {
-          localStorage.setItem("cliente_id", String(c.id_cliente));
-          return c.id_cliente;
-        });
-    promise
-      .then((idCliente) => Promise.all([
-        getChildrenByClientId(idCliente),
-        getAppointmentsByClientId(idCliente),
-      ]))
-      .then(([childrenData, apptsData]) => {
-        if (cancelled) return;
-        setChildren(childrenData);
-        setAppointments(apptsData);
-        if (apptsData.length > 0) setSelected(apptsData[0]);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [usuario]);
+    if (citas.length > 0 && !selected) {
+      setSelected(citas[0]);
+    }
+  }, [citas]);
 
   const filtered = useMemo(() => {
     if (filter === "todos") return appointments;
@@ -81,13 +68,7 @@ export const ConsultationHistory = () => {
         </select>
       </div>
 
-      {loading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 bg-gray-100 rounded-2xl animate-pulse" />
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
+      {loading ? <ConsultationHistorySkeleton /> : filtered.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-3xl border border-gray-100 shadow-sm">
           <div className="w-20 h-20 bg-medi-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-medi-500">

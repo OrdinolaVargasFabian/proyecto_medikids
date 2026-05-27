@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.sql.Time;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @NoArgsConstructor
@@ -18,11 +18,14 @@ public class Horario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false)
-    private int id_horario;
+    // ELIMINADO: @Column(nullable = false)
+    private Integer id_horario;
 
     @Column(nullable = false)
-    private Date fecha;
+    private Integer medico_id;
+
+    @Column(nullable = false)
+    private LocalDate fecha;
 
     @Column(name = "hora_inicio", nullable = false)
     private Time hora_inicio;

@@ -1,5 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
-import { getClienteByUserId, getChildrenByClientId, createChild } from "../../../services/api";
+import { useState, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useChildren, queryKeys } from "../../../hooks/useApiData";
+import { createChild } from "../../../services/api";
+import { ChildrenProfilesSkeleton } from "../../../app/components/skeletons/ChildrenProfilesSkeleton";
 
 const colors = [
   { from: "from-pink-400", to: "to-rose-500" },
@@ -33,34 +36,50 @@ export const ChildrenProfiles = () => {
     catch { return null; }
   }, []);
 
-  const [children, setChildren] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
+  const clientId = useMemo(() => {
+    try { return Number(localStorage.getItem("cliente_id")); }
+    catch { return null; }
+  }, []);
+
+  const { data: children = [], isLoading: loading } = useChildren(clientId);
+
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const [form, setForm] = useState({ nombre_completo: "", dni_menor: "", fecha_nacimiento: "" });
+  const [form, setForm] = useState({ nombre_completo: "", dni_menor: "", fecha_nacimiento: "", genero: "" });
 
-  useEffect(() => {
-    if (!usuario) return;
-    setLoading(true);
-    const cachedId = localStorage.getItem("cliente_id");
-    const promise = cachedId
-      ? Promise.resolve(Number(cachedId))
-      : getClienteByUserId(usuario.id_usuario).then((c) => {
-          localStorage.setItem("cliente_id", String(c.id_cliente));
-          return c.id_cliente;
-        });
-    promise
-      .then((idCliente) => getChildrenByClientId(idCliente))
-      .then((data) => setChildren(data))
-      .catch(() => setError("Error al cargar los perfiles"))
-      .finally(() => setLoading(false));
-  }, [usuario]);
+
+  const validateName = (name) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(name);
+  
+  const validateAge = (birthDate) => {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    if (birth > today) return false;
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age <= 17;
+  };
 
   const handleCreate = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!validateName(form.nombre_completo)) {
+      setError("El nombre no debe contener números ni caracteres especiales.");
+      return;
+    }
+    if (!validateAge(form.fecha_nacimiento)) {
+      setError("La edad máxima permitida es 17 años y la fecha debe ser válida.");
+      return;
+    }
+    if (!form.genero) {
+      setError("Por favor selecciona un género.");
+      return;
+    }
 
     const dniDuplicado = children.some((c) => c.dni_menor === form.dni_menor);
     if (dniDuplicado) {
@@ -68,16 +87,18 @@ export const ChildrenProfiles = () => {
       return;
     }
 
+    const idCliente = Number(localStorage.getItem("cliente_id"));
+    if (!idCliente || isNaN(idCliente)) {
+      setError("No se encontró tu perfil de cliente. Cierra sesión y vuelve a iniciar sesión.");
+      return;
+    }
+
     setSaving(true);
     try {
-      const cachedId = localStorage.getItem("cliente_id");
-      const idCliente = cachedId
-        ? Number(cachedId)
-        : (await getClienteByUserId(usuario.id_usuario)).id_cliente;
-      const nuevo = await createChild({ ...form, id_cliente: idCliente });
-      setChildren((prev) => [...prev, nuevo]);
+      await createChild({ ...form, id_cliente: idCliente });
+      queryClient.invalidateQueries({ queryKey: queryKeys.children(idCliente) });
       setShowModal(false);
-      setForm({ nombre_completo: "", dni_menor: "", fecha_nacimiento: "" });
+      setForm({ nombre_completo: "", dni_menor: "", fecha_nacimiento: "", genero: "" });
     } catch (err) {
       const msg =
         err?.response?.status === 409
@@ -90,17 +111,7 @@ export const ChildrenProfiles = () => {
   };
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-8 w-64 bg-gray-200 rounded-xl animate-pulse" />
-        <div className="h-5 w-80 bg-gray-100 rounded-lg animate-pulse" />
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-3xl border border-gray-100 h-72 animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
+    return <ChildrenProfilesSkeleton />;
   }
 
   return (
@@ -179,59 +190,84 @@ export const ChildrenProfiles = () => {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 sm:p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-extrabold text-gray-900">Añadir Hijo</h3>
-                <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <form onSubmit={handleCreate} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1 pl-1">Nombre Completo</label>
-                  <input
-                    type="text"
-                    required
-                    value={form.nombre_completo}
-                    onChange={(e) => setForm({ ...form, nombre_completo: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
-                  />
+        <div className="fixed inset-0 z-50">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowModal(false)} />
+          <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl flex flex-col overflow-hidden pointer-events-auto" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
+              <div className="shrink-0 px-8 pt-8 pb-4 border-b border-gray-100">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-extrabold text-gray-900">Añadir Hijo</h3>
+                  <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+              </div>
+              <div className="flex-1 overflow-y-auto px-8 py-6" data-lenis-prevent>
+                <form onSubmit={handleCreate} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1 pl-1">DNI</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1 pl-1">Nombre Completo</label>
                     <input
                       type="text"
                       required
-                      maxLength={8}
-                      value={form.dni_menor}
-                      onChange={(e) => setForm({ ...form, dni_menor: e.target.value.replace(/\D/g, "") })}
+                      value={form.nombre_completo}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/.test(val)) {
+                          setForm({ ...form, nombre_completo: val });
+                        }
+                      }}
                       className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-1 pl-1">DNI</label>
+                      <input
+                        type="text"
+                        required
+                        maxLength={8}
+                        value={form.dni_menor}
+                        onChange={(e) => setForm({ ...form, dni_menor: e.target.value.replace(/\D/g, "") })}
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-1 pl-1">Género</label>
+                      <select
+                        required
+                        value={form.genero}
+                        onChange={(e) => setForm({ ...form, genero: e.target.value })}
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                      >
+                        <option value="">Seleccionar</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="femenino">Femenino</option>
+                        <option value="otro">Otro</option>
+                      </select>
+                    </div>
+                  </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1 pl-1">Fecha Nac.</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1 pl-1">Fecha Nacimiento</label>
                     <input
                       type="date"
                       required
+                      max={new Date().toISOString().split("T")[0]}
                       value={form.fecha_nacimiento}
                       onChange={(e) => setForm({ ...form, fecha_nacimiento: e.target.value })}
                       className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
                     />
                   </div>
-                </div>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="w-full py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 transition-all shadow-md active:scale-[0.98] disabled:opacity-60"
-                >
-                  {saving ? "Guardando..." : "Guardar"}
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="w-full py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 transition-all shadow-md active:scale-[0.98] disabled:opacity-60"
+                  >
+                    {saving ? "Guardando..." : "Guardar"}
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         </div>

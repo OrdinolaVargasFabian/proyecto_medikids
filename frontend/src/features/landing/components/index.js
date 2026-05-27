@@ -6,5 +6,4 @@ export * from './TechPortalSection';
 export * from './TestimonialsSection';
 export * from './SpecialistsSection';
 export * from './FAQSection';
-export * from './SectionDivider';
 export * from './Footer';
