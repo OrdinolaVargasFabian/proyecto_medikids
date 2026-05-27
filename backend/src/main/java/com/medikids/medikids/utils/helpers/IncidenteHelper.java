@@ -8,7 +8,6 @@ import org.springframework.data.domain.PageImpl;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +33,7 @@ public class IncidenteHelper implements Serializable {
         return Incidente.builder()
                 .tipo_incidente(incidente.getTipo_incidente())
                 .descripcion(incidente.getDescripcion())
-                .fecha_registro(LocalDateTime.now(ZoneId.of("America/Lima")))
+                .fecha_registro(LocalDateTime.now())
                 .id_medico(incidente.getId_medico())
                 .build();
     }
