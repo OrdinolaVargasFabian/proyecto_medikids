@@ -12,7 +12,7 @@ import java.util.Date;
 @Getter
 @ToString
 @Builder
-@Table(name = "Usuario")
+@Table(name = "usuario")
 public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +25,7 @@ public class Usuario {
     private String nombres;
     @Column(nullable = false)
     private String apellidos;
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
     @Column(nullable = false)
     private String password;
@@ -39,6 +39,9 @@ public class Usuario {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date fecha_modificado;
+
+    @Column(nullable = false)
+    private Boolean activo;
 
     @Column(nullable = false)
     private char visible; //1: Sí, 0: No
@@ -56,6 +59,7 @@ public class Usuario {
         Date ahora = new Date();
         this.fecha_registro = ahora;
         this.fecha_modificado = ahora;
+        this.activo = true;
         this.visible = '1';
     }
 

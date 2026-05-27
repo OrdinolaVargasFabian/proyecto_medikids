@@ -13,6 +13,14 @@ import lombok.*;
 @Table(name = "medico")
 public class Medico {
 
+    public enum EstadoMedico {
+        activo, inactivo
+    }
+
+    public enum Genero {
+        masculino, femenino, otro
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
@@ -25,17 +33,19 @@ public class Medico {
     private String url_foto;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "genero", length = 20)
+    private Genero genero;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "estado")
     private EstadoMedico estado;
 
-    @Column(name = "id_usuario", nullable = false, unique = true)
+    @Column(name = "id_usuario", nullable = false)
     private int id_usuario;
 
     @Column(name = "id_especialidad", nullable = false)
     private int id_especialidad;
 
-    public enum EstadoMedico {
-        activo,
-        inactivo
-    }
+    @Column(name = "activo", nullable = false)
+    private Character activo;
 }

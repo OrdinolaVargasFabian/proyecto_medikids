@@ -3,6 +3,7 @@ package com.medikids.medikids.process.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -12,7 +13,7 @@ import java.util.Date;
 @Getter
 @ToString
 @Builder
-@Table(name = "Cita")
+@Table(name = "cita")
 public class Cita {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,8 +31,8 @@ public class Cita {
     @Column(nullable = false)
     private String estado;
 
-    @Column(nullable = false)
-    private char asistencia;
+    @Column(nullable = true)
+    private Character asistencia;
 
     @Column(nullable = true)
     private String comentarios;
@@ -44,6 +45,12 @@ public class Cita {
 
     @Column(nullable = false)
     private int id_paciente;
+
+    @Column(name = "fecha_cita")
+    private LocalDate fecha_cita;
+
+    @Column(name = "hora_cita", length = 10)
+    private String hora_cita;
 
     @PrePersist
     protected void onCreate() {

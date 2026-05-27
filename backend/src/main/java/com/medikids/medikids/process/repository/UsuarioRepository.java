@@ -8,6 +8,6 @@ import java.util.Optional;
 
 @Repository
 // La libreria provee a las consultas, no es necesario hacerlas.
-public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     Optional<Usuario> findByEmail(String email);
 }

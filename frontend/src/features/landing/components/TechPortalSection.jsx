@@ -4,7 +4,7 @@ import { motion, useInView } from "framer-motion";
 
 export const TechPortalSection = () => {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const inView = useInView(ref, { once: true, margin: "0px" });
 
   const benefits = [
     "Historial médico digital accesible 24/7",
@@ -14,16 +14,16 @@ export const TechPortalSection = () => {
   ];
 
   return (
-    <section ref={ref} className="w-full bg-transparent py-24 overflow-hidden relative" id="nosotros">
+    <section ref={ref} className="w-full bg-transparent py-20 overflow-hidden relative" id="nosotros">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-24 lg:gap-12 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -50 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="space-y-8"
+            transition={{ duration: 1.0, delay: 0.3, ease: "easeOut" }}
+            className="space-y-8 text-center lg:text-left"
           >
-            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight leading-[1.1]">
               Toda la salud de tus hijos en <span className="text-medi-500">la palma de tu mano.</span>
             </h2>
             <p className="text-xl text-gray-600 leading-relaxed">
@@ -34,10 +34,10 @@ export const TechPortalSection = () => {
               {benefits.map((benefit, index) => (
                 <motion.li
                   key={index}
-                  initial={{ opacity: 0, x: -20 }}
+                  initial={{ opacity: 0, x: -40 }}
                   animate={inView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ duration: 0.4, delay: 0.2 + index * 0.1, ease: "easeOut" }}
-                  className="flex items-center gap-3 text-gray-700"
+                  transition={{ duration: 0.8, delay: 0.4 + index * 0.1, ease: "easeOut" }}
+                  className="flex items-center justify-center lg:justify-start gap-3 text-gray-700"
                 >
                   <div className="flex-shrink-0 w-6 h-6 rounded-full bg-medi-100 flex items-center justify-center text-medi-600">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
@@ -50,9 +50,9 @@ export const TechPortalSection = () => {
             </ul>
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 40 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.6, ease: "easeOut" }}
+              transition={{ duration: 0.9, delay: 0.8, ease: "easeOut" }}
               className="pt-4"
             >
               <Link
@@ -68,17 +68,17 @@ export const TechPortalSection = () => {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 30, scale: 0.95 }}
+            initial={{ opacity: 0, x: 50, scale: 0.9 }}
             animate={inView ? { opacity: 1, x: 0, scale: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-            className="relative mx-8 lg:mx-0">
+            transition={{ duration: 1.0, delay: 0.45, ease: "easeOut" }}
+            className="relative mx-8 lg:mx-0 md:w-[75%] lg:w-11/12 md:mx-auto lg:mx-auto">
             <motion.div
-              initial={{ rotate: 3, scale: 1.05 }}
-              animate={{ rotate: 3, scale: 1.08 }}
+              initial={{ rotate: 2, scale: 1.03 }}
+              animate={{ rotate: 2, scale: 1.07 }}
               transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-              className="absolute inset-0 bg-gradient-to-tr from-medi-200 to-medi-50 rounded-3xl"
+                className="absolute inset-0 bg-gradient-to-tr from-medi-200 to-medi-50 rounded-3xl"
             />
-            <div className="bg-white border border-gray-200 rounded-3xl shadow-2xl p-2 relative overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-2 relative overflow-hidden">
               <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-gray-50 rounded-t-2xl">
                 <motion.div
                   animate={{ opacity: [1, 0.3, 1] }}
@@ -96,7 +96,7 @@ export const TechPortalSection = () => {
                   className="w-3 h-3 rounded-full bg-green-400"
                 />
               </div>
-              <div className="bg-gray-50 p-4 sm:p-6 h-64 sm:h-72 md:h-96 flex flex-col gap-4">
+              <div className="bg-gray-50 p-4 sm:p-6 min-h-[272px] sm:min-h-[288px] h-auto flex flex-col gap-3">
                 <motion.div
                   className="h-6 bg-gray-200 rounded-md"
                   initial={{ width: "23%" }}
@@ -107,7 +107,7 @@ export const TechPortalSection = () => {
                   <div className="w-1/2 h-24 bg-white rounded-xl border border-gray-100 shadow-sm" />
                   <div className="w-1/2 h-24 bg-white rounded-xl border border-gray-100 shadow-sm" />
                 </div>
-                <div className="w-full flex-1 bg-white rounded-xl border border-gray-100 shadow-sm mt-2" />
+                <div className="w-full h-24 bg-white rounded-xl border border-gray-100 shadow-sm" />
               </div>
             </div>
           </motion.div>
