@@ -36,6 +36,157 @@ public class EmailService {
     }
 
     /**
+     * Envía un correo de confirmación al registrar una cita,
+     * con el comprobante de pago (boleta/factura) adjunto como PDF.
+     *
+     * @param destinatario    Email del cliente/responsable
+     * @param nombrePaciente  Nombre completo del paciente (hijo)
+     * @param nombreMedico    Nombre completo del médico asignado
+     * @param especialidad    Especialidad del médico
+     * @param fechaCita       Fecha de la cita (ej. "2026-06-15")
+     * @param horaCita        Hora de la cita (ej. "10:30")
+     * @param motivo          Motivo de la consulta
+     * @param pdfBytes        Bytes del PDF del comprobante de pago (puede ser null)
+     * @param tipoComprobante "boleta" o "factura" (para nombrar el adjunto)
+     */
+    public void enviarConfirmacionCita(String destinatario, String nombrePaciente, String nombreMedico,
+                                       String especialidad, String fechaCita, String horaCita,
+                                       String motivo, byte[] pdfBytes, String tipoComprobante) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(destinatario);
+            helper.setSubject("✅ Medikids - Cita Registrada Exitosamente");
+            helper.setText(buildCitaConfirmacionTemplate(
+                    nombrePaciente, nombreMedico, especialidad, fechaCita, horaCita, motivo), true);
+
+            // Adjuntar PDF comprobante si está disponible
+            if (pdfBytes != null && pdfBytes.length > 0) {
+                String nombreArchivo = "boleta".equalsIgnoreCase(tipoComprobante)
+                        ? "Boleta_Medikids.pdf"
+                        : "Factura_Medikids.pdf";
+                helper.addAttachment(nombreArchivo,
+                        new org.springframework.core.io.ByteArrayResource(pdfBytes),
+                        "application/pdf");
+            }
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Error al enviar el correo de confirmación de cita: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Construye el template HTML del correo de confirmación de cita.
+     */
+    private String buildCitaConfirmacionTemplate(String nombrePaciente, String nombreMedico,
+                                                  String especialidad, String fechaCita,
+                                                  String horaCita, String motivo) {
+        return """
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="margin:0; padding:0; background-color:#f7f9f2; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                    <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="background-color:#f7f9f2; padding:40px 0;">
+                        <tr>
+                            <td align="center">
+                                <table role="presentation" width="480" cellspacing="0" cellpadding="0"
+                                       style="background-color:#ffffff; border-radius:16px; box-shadow:0 4px 24px rgba(74,85,41,0.10); overflow:hidden;">
+
+                                    <!-- Header -->
+                                    <tr>
+                                        <td style="background: linear-gradient(135deg, #9cb151 0%%, #5e6d31 100%%); padding:36px 40px; text-align:center;">
+                                            <h1 style="color:#ffffff; margin:0; font-size:28px; font-weight:700; letter-spacing:1px;">
+                                                Medikids
+                                            </h1>
+                                            <p style="color:rgba(255,255,255,0.90); margin:10px 0 0; font-size:14px; letter-spacing:0.5px;">
+                                                Confirmación de Cita Médica
+                                            </p>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Decorative Accent Line -->
+                                    <tr>
+                                        <td style="height:4px; background: linear-gradient(90deg, #b8ca76 0%%, #9cb151 50%%, #7c8f3e 100%%);"></td>
+                                    </tr>
+
+                                    <!-- Body -->
+                                    <tr>
+                                        <td style="padding:40px;">
+                                            <p style="color:#4a5529; font-size:16px; margin:0 0 8px; font-weight:600;">
+                                                ¡Cita registrada con éxito! ✅
+                                            </p>
+                                            <p style="color:#5e6d31; font-size:14px; line-height:1.7; margin:0 0 28px;">
+                                                Te confirmamos que la siguiente cita ha sido agendada correctamente en el sistema Medikids.
+                                            </p>
+
+                                            <!-- Detalles de la cita -->
+                                            <table role="presentation" width="100%%" cellspacing="0" cellpadding="0"
+                                                   style="background: linear-gradient(135deg, #f7f9f2 0%%, #ecefdf 100%%); border:2px solid #b8ca76; border-radius:12px; overflow:hidden; margin:0 0 28px;">
+                                                <tr>
+                                                    <td style="padding:18px 24px; border-bottom:1px solid #dae1c0;">
+                                                        <p style="color:#7c8f3e; font-size:11px; text-transform:uppercase; letter-spacing:1.5px; margin:0 0 4px; font-weight:600;">👶 Paciente</p>
+                                                        <p style="color:#4a5529; font-size:15px; font-weight:700; margin:0;">%s</p>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding:18px 24px; border-bottom:1px solid #dae1c0;">
+                                                        <p style="color:#7c8f3e; font-size:11px; text-transform:uppercase; letter-spacing:1.5px; margin:0 0 4px; font-weight:600;">👨‍⚕️ Médico</p>
+                                                        <p style="color:#4a5529; font-size:15px; font-weight:700; margin:0;">%s</p>
+                                                        <p style="color:#5e6d31; font-size:13px; margin:3px 0 0;">%s</p>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding:18px 24px; border-bottom:1px solid #dae1c0;">
+                                                        <p style="color:#7c8f3e; font-size:11px; text-transform:uppercase; letter-spacing:1.5px; margin:0 0 4px; font-weight:600;">📅 Fecha</p>
+                                                        <p style="color:#4a5529; font-size:15px; font-weight:700; margin:0;">%s</p>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding:18px 24px; border-bottom:1px solid #dae1c0;">
+                                                        <p style="color:#7c8f3e; font-size:11px; text-transform:uppercase; letter-spacing:1.5px; margin:0 0 4px; font-weight:600;">🕐 Hora</p>
+                                                        <p style="color:#4a5529; font-size:15px; font-weight:700; margin:0;">%s</p>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding:18px 24px;">
+                                                        <p style="color:#7c8f3e; font-size:11px; text-transform:uppercase; letter-spacing:1.5px; margin:0 0 4px; font-weight:600;">📋 Motivo</p>
+                                                        <p style="color:#4a5529; font-size:14px; margin:0;">%s</p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                            <p style="color:#5e6d31; font-size:13px; line-height:1.6; margin:0 0 10px;">
+                                                🏥 Por favor, preséntate con el menor <strong style="color:#4a5529;">10 minutos antes</strong> de la hora indicada.
+                                            </p>
+                                            <p style="color:#5e6d31; font-size:13px; line-height:1.6; margin:0;">
+                                                Si necesitas cancelar o reprogramar la cita, contáctanos con anticipación.
+                                            </p>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="background-color:#ecefdf; padding:20px 40px; border-top:1px solid #dae1c0; text-align:center;">
+                                            <p style="color:#7c8f3e; font-size:12px; margin:0;">
+                                                © 2026 Medikids · Todos los derechos reservados
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
+                """.formatted(nombrePaciente, nombreMedico, especialidad, fechaCita, horaCita, motivo);
+    }
+
+    /**
      * Construye el template HTML del correo con diseño profesional.
      */
     private String buildHtmlTemplate(String codigo) {

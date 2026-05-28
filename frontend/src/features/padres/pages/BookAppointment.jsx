@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { CreditCardIcon, BanknotesIcon, QrCodeIcon } from "@heroicons/react/24/outline";
 import { useQueryClient } from "@tanstack/react-query";
-import { useChildren, useDoctores, useEspecialidades, useHorariosDisponibles, queryKeys } from "../../../hooks/useApiData";
+import { useChildren, useDoctores, useEspecialidades, useHorariosDisponibles, useCliente, queryKeys } from "../../../hooks/useApiData";
 import { saveAppointment } from "../../../services/api";
 import { BookAppointmentSkeleton } from "../../../app/components/skeletons/BookAppointmentSkeleton";
 
@@ -66,11 +66,15 @@ export const BookAppointment = () => {
   const [motivo, setMotivo] = useState("");
   const [metodoPago, setMetodoPago] = useState("");
   const [metodoBD, setMetodoBD] = useState("");
+  const [tipoComprobante, setTipoComprobante] = useState(""); // "boleta" | "factura"
+  const [ruc, setRuc] = useState("");
+  const [razonSocial, setRazonSocial] = useState("");
 
   const { data: children = [], isLoading: loadingChildren } = useChildren(clientId);
   const { data: doctors = [], isLoading: loadingDoctores } = useDoctores();
   const { data: specialties = [], isLoading: loadingEspecialidades } = useEspecialidades();
   const { data: horarios = [], isLoading: loadingHorarios } = useHorariosDisponibles(selectedDoctor?.id_medico);
+  const { data: clienteData } = useCliente(usuario?.id_usuario);
 
   const loading = loadingChildren || loadingDoctores || loadingEspecialidades || (!clientId && !loadingChildren);
 
@@ -88,7 +92,12 @@ export const BookAppointment = () => {
     if (step === 1) return !!selectedChild;
     if (step === 2) return !!selectedSpecialty && !!selectedDoctor;
     if (step === 3) return !!selectedHorario && !!motivo;
-    if (step === 4) return !!metodoPago;
+    if (step === 4) {
+      if (!metodoPago) return false;
+      if (!tipoComprobante) return false;
+      if (tipoComprobante === "factura") return ruc.length >= 11 && razonSocial.trim().length > 0;
+      return true; // boleta usa DNI automático
+    }
     return true;
   };
 
@@ -113,6 +122,14 @@ export const BookAppointment = () => {
     setSaving(true);
     setMessage("");
     try {
+      // Determinar documento según tipo de comprobante
+      const numeroDocumento = tipoComprobante === "factura"
+        ? ruc
+        : String(clienteData?.dni_responsable ?? "");
+      const nombreRazonSocial = tipoComprobante === "factura"
+        ? razonSocial
+        : `${usuario?.nombres ?? ""} ${usuario?.apellidos ?? ""}`.trim();
+
       await saveAppointment({
         motivo,
         estado: "Pendiente",
@@ -123,6 +140,10 @@ export const BookAppointment = () => {
         id_paciente: selectedChild.id_paciente,
         fecha_cita: date,
         hora_cita: time,
+        tipoComprobante,
+        numeroDocumento,
+        nombreRazonSocial,
+        metodoPago: metodoBD,
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.citas(clientId) });
       if (selectedDoctor) queryClient.invalidateQueries({ queryKey: queryKeys.horariosDisponibles(selectedDoctor.id_medico) });
@@ -138,6 +159,9 @@ export const BookAppointment = () => {
         setMotivo("");
         setMetodoPago("");
         setMetodoBD("");
+        setTipoComprobante("");
+        setRuc("");
+        setRazonSocial("");
         setMessage("");
       }, 2500);
     } catch {
@@ -426,7 +450,7 @@ export const BookAppointment = () => {
             )}
 
             {metodoPago === "efectivo" && (
-              <div className="bg-medi-50 rounded-2xl p-6 space-y-3 border border-medi-200">
+                      <div className="bg-medi-50 rounded-2xl p-6 space-y-3 border border-medi-200">
                 <h4 className="font-extrabold text-medi-700">Pago en Efectivo</h4>
                 <p className="text-sm text-medi-600 font-medium">Realiza el pago en caja al momento de llegar a tu cita.</p>
                 <div className="bg-white rounded-xl p-4 border border-medi-200 text-sm text-gray-600 font-medium space-y-2">
@@ -436,6 +460,71 @@ export const BookAppointment = () => {
                 </div>
               </div>
             )}
+
+            {/* ── Tipo de Comprobante ── */}
+            <div className="pt-4 border-t border-gray-100 space-y-4">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tipo de Comprobante</p>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { id: "boleta", label: "Boleta", desc: "Persona natural (DNI)" },
+                  { id: "factura", label: "Factura", desc: "Empresa (RUC)" },
+                ].map((tipo) => (
+                  <button
+                    key={tipo.id}
+                    onClick={() => { setTipoComprobante(tipo.id); setRuc(""); setRazonSocial(""); }}
+                    className={`rounded-2xl p-4 text-left transition-all border-2 ${
+                      tipoComprobante === tipo.id
+                        ? "border-medi-500 bg-medi-50 shadow-md"
+                        : "border-gray-100 bg-white hover:border-medi-300"
+                    }`}
+                  >
+                    <div className={`text-sm font-extrabold ${tipoComprobante === tipo.id ? "text-medi-600" : "text-gray-700"}`}>
+                      🧾 {tipo.label}
+                    </div>
+                    <div className="text-xs text-gray-400 font-medium mt-1">{tipo.desc}</div>
+                  </button>
+                ))}
+              </div>
+
+              {tipoComprobante === "boleta" && (
+                <div className="bg-medi-50 rounded-2xl p-4 border border-medi-200">
+                  <p className="text-xs font-bold text-medi-600 uppercase tracking-wider mb-1">DNI del Responsable</p>
+                  <p className="text-sm font-bold text-gray-900">
+                    {clienteData?.dni_responsable ?? "—"}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">Se usará el DNI registrado en tu perfil.</p>
+                </div>
+              )}
+
+              {tipoComprobante === "factura" && (
+                <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200 space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">RUC *</label>
+                    <input
+                      type="text"
+                      maxLength={11}
+                      placeholder="Ej: 20123456789"
+                      value={ruc}
+                      onChange={(e) => setRuc(e.target.value.replace(/\D/g, ""))}
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                    />
+                    {ruc.length > 0 && ruc.length < 11 && (
+                      <p className="text-xs text-red-500 mt-1">El RUC debe tener 11 dígitos.</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Razón Social *</label>
+                    <input
+                      type="text"
+                      placeholder="Nombre de la empresa"
+                      value={razonSocial}
+                      onChange={(e) => setRazonSocial(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
