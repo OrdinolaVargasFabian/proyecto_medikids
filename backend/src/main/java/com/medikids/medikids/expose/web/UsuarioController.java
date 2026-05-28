@@ -23,6 +23,7 @@ public class UsuarioController {
     @Autowired
     private final UsuarioService usuarioService;
 
+    @SuppressWarnings("unchecked")
     @GetMapping("/all")
     @PreAuthorize("@permiso.has('usuario:read')")
     public List<UsuarioDto> all(Authentication auth) {
@@ -59,6 +60,7 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
+    @SuppressWarnings("unchecked")
     @PutMapping("/profile")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UsuarioDto> updateProfile(@RequestBody UsuarioRequest usuario, Authentication auth) {

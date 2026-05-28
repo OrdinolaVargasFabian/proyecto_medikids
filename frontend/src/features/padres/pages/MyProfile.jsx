@@ -138,17 +138,17 @@ export const MyProfile = () => {
         nombres,
         apellidos,
         email,
-        telefono: telefono ? parseInt(telefono, 10) : 0,
+        telefono: telefono ? parseInt(telefono.replace(/\D/g, ''), 10) || 0 : 0,
       });
 
-      const updatedUser = { ...usuario, nombres, apellidos, email, telefono: telefono ? parseInt(telefono, 10) : 0 };
+      const updatedUser = { ...usuario, nombres, apellidos, email, telefono: telefono ? parseInt(telefono.replace(/\D/g, ''), 10) || 0 : 0 };
       localStorage.setItem("usuario", JSON.stringify(updatedUser));
       setUsuario(updatedUser);
 
       if (cliente) {
         await updateClient(cliente.id_cliente, {
           id_usuario: usuario.id_usuario,
-          dni_responsable: dni ? parseInt(dni, 10) : 0,
+          dni_responsable: dni ? parseInt(dni.replace(/\D/g, ''), 10) || 0 : 0,
           direccion,
         });
       }

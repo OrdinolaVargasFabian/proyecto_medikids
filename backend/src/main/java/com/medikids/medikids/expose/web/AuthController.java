@@ -2,10 +2,10 @@ package com.medikids.medikids.expose.web;
 
 import com.medikids.medikids.expose.model.response.AuthResponse;
 import com.medikids.medikids.expose.model.request.LoginRequest;
+import com.medikids.medikids.expose.model.request.RefreshTokenRequest;
 import com.medikids.medikids.expose.model.request.VerifyCodeRequest;
 import com.medikids.medikids.process.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +18,6 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
     private final AuthService authService;
 
     /**
@@ -28,7 +27,7 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
-        AuthResponse response = authService.login(request.getEmail(), request.getPassword(), extraerIpCliente(httpServletRequest));
+        AuthResponse response = authService.login(request.getEmail(), request.getPassword(), httpServletRequest);
 
         if (Objects.nonNull(response)) {
             return ResponseEntity.ok(response);
@@ -59,7 +58,7 @@ public class AuthController {
     }
 
     @PostMapping("/resend-2fa")
-    public ResponseEntity<AuthResponse> resend2FA(@RequestBody com.medikids.medikids.expose.model.request.LoginRequest request) {
+    public ResponseEntity<AuthResponse> resend2FA(@RequestBody LoginRequest request) {
         AuthResponse response = authService.resend2FA(request.getEmail());
 
         if (Objects.nonNull(response)) {
@@ -72,17 +71,25 @@ public class AuthController {
                         .build());
     }
 
-    private String extraerIpCliente(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
+    // ── Refresh Token ──────────────────────────────────────────────────────
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@RequestBody RefreshTokenRequest request, HttpServletRequest httpRequest) {
+        AuthResponse response = authService.refreshToken(request.getRefreshToken(), httpRequest);
+
+        if (Objects.nonNull(response)) {
+            return ResponseEntity.ok(response);
         }
 
-        String realIp = request.getHeader("X-Real-IP");
-        if (realIp != null && !realIp.isBlank()) {
-            return realIp.trim();
-        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(AuthResponse.builder()
+                        .message("Token de actualización inválido o expirado")
+                        .build());
+    }
 
-        return request.getRemoteAddr();
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestBody RefreshTokenRequest request) {
+        authService.logout(request.getRefreshToken());
+        return ResponseEntity.ok().build();
     }
 }
