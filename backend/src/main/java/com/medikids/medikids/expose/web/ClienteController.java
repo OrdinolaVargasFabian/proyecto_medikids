@@ -22,6 +22,7 @@ public class ClienteController {
     @Autowired
     private final ClienteService clienteService;
 
+    @SuppressWarnings("unchecked")
     @GetMapping("")
     @PreAuthorize("@permiso.has('cliente:read')")
     public List<ClienteDto> all(Authentication auth) {
@@ -70,6 +71,7 @@ public class ClienteController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
+    @SuppressWarnings("unchecked")
     @GetMapping("/nombre/{nombre}")
     @PreAuthorize("@permiso.has('cliente:read')")
     public List<ClienteDto> getByNombre(@PathVariable String nombre, Authentication auth) {
@@ -81,6 +83,7 @@ public class ClienteController {
         return List.of();
     }
 
+    @SuppressWarnings("unchecked")
     @GetMapping("/dni/{dni}")
     @PreAuthorize("@permiso.has('cliente:read')")
     public ResponseEntity<ClienteDto> getByDni(@PathVariable String dni, Authentication auth) {

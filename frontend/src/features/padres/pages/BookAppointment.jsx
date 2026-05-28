@@ -14,11 +14,13 @@ const colors = [
 ];
 
 const getInitials = (name) =>
-  name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+  name ? name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) : "";
 
 const getAge = (birthDate) => {
+  if (!birthDate) return 0;
   const today = new Date();
   const birth = new Date(birthDate);
+  if (isNaN(birth.getTime())) return 0;
   let age = today.getFullYear() - birth.getFullYear();
   const m = today.getMonth() - birth.getMonth();
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;

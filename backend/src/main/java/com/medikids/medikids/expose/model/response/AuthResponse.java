@@ -14,6 +14,7 @@ public class AuthResponse implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String token;
+    private String refreshToken;
     private String message;
     private UsuarioDto usuario;
 }

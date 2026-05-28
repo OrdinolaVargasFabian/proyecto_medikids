@@ -63,8 +63,7 @@ public class AdminAuthController {
     @PostMapping("/auth/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AdminLoginRequest request,
                                               HttpServletRequest httpRequest) {
-        String clientIp = getClientIp(httpRequest);
-        AuthResponse response = authService.adminLogin(request.getEmail(), request.getPassword(), clientIp);
+        AuthResponse response = authService.adminLogin(request.getEmail(), request.getPassword(), httpRequest);
 
         if (Objects.nonNull(response)) {
             return ResponseEntity.ok(response);

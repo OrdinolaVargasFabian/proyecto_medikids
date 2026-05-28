@@ -2,11 +2,12 @@ package com.medikids.medikids.expose.web;
 
 import com.medikids.medikids.expose.model.request.CrearAdminRequest;
 import com.medikids.medikids.expose.model.request.UsuarioRequest;
+import com.medikids.medikids.expose.model.request.IpAutorizadaRequest;
 import com.medikids.medikids.process.domain.IntentoLogin;
-import com.medikids.medikids.process.domain.IpAutorizada;
 import com.medikids.medikids.process.domain.Permiso;
 import com.medikids.medikids.process.domain.Rol;
 import com.medikids.medikids.process.domain.Usuario;
+import com.medikids.medikids.process.dto.IpAutorizadaDto;
 import com.medikids.medikids.process.dto.UsuarioDto;
 import com.medikids.medikids.process.repository.PermisoRepository;
 import com.medikids.medikids.process.repository.RolPermisoRepository;
@@ -52,36 +53,37 @@ public class AdminController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // ── IPs Autorizadas ──────────────────────────────────────────────────────
+    // ── IPs Autorizadas (deprecated: usar /ip-autorizada) ───────────────────
 
     @GetMapping("/ips")
     @PreAuthorize("@permiso.has('ip:read')")
-    public ResponseEntity<List<IpAutorizada>> listarIps() {
-        return ResponseEntity.ok(ipAutorizadaService.listarTodas());
+    public ResponseEntity<List<IpAutorizadaDto>> listarIps() {
+        return ResponseEntity.ok(ipAutorizadaService.getAll());
     }
 
     @PostMapping("/ips")
     @PreAuthorize("@permiso.has('ip:write')")
-    public ResponseEntity<IpAutorizada> crearIp(@RequestBody IpAutorizada ip) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(ipAutorizadaService.guardar(ip));
+    public ResponseEntity<IpAutorizadaDto> crearIp(@RequestBody IpAutorizadaRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ipAutorizadaService.save(request));
     }
 
     @PutMapping("/ips/{id}")
     @PreAuthorize("@permiso.has('ip:write')")
-    public ResponseEntity<IpAutorizada> actualizarIp(@PathVariable Integer id, @RequestBody IpAutorizada ip) {
-        return ipAutorizadaService.buscarPorId(id)
-                .map(existente -> {
-                    ip.setIdIpAutorizada(id);
-                    return ResponseEntity.ok(ipAutorizadaService.guardar(ip));
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<IpAutorizadaDto> actualizarIp(@PathVariable int id, @RequestBody IpAutorizadaRequest request) {
+        IpAutorizadaDto dto = ipAutorizadaService.update(id, request);
+        if (dto != null) {
+            return ResponseEntity.ok(dto);
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/ips/{id}")
     @PreAuthorize("@permiso.has('ip:write')")
-    public ResponseEntity<Void> eliminarIp(@PathVariable Integer id) {
-        ipAutorizadaService.eliminar(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> eliminarIp(@PathVariable int id) {
+        if (ipAutorizadaService.delete(id)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
     // ── Auditoría ────────────────────────────────────────────────────────────
@@ -167,6 +169,7 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
+    @SuppressWarnings("unchecked")
     @PutMapping("/usuarios/{id}/rol")
     @PreAuthorize("@permiso.has('rol:assign')")
     public ResponseEntity<?> actualizarRol(@PathVariable Integer id, @RequestBody Map<String, Integer> body) {
@@ -188,6 +191,7 @@ public class AdminController {
         return ResponseEntity.ok().build();
     }
 
+    @SuppressWarnings("unchecked")
     @PutMapping("/usuarios/{id}/status")
     @PreAuthorize("@permiso.has('rol:assign')")
     public ResponseEntity<?> cambiarStatus(@PathVariable Integer id, @RequestBody Map<String, Boolean> body) {
