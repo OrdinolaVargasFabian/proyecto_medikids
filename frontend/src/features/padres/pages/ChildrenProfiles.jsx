@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useChildren, queryKeys } from "../../../hooks/useApiData";
 import { createChild } from "../../../services/api";
@@ -13,11 +14,13 @@ const colors = [
 ];
 
 const getInitials = (name) =>
-  name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+  name ? name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) : "";
 
 const getAge = (birthDate) => {
+  if (!birthDate) return 0;
   const today = new Date();
   const birth = new Date(birthDate);
+  if (isNaN(birth.getTime())) return 0;
   let age = today.getFullYear() - birth.getFullYear();
   const m = today.getMonth() - birth.getMonth();
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
@@ -31,6 +34,7 @@ const formatDate = (dateStr) => {
 };
 
 export const ChildrenProfiles = () => {
+  const navigate = useNavigate();
   const usuario = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("usuario")); }
     catch { return null; }
@@ -179,7 +183,10 @@ export const ChildrenProfiles = () => {
                       <div className="text-sm font-bold text-gray-900">{formatDate(child.fecha_nacimiento)}</div>
                     </div>
                   </div>
-                  <button className="w-full py-3 text-sm font-bold text-medi-600 bg-medi-50 hover:bg-medi-100 rounded-2xl transition-colors">
+                  <button
+                    onClick={() => navigate(`/padres/historial?hijo=${child.id_paciente}`)}
+                    className="w-full py-3 text-sm font-bold text-medi-600 bg-medi-50 hover:bg-medi-100 rounded-2xl transition-colors"
+                  >
                     Ver Historial Completo
                   </button>
                 </div>

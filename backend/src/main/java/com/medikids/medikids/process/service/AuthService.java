@@ -1,20 +1,28 @@
 package com.medikids.medikids.process.service;
 
 import com.medikids.medikids.expose.model.response.AuthResponse;
+import com.medikids.medikids.process.domain.RefreshToken;
 import com.medikids.medikids.process.domain.Usuario;
 import com.medikids.medikids.process.service.IpAutorizadaService;
 import com.medikids.medikids.process.repository.UsuarioRepository;
+import com.medikids.medikids.utils.helpers.IpUtils;
 import com.medikids.medikids.utils.helpers.UsuarioHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
+
+import jakarta.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class AuthService {
 
     @Autowired
@@ -35,6 +43,9 @@ public class AuthService {
     @Autowired
     private AuditService auditService;
 
+    @Autowired
+    private RefreshTokenService refreshTokenService;
+
     @Value("${codigo.2fa.expiration}")
     private long codigoExpiracionMs;
 
@@ -49,7 +60,10 @@ public class AuthService {
      * Login SIN 2FA: valida credenciales y retorna JWT directamente.
      * Rechaza usuarios con rol=3 (deben usar la ruta administrativa secreta).
      */
-    public AuthResponse login(String email, String password, String ipCliente) {
+    public AuthResponse login(String email, String password, HttpServletRequest httpRequest) {
+        String clientIp = IpUtils.getClientIp(httpRequest);
+        String fingerprint = computeFingerprint(httpRequest);
+
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
 
         if (usuarioOpt.isEmpty()) {
@@ -72,8 +86,11 @@ public class AuthService {
 
         String token = jwtService.generateToken(usuario);
 
+        String refreshToken = refreshTokenService.createRefreshToken(usuario.getId_usuario(), fingerprint, clientIp).getToken();
+
         return AuthResponse.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .message("Inicio de sesión exitoso")
                 .usuario(UsuarioHelper.mapUsuario(usuario))
                 .build();
@@ -83,7 +100,10 @@ public class AuthService {
      * Login exclusivo para administradores (rol=3).
      * Verifica IP, genera token de corta duración y registra auditoría.
      */
-    public AuthResponse adminLogin(String email, String password, String clientIp) {
+    public AuthResponse adminLogin(String email, String password, HttpServletRequest httpRequest) {
+        String clientIp = IpUtils.getClientIp(httpRequest);
+        String fingerprint = computeFingerprint(httpRequest);
+
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
 
         if (usuarioOpt.isEmpty()) {
@@ -106,8 +126,11 @@ public class AuthService {
         String token = jwtService.generateAdminToken(usuario);
         auditService.registrarIntento(email, clientIp, true, "ADMIN");
 
+        String refreshToken = refreshTokenService.createRefreshToken(usuario.getId_usuario(), fingerprint, clientIp).getToken();
+
         return AuthResponse.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .message("Acceso administrativo autorizado")
                 .usuario(UsuarioHelper.mapUsuario(usuario))
                 .build();
@@ -232,4 +255,80 @@ public class AuthService {
                 + parts[0].charAt(parts[0].length() - 1)
                 + "@" + parts[1];
     }
+
+    // ── Refresh Token ─────────────────────────────────────────────────────
+
+    public AuthResponse refreshToken(String refreshTokenValue, HttpServletRequest httpRequest) {
+        String currentFingerprint = computeFingerprint(httpRequest);
+        String currentIp = IpUtils.getClientIp(httpRequest);
+
+        Optional<RefreshToken> optRt = refreshTokenService.findByToken(refreshTokenValue);
+        if (optRt.isEmpty()) return null;
+
+        RefreshToken rt = optRt.get();
+
+        if (rt.isRevoked()) {
+            refreshTokenService.revokeAllUserTokens(rt.getIdUsuario());
+            return null;
+        }
+
+        if (rt.getExpiryDate().isBefore(java.time.LocalDateTime.now())) {
+            return null;
+        }
+
+        if (!refreshTokenService.isSessionValid(rt, currentFingerprint, currentIp)) {
+            refreshTokenService.revokeAllUserTokens(rt.getIdUsuario());
+            return null;
+        }
+
+        Optional<Usuario> usuarioOpt = usuarioRepository.findById(rt.getIdUsuario());
+        if (usuarioOpt.isEmpty()) return null;
+
+        Usuario usuario = usuarioOpt.get();
+        if (usuario.getVisible() != '1' || Boolean.FALSE.equals(usuario.getActivo())) {
+            return null;
+        }
+
+        String newToken = jwtService.generateToken(usuario);
+
+        refreshTokenService.revokeToken(refreshTokenValue);
+        String newRefreshToken = refreshTokenService.createRefreshToken(usuario.getId_usuario(), currentFingerprint, currentIp).getToken();
+
+        return AuthResponse.builder()
+                .token(newToken)
+                .refreshToken(newRefreshToken)
+                .message("Token renovado exitosamente")
+                .usuario(UsuarioHelper.mapUsuario(usuario))
+                .build();
+    }
+
+    public boolean logout(String refreshTokenValue) {
+        Optional<RefreshToken> optRt = refreshTokenService.findByToken(refreshTokenValue);
+        if (optRt.isEmpty()) return false;
+
+        refreshTokenService.revokeAllUserTokens(optRt.get().getIdUsuario());
+        return true;
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+
+    private String computeFingerprint(HttpServletRequest request) {
+        try {
+            String ua = request.getHeader("User-Agent");
+            String lang = request.getHeader("Accept-Language");
+            String ip = IpUtils.getClientIp(request);
+            String raw = (ua != null ? ua : "") + "||" + (lang != null ? lang : "") + "||" + (ip != null ? ip : "");
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(raw.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder(64);
+            for (byte b : hash) {
+                hex.append(String.format("%02x", b & 0xff));
+            }
+            return hex.toString();
+        } catch (Exception e) {
+            log.warn("Error al calcular fingerprint: {}", e.getMessage());
+            return null;
+        }
+    }
+
 }

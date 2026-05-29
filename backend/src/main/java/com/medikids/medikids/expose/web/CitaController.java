@@ -1,9 +1,11 @@
 package com.medikids.medikids.expose.web;
 
 import com.medikids.medikids.expose.model.request.CitaRequest;
+import com.medikids.medikids.process.domain.Paciente;
 import com.medikids.medikids.process.dto.CitaDto;
 import com.medikids.medikids.process.dto.ClienteDto;
 import com.medikids.medikids.process.dto.MedicoDto;
+import com.medikids.medikids.process.repository.PacienteRepository;
 import com.medikids.medikids.process.service.CitaService;
 import com.medikids.medikids.process.service.ClienteService;
 import com.medikids.medikids.process.service.MedicoService;
@@ -31,6 +33,9 @@ public class CitaController {
 
     @Autowired
     private MedicoService medicoService;
+
+    @Autowired
+    private PacienteRepository pacienteRepository;
 
     @GetMapping("/all")
     @PreAuthorize("@permiso.has('cita:read')")
@@ -72,8 +77,12 @@ public class CitaController {
             if (cliente == null) {
                 throw new RuntimeException("Cliente no encontrado");
             }
-            List<CitaDto> citas = citaService.getByCliente(cliente.getId_cliente());
-            boolean ownsPaciente = citas.stream().anyMatch(c -> c.getId_paciente() == cita.getId_paciente());
+            // Verificar que el paciente pertenece al cliente consultando directamente
+            // la tabla paciente (evita el bug de la primera cita donde no hay citas previas)
+            boolean ownsPaciente = pacienteRepository
+                    .findByIdCliente(cliente.getId_cliente())
+                    .stream()
+                    .anyMatch(p -> p.getId_paciente() == cita.getId_paciente());
             if (!ownsPaciente) {
                 throw new RuntimeException("El paciente no pertenece a tus hijos");
             }

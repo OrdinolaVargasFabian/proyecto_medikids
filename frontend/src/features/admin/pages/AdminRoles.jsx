@@ -39,8 +39,8 @@ export const AdminRoles = () => {
         await asignarPermisoARol(selectedRol.id_rol, idPermiso);
         setPermisosRol((prev) => [...prev, permiso.codigo]);
       }
-    } catch {
-      // si falla 401/403 el interceptor redirige a login
+    } catch (err) {
+      console.error("Error al cambiar permiso:", err);
     } finally {
       setSaving(null);
     }

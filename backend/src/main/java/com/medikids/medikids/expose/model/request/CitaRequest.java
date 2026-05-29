@@ -3,9 +3,6 @@ package com.medikids.medikids.expose.model.request;
 import lombok.Getter;
 import lombok.Setter;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.io.Serializable;
 
 @Setter
@@ -22,4 +19,10 @@ public class CitaRequest implements Serializable {
     private int id_paciente;
     private String fecha_cita;
     private String hora_cita;
+
+    // Datos del comprobante de pago
+    private String tipoComprobante;    // "boleta" o "factura"
+    private String numeroDocumento;    // DNI (boleta) o RUC (factura)
+    private String nombreRazonSocial;  // Nombre del responsable o razón social
+    private String metodoPago;         // "Efectivo", "Tarjeta", "Transferencia"
 }

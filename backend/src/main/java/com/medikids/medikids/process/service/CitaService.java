@@ -18,12 +18,15 @@ import com.medikids.medikids.process.repository.HorarioRepository;
 import com.medikids.medikids.process.repository.MedicoRepository;
 import com.medikids.medikids.process.repository.PacienteRepository;
 import com.medikids.medikids.process.repository.UsuarioRepository;
+import com.medikids.medikids.process.domain.Cliente;
+import com.medikids.medikids.process.repository.ClienteRepository;
 import com.medikids.medikids.utils.config.SimpleCache;
 import com.medikids.medikids.utils.helpers.CitaHelper;
 import com.medikids.medikids.utils.helpers.EspecialidadHelper;
 import com.medikids.medikids.utils.helpers.MedicoHelper;
 import com.medikids.medikids.utils.helpers.PacienteHelper;
 import com.medikids.medikids.utils.helpers.UsuarioHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +37,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class CitaService {
     @Autowired
     private CitaRepository citaRepository;
@@ -49,6 +53,15 @@ public class CitaService {
 
     @Autowired
     private EspecialidadRepository especialidadRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private PdfService pdfService;
 
     @Autowired
     private SimpleCache<Integer, Medico> medicoEntityCache;
@@ -181,7 +194,64 @@ public class CitaService {
         horario.setDisponible('0');
         horarioRepository.save(horario);
 
-        return enriquecer(CitaHelper.mapCita(saved));
+        CitaDto citaDto = enriquecer(CitaHelper.mapCita(saved));
+
+        // Enviar correo de confirmación al responsable del paciente
+        try {
+            pacienteRepository.findById(cita.getId_paciente()).ifPresent(paciente -> {
+                clienteRepository.findById(paciente.getId_cliente()).ifPresent(cliente -> {
+                    Usuario usuario = cliente.getUsuario();
+                    if (usuario != null && usuario.getEmail() != null) {
+                        String nombreMedico = "Médico asignado";
+                        String especialidad = "";
+                        if (citaDto.getMedico() != null) {
+                            if (citaDto.getMedico().getUsuario() != null) {
+                                nombreMedico = citaDto.getMedico().getUsuario().getNombres()
+                                        + " " + citaDto.getMedico().getUsuario().getApellidos();
+                            }
+                            if (citaDto.getMedico().getEspecialidad() != null) {
+                                especialidad = citaDto.getMedico().getEspecialidad().getNombre();
+                            }
+                        }
+
+                        // Generar PDF del comprobante si se proporcionaron datos de pago
+                        byte[] pdfBytes = null;
+                        String tipoComprobante = cita.getTipoComprobante();
+                        if (tipoComprobante != null && !tipoComprobante.isBlank()
+                                && cita.getNumeroDocumento() != null
+                                && cita.getNombreRazonSocial() != null) {
+                            pdfBytes = pdfService.generarComprobante(
+                                    tipoComprobante,
+                                    cita.getNumeroDocumento(),
+                                    cita.getNombreRazonSocial(),
+                                    paciente.getNombre_completo(),
+                                    nombreMedico,
+                                    especialidad,
+                                    citaDto.getFecha_cita() != null ? citaDto.getFecha_cita() : "Por confirmar",
+                                    citaDto.getHora_cita() != null ? citaDto.getHora_cita() : "Por confirmar",
+                                    cita.getMetodoPago()
+                            );
+                        }
+
+                        emailService.enviarConfirmacionCita(
+                                usuario.getEmail(),
+                                paciente.getNombre_completo(),
+                                nombreMedico,
+                                especialidad,
+                                citaDto.getFecha_cita() != null ? citaDto.getFecha_cita() : "Por confirmar",
+                                citaDto.getHora_cita() != null ? citaDto.getHora_cita() : "Por confirmar",
+                                cita.getMotivo(),
+                                pdfBytes,
+                                tipoComprobante
+                        );
+                    }
+                });
+            });
+        } catch (Exception e) {
+            log.warn("No se pudo enviar el correo de confirmación de cita: {}", e.getMessage());
+        }
+
+        return citaDto;
     }
     public CitaDto update(int id, CitaRequest cita) {
         Optional<Cita> citaUpdate = citaRepository.findById(id);

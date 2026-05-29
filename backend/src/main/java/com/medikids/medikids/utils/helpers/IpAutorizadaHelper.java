@@ -2,10 +2,11 @@ package com.medikids.medikids.utils.helpers;
 
 import com.medikids.medikids.expose.model.request.IpAutorizadaRequest;
 import com.medikids.medikids.process.domain.IpAutorizada;
-import com.medikids.medikids.process.domain.Usuario;
 import com.medikids.medikids.process.dto.IpAutorizadaDto;
 
 import java.io.Serializable;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,14 +17,19 @@ public class IpAutorizadaHelper implements Serializable {
 
     public static IpAutorizadaDto mapIpAutorizada(IpAutorizada ipAutorizada) {
         return IpAutorizadaDto.builder()
-                .id_ip_autorizada(ipAutorizada.getId_ip_autorizada())
-                .id_usuario(ipAutorizada.getUsuario() != null ? ipAutorizada.getUsuario().getId_usuario() : 0)
+                .id_ip_autorizada(ipAutorizada.getIdIpAutorizada())
+                .id_usuario(ipAutorizada.getIdUsuario())
                 .ip(ipAutorizada.getIp())
                 .descripcion(ipAutorizada.getDescripcion())
-                .activo(ipAutorizada.isActivo())
-                .fecha_registro(ipAutorizada.getFecha_registro())
-                .fecha_modificado(ipAutorizada.getFecha_modificado())
+                .activo(ipAutorizada.getActivo() != null && ipAutorizada.getActivo())
+                .fecha_registro(toDate(ipAutorizada.getFechaRegistro()))
+                .fecha_modificado(toDate(ipAutorizada.getFechaModificado()))
                 .build();
+    }
+
+    private static Date toDate(java.time.LocalDateTime localDateTime) {
+        if (localDateTime == null) return null;
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     public static IpAutorizada buildIpAutorizada(IpAutorizadaRequest request) {
@@ -31,7 +37,7 @@ public class IpAutorizadaHelper implements Serializable {
                 .ip(request.getIp())
                 .descripcion(request.getDescripcion())
                 .activo(request.getActivo() == null || request.getActivo())
-                .usuario(Usuario.builder().id_usuario(request.getId_usuario()).build())
+                .idUsuario(request.getId_usuario())
                 .build();
     }
 
