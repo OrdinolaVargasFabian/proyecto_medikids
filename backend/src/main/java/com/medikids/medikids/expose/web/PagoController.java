@@ -3,7 +3,6 @@ package com.medikids.medikids.expose.web;
 import com.medikids.medikids.expose.model.request.PagoRequest;
 import com.medikids.medikids.process.dto.ClienteDto;
 import com.medikids.medikids.process.dto.PagoDto;
-import com.medikids.medikids.process.service.CitaService;
 import com.medikids.medikids.process.service.ClienteService;
 import com.medikids.medikids.process.service.PagoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/pagos")
+@RequestMapping("/pago")
 @CrossOrigin("*")
 public class PagoController {
 
@@ -24,9 +23,6 @@ public class PagoController {
 
     @Autowired
     private ClienteService clienteService;
-
-    @Autowired
-    private CitaService citaService;
 
     @GetMapping
     @PreAuthorize("@permiso.has('pago:read')")
@@ -42,9 +38,10 @@ public class PagoController {
         return pagoService.listarPagosPorCliente(cliente.getId_cliente());
     }
 
-    @PostMapping
+    @PostMapping("/save")
     @PreAuthorize("@permiso.has('pago:write')")
     public PagoDto guardarPago(@RequestBody PagoRequest pago, Authentication auth) {
+        // Validar rol del usuario (Debe ser cliente)
         Map<String, Object> details = (Map<String, Object>) auth.getDetails();
         int role = (int) details.get("id_rol");
         if (role == 1) {
@@ -52,10 +49,6 @@ public class PagoController {
             ClienteDto cliente = clienteService.getByIdUsuario(userId);
             if (cliente == null) {
                 throw new RuntimeException("Cliente no encontrado");
-            }
-            List<Integer> citaIds = citaService.getCitaIdsByCliente(cliente.getId_cliente());
-            if (!citaIds.contains(pago.getId_cita())) {
-                throw new RuntimeException("La cita no pertenece a tus hijos");
             }
         }
         return pagoService.guardarPago(pago);

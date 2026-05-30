@@ -30,6 +30,7 @@ public class CitaHelper implements Serializable {
                 .id_paciente(cita.getId_paciente())
                 .fecha_cita(cita.getFecha_cita() != null ? cita.getFecha_cita().toString() : null)
                 .hora_cita(cita.getHora_cita())
+                .id_pago(cita.getId_pago() != null ? cita.getId_pago() : 0)
                 .build();
     }
 
@@ -60,6 +61,7 @@ public class CitaHelper implements Serializable {
                 .id_paciente(cita.getId_paciente())
                 .fecha_cita(parsedDate)
                 .hora_cita(cita.getHora_cita())
+                .id_pago(cita.getId_pago() > 0 ? cita.getId_pago() : null)
                 .build();
     }
 

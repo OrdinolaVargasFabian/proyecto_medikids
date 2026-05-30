@@ -52,6 +52,9 @@ public class Cita {
     @Column(name = "hora_cita", length = 10)
     private String hora_cita;
 
+    @Column(name = "id_pago", nullable = true)
+    private Integer id_pago;
+
     @PrePersist
     protected void onCreate() {
         this.fecha_registro = new Date();

@@ -28,10 +28,4 @@ public class Pago {
 
     @Column(name = "estado_transaccion", nullable = false)
     private String estado_transaccion;
-
-    @Column(name = "fecha_pago", nullable = false)
-    private LocalDateTime fecha_pago;
-
-    @Column(name = "id_cita", nullable = false)
-    private int id_cita;
 }

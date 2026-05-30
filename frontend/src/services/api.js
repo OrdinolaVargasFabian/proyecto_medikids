@@ -114,6 +114,9 @@ export const getHorarios = () =>
 export const getHorariosByMedico = (idMedico) =>
   api.get(`/horarios/medico/${idMedico}`).then((r) => r.data);
 
+export const savePayment = (data) =>
+  api.post('/pago/save', data).then((r) => r.data);
+
 // ── Admin ──
 export const getAllAppointments = () =>
   api.get('/cita/all').then((r) => r.data);
@@ -131,7 +134,7 @@ export const respondToIncident = (id, data) =>
   api.patch(`/incidente/responder/${id}`, data).then((r) => r.data);
 
 export const getAllPayments = () =>
-  api.get('/pagos').then((r) => r.data);
+  api.get('/pago').then((r) => r.data);
 
 // ── Admin: Roles y Permisos ──
 export const getRoles = () =>
