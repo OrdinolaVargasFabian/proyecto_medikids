@@ -19,6 +19,7 @@ public class CitaRequest implements Serializable {
     private int id_paciente;
     private String fecha_cita;
     private String hora_cita;
+    private int id_pago;
 
     // Datos del comprobante de pago
     private String tipoComprobante;    // "boleta" o "factura"

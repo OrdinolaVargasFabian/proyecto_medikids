@@ -21,19 +21,16 @@ public class PagoHelper implements Serializable {
                 .id_pago(pago.getId_pago())
                 .monto(pago.getMonto())
                 .metodo_pago(pago.getMetodo_pago())
-                .estado_transaccion(pago.getEstado_transaccion())
-                .fecha_pago(pago.getFecha_pago())
-                .id_cita(pago.getId_cita())
+                .estado_transaccion("Efectivo".equals(pago.getMetodo_pago()) ? "Pendiente" : "Completado")
                 .build();
     }
 
     public static Pago buildPago(PagoRequest pago) {
+        String estado = "Efectivo".equals(pago.getMetodo_pago()) ? "Pendiente" : "Completado";
         return Pago.builder()
                 .monto(pago.getMonto())
                 .metodo_pago(pago.getMetodo_pago())
-                .estado_transaccion(pago.getEstado_transaccion())
-                .fecha_pago(pago.getFecha_pago())
-                .id_cita(pago.getId_cita())
+                .estado_transaccion(estado)
                 .build();
     }
 

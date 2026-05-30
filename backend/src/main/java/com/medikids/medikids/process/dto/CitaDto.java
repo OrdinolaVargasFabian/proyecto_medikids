@@ -24,8 +24,10 @@ public class CitaDto implements Serializable {
     private int id_paciente; // FK
     private String fecha_cita;
     private String hora_cita;
+    private int id_pago; // FK
 
     // Datos enriquecidos de las FKs
     private MedicoDto medico;
     private PacienteDto paciente;
+    private PagoDto pago;
 }

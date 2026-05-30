@@ -13,7 +13,4 @@ public class PagoRequest implements Serializable {
 
     private double monto;
     private String metodo_pago;
-    private String estado_transaccion;
-    private LocalDateTime fecha_pago;
-    private int id_cita;
 }

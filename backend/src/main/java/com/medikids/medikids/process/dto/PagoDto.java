@@ -17,9 +17,4 @@ public class PagoDto implements Serializable {
     private double monto;
     private String metodo_pago;
     private String estado_transaccion;
-    private LocalDateTime fecha_pago;
-    private int id_cita; // FK
-
-    // Datos enriquecidos de la FK id_cita
-    private CitaDto cita;
 }

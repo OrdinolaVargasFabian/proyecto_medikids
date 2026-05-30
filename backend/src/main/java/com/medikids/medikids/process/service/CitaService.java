@@ -25,7 +25,9 @@ import com.medikids.medikids.utils.helpers.CitaHelper;
 import com.medikids.medikids.utils.helpers.EspecialidadHelper;
 import com.medikids.medikids.utils.helpers.MedicoHelper;
 import com.medikids.medikids.utils.helpers.PacienteHelper;
+import com.medikids.medikids.utils.helpers.PagoHelper;
 import com.medikids.medikids.utils.helpers.UsuarioHelper;
+import com.medikids.medikids.process.repository.PagoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,6 +73,9 @@ public class CitaService {
     @Autowired
     private HorarioRepository horarioRepository;
 
+    @Autowired
+    private PagoRepository pagoRepository;
+
     // Enriquece un solo CitaDto (usado para getById, save, update)
     private CitaDto enriquecer(CitaDto dto) {
         medicoRepository.findById(dto.getId_medico()).ifPresent(medico -> {
@@ -87,6 +91,11 @@ public class CitaService {
         pacienteRepository.findById(dto.getId_paciente()).ifPresent(paciente ->
                 dto.setPaciente(PacienteHelper.mapPaciente(paciente))
         );
+        if (dto.getId_pago() > 0) {
+            pagoRepository.findById(dto.getId_pago()).ifPresent(pago ->
+                    dto.setPago(PagoHelper.mapPago(pago))
+            );
+        }
         return dto;
     }
 
@@ -153,6 +162,18 @@ public class CitaService {
         Map<Integer, PacienteDto> pacienteMap = pacienteRepository.findAllById(pacienteIds).stream()
                 .collect(Collectors.toMap(Paciente::getId_paciente, PacienteHelper::mapPaciente));
 
+        // Resolver pagos en batch usando id_pago de cada CitaDto
+        Set<Integer> pagoIds = dtos.stream()
+                .map(CitaDto::getId_pago)
+                .filter(id -> id > 0)
+                .collect(Collectors.toSet());
+        Map<Integer, com.medikids.medikids.process.dto.PagoDto> pagoMap = pagoIds.isEmpty()
+                ? Collections.emptyMap()
+                : pagoRepository.findAllById(pagoIds).stream()
+                        .collect(Collectors.toMap(
+                                com.medikids.medikids.process.domain.Pago::getId_pago,
+                                PagoHelper::mapPago));
+
         for (CitaDto dto : dtos) {
             Medico medico = medicoEntities.get(dto.getId_medico());
             if (medico != null) {
@@ -162,6 +183,9 @@ public class CitaService {
                 dto.setMedico(medicoDto);
             }
             dto.setPaciente(pacienteMap.get(dto.getId_paciente()));
+            if (dto.getId_pago() > 0) {
+                dto.setPago(pagoMap.get(dto.getId_pago()));
+            }
         }
 
         return dtos;
@@ -265,6 +289,7 @@ public class CitaService {
             citaUpdate.get().setId_paciente(cita.getId_paciente());
             citaUpdate.get().setFecha_cita(cita.getFecha_cita() != null ? LocalDate.parse(cita.getFecha_cita()) : null);
             citaUpdate.get().setHora_cita(cita.getHora_cita());
+            citaUpdate.get().setId_pago(cita.getId_pago() > 0 ? cita.getId_pago() : null);
             return enriquecer(CitaHelper.mapCita(citaRepository.save(citaUpdate.get())));
         }
         return null;
