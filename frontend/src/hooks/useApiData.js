@@ -5,6 +5,7 @@ import api, {
   getAppointmentsByClientId,
   getDoctors,
   getSpecialties,
+  getTarjetas,
 } from '../services/api'
 
 export const queryKeys = {
@@ -16,6 +17,7 @@ export const queryKeys = {
   horariosDisponibles: (medicoId) => ['horarios', 'disponibles', medicoId],
   horariosSemana: (medicoId, inicio, fin) => ['horarios', 'semana', medicoId, inicio, fin],
   profile: (userId) => ['profile', userId],
+  tarjetas: (userId) => ['tarjetas', userId],
 }
 
 export function useCliente(userId) {
@@ -79,6 +81,14 @@ export function useProfile(userId) {
   return useQuery({
     queryKey: queryKeys.profile(userId),
     queryFn: () => getClienteByUserId(userId),
+    enabled: !!userId,
+  })
+}
+
+export function useTarjetas(userId) {
+  return useQuery({
+    queryKey: queryKeys.tarjetas(userId),
+    queryFn: getTarjetas,
     enabled: !!userId,
   })
 }

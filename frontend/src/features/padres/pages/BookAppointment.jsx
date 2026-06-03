@@ -1,9 +1,16 @@
 import { useState, useMemo } from "react";
 import { CreditCardIcon, BanknotesIcon, QrCodeIcon } from "@heroicons/react/24/outline";
 import { useQueryClient } from "@tanstack/react-query";
-import { useChildren, useDoctores, useEspecialidades, useHorariosDisponibles, useCliente, queryKeys } from "../../../hooks/useApiData";
+import { useChildren, useDoctores, useEspecialidades, useHorariosDisponibles, useCliente, useTarjetas, queryKeys } from "../../../hooks/useApiData";
 import { saveAppointment, savePayment } from "../../../services/api";
 import { BookAppointmentSkeleton } from "../../../app/components/skeletons/BookAppointmentSkeleton";
+
+const marcaColorBook = {
+  Visa: "from-blue-700 to-blue-900",
+  Mastercard: "from-red-600 to-orange-600",
+  Amex: "from-teal-600 to-emerald-800",
+  Otro: "from-gray-600 to-gray-800",
+};
 
 const colors = [
   { from: "from-pink-400", to: "to-rose-500" },
@@ -69,12 +76,15 @@ export const BookAppointment = () => {
   const [tipoComprobante, setTipoComprobante] = useState(""); // "boleta" | "factura"
   const [ruc, setRuc] = useState("");
   const [razonSocial, setRazonSocial] = useState("");
+  const [selectedTarjeta, setSelectedTarjeta] = useState(null); // tarjeta guardada seleccionada
+  const [usarNuevaTarjeta, setUsarNuevaTarjeta] = useState(false);
 
   const { data: children = [], isLoading: loadingChildren } = useChildren(clientId);
   const { data: doctors = [], isLoading: loadingDoctores } = useDoctores();
   const { data: specialties = [], isLoading: loadingEspecialidades } = useEspecialidades();
   const { data: horarios = [], isLoading: loadingHorarios } = useHorariosDisponibles(selectedDoctor?.id_medico);
   const { data: clienteData } = useCliente(usuario?.id_usuario);
+  const { data: tarjetasGuardadas = [] } = useTarjetas(usuario?.id_usuario);
 
   const loading = loadingChildren || loadingDoctores || loadingEspecialidades || (!clientId && !loadingChildren);
 
@@ -94,9 +104,10 @@ export const BookAppointment = () => {
     if (step === 3) return !!selectedHorario && !!motivo;
     if (step === 4) {
       if (!metodoPago) return false;
+      if (metodoPago === "tarjeta" && !selectedTarjeta && !usarNuevaTarjeta) return false;
       if (!tipoComprobante) return false;
       if (tipoComprobante === "factura") return ruc.length >= 11 && razonSocial.trim().length > 0;
-      return true; // boleta usa DNI automático
+      return true;
     }
     return true;
   };
@@ -171,6 +182,8 @@ export const BookAppointment = () => {
         setTipoComprobante("");
         setRuc("");
         setRazonSocial("");
+        setSelectedTarjeta(null);
+        setUsarNuevaTarjeta(false);
         setMessage("");
       }, 2500);
     } catch {
@@ -444,16 +457,73 @@ export const BookAppointment = () => {
             {metodoPago === "tarjeta" && (
               <div className="bg-gray-50 rounded-2xl p-6 space-y-4 border border-gray-200">
                 <h4 className="font-extrabold text-gray-800">Pagar con Tarjeta</h4>
-                <input type="text" placeholder="Número de tarjeta" maxLength={19}
-                  className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all" />
-                <div className="grid grid-cols-2 gap-4">
-                  <input type="text" placeholder="MM/AA" maxLength={5}
-                    className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all" />
-                  <input type="text" placeholder="CVV" maxLength={3}
-                    className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all" />
-                </div>
-                <input type="text" placeholder="Nombre en la tarjeta"
-                  className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all" />
+
+                {/* Tarjetas guardadas */}
+                {tarjetasGuardadas.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tarjetas guardadas</p>
+                    {tarjetasGuardadas.map((t) => (
+                      <button
+                        key={t.id_tarjeta}
+                        type="button"
+                        onClick={() => { setSelectedTarjeta(t); setUsarNuevaTarjeta(false); }}
+                        className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all ${
+                          selectedTarjeta?.id_tarjeta === t.id_tarjeta
+                            ? "border-medi-500 bg-medi-50 shadow-md"
+                            : "border-gray-200 bg-white hover:border-medi-300"
+                        }`}
+                      >
+                        <div className={`w-12 h-8 rounded-lg bg-gradient-to-br ${marcaColorBook[t.marca] || marcaColorBook.Otro} flex items-center justify-center shrink-0`}>
+                          <span className="text-white text-xs font-bold">{t.marca === "Visa" ? "VISA" : t.marca === "Mastercard" ? "MC" : t.marca === "Amex" ? "AMEX" : "CARD"}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-bold text-gray-900">{t.alias}</div>
+                          <div className="text-xs text-gray-500 font-mono">•••• {t.ultimos_digitos} · {String(t.mes_vencimiento).padStart(2,"0")}/{String(t.anio_vencimiento).slice(-2)}</div>
+                        </div>
+                        {t.es_predeterminada && (
+                          <span className="text-xs font-bold text-medi-600 bg-medi-100 px-2 py-0.5 rounded-full shrink-0">Default</span>
+                        )}
+                        {selectedTarjeta?.id_tarjeta === t.id_tarjeta && (
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 text-medi-600 shrink-0">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => { setUsarNuevaTarjeta(true); setSelectedTarjeta(null); }}
+                      className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all ${
+                        usarNuevaTarjeta
+                          ? "border-medi-500 bg-medi-50 shadow-md"
+                          : "border-dashed border-gray-300 bg-white hover:border-medi-400"
+                      }`}
+                    >
+                      <div className="w-12 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-gray-500">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                      </div>
+                      <span className="text-sm font-bold text-gray-600">Usar otra tarjeta</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Formulario de nueva tarjeta */}
+                {(usarNuevaTarjeta || tarjetasGuardadas.length === 0) && (
+                  <div className="space-y-3 pt-2">
+                    <input type="text" placeholder="Número de tarjeta" maxLength={19}
+                      className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <input type="text" placeholder="MM/AA" maxLength={5}
+                        className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all" />
+                      <input type="text" placeholder="CVV" maxLength={3}
+                        className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all" />
+                    </div>
+                    <input type="text" placeholder="Nombre en la tarjeta"
+                      className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all" />
+                  </div>
+                )}
               </div>
             )}
 
@@ -586,7 +656,9 @@ export const BookAppointment = () => {
                 <span className="font-bold text-gray-900 capitalize">
                   {metodoPago === "yapeplin" && "Yape / Plin"}
                   {metodoPago === "paypal" && "PayPal"}
-                  {metodoPago === "tarjeta" && "Tarjeta"}
+                  {metodoPago === "tarjeta" && selectedTarjeta
+                    ? `${selectedTarjeta.alias} (•••• ${selectedTarjeta.ultimos_digitos})`
+                    : metodoPago === "tarjeta" ? "Tarjeta" : null}
                   {metodoPago === "efectivo" && "Efectivo"}
                 </span>
               </div>

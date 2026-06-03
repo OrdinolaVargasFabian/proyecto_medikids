@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { useProfile, queryKeys } from "../../../hooks/useApiData";
-import { updateMyProfile, updateClient, changePassword } from "../../../services/api";
+import { useProfile, useTarjetas, queryKeys } from "../../../hooks/useApiData";
+import { updateMyProfile, updateClient, changePassword, saveTarjeta, deleteTarjeta, setPredeterminadaTarjeta } from "../../../services/api";
 import { MyProfileSkeleton } from "../../../app/components/skeletons/MyProfileSkeleton";
 
 const EyeIcon = ({ visible }) =>
@@ -28,6 +28,44 @@ const getPasswordStrength = (pw) => {
 };
 
 const strengthLabel = ["Muy débil", "Débil", "Regular", "Buena", "Fuerte", "Muy fuerte"];
+
+const detectMarca = (num) => {
+  const n = num.replace(/\s/g, "");
+  if (/^4/.test(n)) return "Visa";
+  if (/^5[1-5]/.test(n) || /^2[2-7]/.test(n)) return "Mastercard";
+  if (/^3[47]/.test(n)) return "Amex";
+  return "Otro";
+};
+
+const marcaColor = {
+  Visa: "from-blue-700 to-blue-900",
+  Mastercard: "from-red-600 to-orange-600",
+  Amex: "from-teal-600 to-emerald-800",
+  Otro: "from-gray-600 to-gray-800",
+};
+
+const MarcaIcon = ({ marca }) => {
+  if (marca === "Visa") return (
+    <span className="text-white font-extrabold italic text-lg tracking-tight">VISA</span>
+  );
+  if (marca === "Mastercard") return (
+    <span className="flex items-center gap-0.5">
+      <span className="w-5 h-5 rounded-full bg-red-500 opacity-90" />
+      <span className="w-5 h-5 rounded-full bg-yellow-400 opacity-90 -ml-2" />
+    </span>
+  );
+  if (marca === "Amex") return (
+    <span className="text-white font-extrabold text-xs tracking-widest">AMEX</span>
+  );
+  return <span className="text-white text-xs font-bold">CARD</span>;
+};
+
+const CARD_INITIAL = { alias: "", numero: "", nombre_titular: "", vencimiento: "" };
+
+const formatCardNumber = (val) => {
+  const digits = val.replace(/\D/g, "").slice(0, 16);
+  return digits.replace(/(.{4})/g, "$1 ").trim();
+};
 const strengthColor = ["bg-red-500", "bg-red-400", "bg-orange-400", "bg-yellow-400", "bg-medi-400", "bg-medi-500"];
 
 const PasswordField = ({ id, label, value, onChange, visible, onToggle, placeholder }) => (
@@ -67,6 +105,7 @@ export const MyProfile = () => {
 
   const queryClient = useQueryClient();
   const { data: cliente, isLoading: loading } = useProfile(usuario?.id_usuario);
+  const { data: tarjetas = [], isLoading: loadingTarjetas } = useTarjetas(usuario?.id_usuario);
 
   const [saving, setSaving] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
@@ -78,6 +117,11 @@ export const MyProfile = () => {
   const [telefono, setTelefono] = useState("");
   const [dni, setDni] = useState("");
   const [direccion, setDireccion] = useState("");
+
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [cardForm, setCardForm] = useState(CARD_INITIAL);
+  const [cardFormError, setCardFormError] = useState("");
+  const [savingCard, setSavingCard] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -129,6 +173,57 @@ export const MyProfile = () => {
       : usuario?.id_rol === 3
         ? "Administrador"
         : "Usuario";
+
+  const handleSaveCard = async () => {
+    const digits = cardForm.numero.replace(/\s/g, "");
+    if (!cardForm.alias.trim()) { setCardFormError("El alias es obligatorio"); return; }
+    if (digits.length < 13) { setCardFormError("Número de tarjeta inválido"); return; }
+    if (!cardForm.nombre_titular.trim()) { setCardFormError("El nombre es obligatorio"); return; }
+    const [mes, anio] = cardForm.vencimiento.split("/");
+    if (!mes || !anio || isNaN(Number(mes)) || isNaN(Number(anio))) {
+      setCardFormError("Fecha de vencimiento inválida (MM/AA)");
+      return;
+    }
+    setSavingCard(true);
+    setCardFormError("");
+    try {
+      await saveTarjeta({
+        alias: cardForm.alias.trim(),
+        ultimos_digitos: digits.slice(-4),
+        marca: detectMarca(digits),
+        nombre_titular: cardForm.nombre_titular.trim(),
+        mes_vencimiento: parseInt(mes, 10),
+        anio_vencimiento: 2000 + parseInt(anio, 10),
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tarjetas(usuario.id_usuario) });
+      setShowCardModal(false);
+      setCardForm(CARD_INITIAL);
+      setMessage({ text: "Tarjeta guardada correctamente", type: "success" });
+    } catch {
+      setCardFormError("Error al guardar la tarjeta");
+    } finally {
+      setSavingCard(false);
+    }
+  };
+
+  const handleDeleteCard = async (id) => {
+    try {
+      await deleteTarjeta(id);
+      queryClient.invalidateQueries({ queryKey: queryKeys.tarjetas(usuario.id_usuario) });
+      setMessage({ text: "Tarjeta eliminada", type: "success" });
+    } catch {
+      setMessage({ text: "Error al eliminar la tarjeta", type: "error" });
+    }
+  };
+
+  const handleSetPredeterminada = async (id) => {
+    try {
+      await setPredeterminadaTarjeta(id);
+      queryClient.invalidateQueries({ queryKey: queryKeys.tarjetas(usuario.id_usuario) });
+    } catch {
+      setMessage({ text: "Error al actualizar la tarjeta", type: "error" });
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -279,6 +374,227 @@ export const MyProfile = () => {
               </div>
             </div>
           )}
+
+          {/* ── Mis Tarjetas ── */}
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 sm:p-6 lg:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-gray-900">Mis Tarjetas</h3>
+              <button
+                onClick={() => { setShowCardModal(true); setCardForm(CARD_INITIAL); setCardFormError(""); }}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 text-white text-xs font-bold rounded-xl shadow transition-all"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Agregar Tarjeta
+              </button>
+            </div>
+
+            {loadingTarjetas ? (
+              <div className="flex justify-center py-8">
+                <div className="w-6 h-6 border-2 border-medi-400 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : tarjetas.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7 text-gray-400">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-bold text-gray-500">No tienes tarjetas guardadas</p>
+                <p className="text-xs text-gray-400 mt-1">Agrega una para agilizar tus pagos</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {tarjetas.map((t) => (
+                  <div key={t.id_tarjeta} className="relative group">
+                    {/* Tarjeta visual */}
+                    <div className={`bg-gradient-to-br ${marcaColor[t.marca] || marcaColor.Otro} rounded-2xl p-5 text-white shadow-lg`}>
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <p className="text-white/60 text-xs font-medium uppercase tracking-wider">Alias</p>
+                          <p className="text-white font-bold text-sm mt-0.5">{t.alias}</p>
+                        </div>
+                        <MarcaIcon marca={t.marca} />
+                      </div>
+                      <p className="text-white/80 text-base font-mono tracking-widest mb-4">
+                        •••• •••• •••• {t.ultimos_digitos}
+                      </p>
+                      <div className="flex items-end justify-between">
+                        <div>
+                          <p className="text-white/50 text-xs uppercase tracking-wider">Titular</p>
+                          <p className="text-white font-semibold text-sm">{t.nombre_titular}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-white/50 text-xs uppercase tracking-wider">Vence</p>
+                          <p className="text-white font-semibold text-sm">
+                            {String(t.mes_vencimiento).padStart(2, "0")}/{String(t.anio_vencimiento).slice(-2)}
+                          </p>
+                        </div>
+                      </div>
+                      {t.es_predeterminada && (
+                        <span className="absolute top-3 right-3 bg-white/20 backdrop-blur text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                          Predeterminada
+                        </span>
+                      )}
+                    </div>
+                    {/* Acciones */}
+                    <div className="flex gap-2 mt-2">
+                      {!t.es_predeterminada && (
+                        <button
+                          onClick={() => handleSetPredeterminada(t.id_tarjeta)}
+                          className="flex-1 py-2 text-xs font-bold text-medi-600 bg-medi-50 hover:bg-medi-100 rounded-xl transition-colors"
+                        >
+                          Usar por defecto
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDeleteCard(t.id_tarjeta)}
+                        className="flex-1 py-2 text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── Modal Agregar Tarjeta ── */}
+          <AnimatePresence>
+            {showCardModal && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+                onClick={(e) => { if (e.target === e.currentTarget) setShowCardModal(false); }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 16 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 16 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-5"
+                >
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-lg font-extrabold text-gray-900">Nueva Tarjeta</h4>
+                    <button
+                      onClick={() => setShowCardModal(false)}
+                      className="w-8 h-8 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Vista previa mini de la tarjeta */}
+                  <div className={`bg-gradient-to-br ${marcaColor[detectMarca(cardForm.numero)]} rounded-2xl p-4 text-white`}>
+                    <div className="flex justify-between items-start mb-3">
+                      <p className="text-white/70 text-xs font-medium">{cardForm.alias || "Alias de la tarjeta"}</p>
+                      <MarcaIcon marca={detectMarca(cardForm.numero)} />
+                    </div>
+                    <p className="font-mono text-base tracking-widest mb-3">
+                      {cardForm.numero
+                        ? cardForm.numero.replace(/\d(?=\d{4})/g, "•").replace(/\s/g, " ")
+                        : "•••• •••• •••• ••••"}
+                    </p>
+                    <div className="flex justify-between text-xs">
+                      <span>{cardForm.nombre_titular || "NOMBRE TITULAR"}</span>
+                      <span>{cardForm.vencimiento || "MM/AA"}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Alias *</label>
+                      <input
+                        type="text"
+                        placeholder="Ej: Mi Visa personal"
+                        value={cardForm.alias}
+                        onChange={(e) => setCardForm((f) => ({ ...f, alias: e.target.value }))}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Número de Tarjeta *</label>
+                      <input
+                        type="text"
+                        placeholder="0000 0000 0000 0000"
+                        value={cardForm.numero}
+                        maxLength={19}
+                        onChange={(e) => setCardForm((f) => ({ ...f, numero: formatCardNumber(e.target.value) }))}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-mono font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Nombre del Titular *</label>
+                      <input
+                        type="text"
+                        placeholder="Como aparece en la tarjeta"
+                        value={cardForm.nombre_titular}
+                        onChange={(e) => setCardForm((f) => ({ ...f, nombre_titular: e.target.value.toUpperCase() }))}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Vencimiento *</label>
+                        <input
+                          type="text"
+                          placeholder="MM/AA"
+                          maxLength={5}
+                          value={cardForm.vencimiento}
+                          onChange={(e) => {
+                            let v = e.target.value.replace(/\D/g, "");
+                            if (v.length >= 3) v = v.slice(0, 2) + "/" + v.slice(2, 4);
+                            setCardForm((f) => ({ ...f, vencimiento: v }));
+                          }}
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">CVV</label>
+                        <input
+                          type="password"
+                          placeholder="•••"
+                          maxLength={4}
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {cardFormError && (
+                    <p className="text-xs font-bold text-red-500 flex items-center gap-1.5">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                      </svg>
+                      {cardFormError}
+                    </p>
+                  )}
+
+                  <div className="flex gap-3 pt-1">
+                    <button
+                      onClick={() => setShowCardModal(false)}
+                      className="flex-1 py-3 text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-2xl transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleSaveCard}
+                      disabled={savingCard}
+                      className="flex-1 py-3 text-sm font-bold text-white bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 rounded-2xl shadow transition-all disabled:opacity-60"
+                    >
+                      {savingCard ? "Guardando..." : "Guardar Tarjeta"}
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 sm:p-6 lg:p-8">
             <h3 className="text-lg font-bold text-gray-900 mb-6">Cambiar Contraseña</h3>
