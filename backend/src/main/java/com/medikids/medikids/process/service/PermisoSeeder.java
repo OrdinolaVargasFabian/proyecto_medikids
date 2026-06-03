@@ -65,6 +65,22 @@ public class PermisoSeeder implements CommandLineRunner {
                         "auditoria:read"
                 );
             }
+
+            // Agregar permisos de tarjeta si aún no existen
+            Map<String, Permiso> existentes = permisoRepository.findAll().stream()
+                    .collect(Collectors.toMap(Permiso::getCodigo, p -> p));
+            if (!existentes.containsKey("tarjeta:read")) {
+                List<Permiso> nuevos = permisoRepository.saveAll(List.of(
+                        Permiso.builder().codigo("tarjeta:read").nombre("Ver tarjetas guardadas").descripcion("Ver tarjetas de pago guardadas").recurso("tarjeta").accion("read").build(),
+                        Permiso.builder().codigo("tarjeta:write").nombre("Guardar tarjetas").descripcion("Guardar y modificar tarjetas de pago").recurso("tarjeta").accion("write").build(),
+                        Permiso.builder().codigo("tarjeta:delete").nombre("Eliminar tarjetas").descripcion("Eliminar tarjetas guardadas").recurso("tarjeta").accion("delete").build()
+                ));
+                nuevos.forEach(p -> existentes.put(p.getCodigo(), p));
+                insertarPermisosRol(ROL_CLIENTE, existentes, "tarjeta:read", "tarjeta:write", "tarjeta:delete");
+                insertarPermisosRol(ROL_ADMIN, existentes, "tarjeta:read", "tarjeta:write", "tarjeta:delete");
+                insertarPermisosRol(ROL_ADMIN_OPERATIVO, existentes, "tarjeta:read", "tarjeta:write", "tarjeta:delete");
+            }
+
             return;
         }
 
@@ -103,7 +119,11 @@ public class PermisoSeeder implements CommandLineRunner {
                 Permiso.builder().codigo("ip:read").nombre("Leer IPs autorizadas").descripcion("Ver lista blanca de IPs").recurso("ip").accion("read").build(),
                 Permiso.builder().codigo("ip:write").nombre("Gestionar IPs autorizadas").descripcion("Crear/editar/eliminar IPs").recurso("ip").accion("write").build(),
                 Permiso.builder().codigo("auditoria:read").nombre("Ver auditoría").descripcion("Consultar registros de auditoría").recurso("auditoria").accion("read").build(),
-                Permiso.builder().codigo("rol:assign").nombre("Asignar roles").descripcion("Asignar roles a usuarios").recurso("rol").accion("assign").build()
+                Permiso.builder().codigo("rol:assign").nombre("Asignar roles").descripcion("Asignar roles a usuarios").recurso("rol").accion("assign").build(),
+                // ── Tarjeta ──
+                Permiso.builder().codigo("tarjeta:read").nombre("Ver tarjetas guardadas").descripcion("Ver tarjetas de pago guardadas").recurso("tarjeta").accion("read").build(),
+                Permiso.builder().codigo("tarjeta:write").nombre("Guardar tarjetas").descripcion("Guardar y modificar tarjetas de pago").recurso("tarjeta").accion("write").build(),
+                Permiso.builder().codigo("tarjeta:delete").nombre("Eliminar tarjetas").descripcion("Eliminar tarjetas guardadas").recurso("tarjeta").accion("delete").build()
         ));
 
         Map<String, Permiso> byCodigo = permisos.stream()
@@ -117,7 +137,8 @@ public class PermisoSeeder implements CommandLineRunner {
                 "medico:read",
                 "horario:read",
                 "especialidad:read",
-                "usuario:read"
+                "usuario:read",
+                "tarjeta:read", "tarjeta:write", "tarjeta:delete"
         );
 
         insertarPermisosRol(ROL_MEDICO, byCodigo,

@@ -165,4 +165,17 @@ export const cambiarStatusUsuario = (id, activo) =>
 export const getUsers = () =>
   api.get('/usuario/all').then((r) => r.data);
 
+// ── Tarjetas Guardadas ──
+export const getTarjetas = () =>
+  api.get('/tarjeta').then((r) => r.data);
+
+export const saveTarjeta = (data) =>
+  api.post('/tarjeta/save', data).then((r) => r.data);
+
+export const deleteTarjeta = (id) =>
+  api.delete(`/tarjeta/delete/${id}`).then((r) => r.data);
+
+export const setPredeterminadaTarjeta = (id) =>
+  api.put(`/tarjeta/${id}/predeterminada`).then((r) => r.data);
+
 export default api;
