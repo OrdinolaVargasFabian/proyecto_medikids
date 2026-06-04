@@ -1,13 +1,23 @@
 package com.medikids.medikids.process.service;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Random;
 
 @Service
@@ -19,19 +29,20 @@ public class PdfService {
     private static final Color COLOR_VERDE_CLARO  = new Color(0xec, 0xef, 0xdf);
     private static final Color COLOR_GRIS_TEXTO   = new Color(0x55, 0x55, 0x55);
     private static final Color COLOR_BLANCO       = Color.WHITE;
+    private static final Color COLOR_LETRAS_BG    = new Color(0xf0, 0xf5, 0xe0);
 
     /**
      * Genera un PDF comprobante de pago (boleta o factura) para una cita médica.
      *
-     * @param tipoComprobante  "boleta" o "factura"
-     * @param numeroDocumento  DNI (boleta) o RUC (factura)
+     * @param tipoComprobante   "boleta" o "factura"
+     * @param numeroDocumento   DNI (boleta) o RUC (factura)
      * @param nombreRazonSocial Nombre o razón social del receptor
-     * @param nombrePaciente   Nombre del paciente
-     * @param nombreMedico     Nombre completo del médico
-     * @param especialidad     Especialidad médica
-     * @param fechaCita        Fecha de la cita
-     * @param horaCita         Hora de la cita
-     * @param metodoPago       Método de pago utilizado
+     * @param nombrePaciente    Nombre del paciente
+     * @param nombreMedico      Nombre completo del médico
+     * @param especialidad      Especialidad médica
+     * @param fechaCita         Fecha de la cita
+     * @param horaCita          Hora de la cita
+     * @param metodoPago        Método de pago utilizado
      * @return PDF en bytes listo para adjuntar al correo
      */
     public byte[] generarComprobante(String tipoComprobante, String numeroDocumento,
@@ -45,14 +56,22 @@ public class PdfService {
             document.open();
 
             boolean esFactura = "factura".equalsIgnoreCase(tipoComprobante);
-            String tipoLabel = esFactura ? "FACTURA ELECTRÓNICA" : "BOLETA DE VENTA ELECTRÓNICA";
-            String serie    = esFactura ? "F001" : "B001";
-            String numero   = String.format("%08d", new Random().nextInt(90000000) + 10000000);
-            String nroComprobante = serie + "-" + numero;
-            String fechaEmision = LocalDate.now()
-                    .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            String tipoLabel      = esFactura ? "FACTURA ELECTRÓNICA" : "BOLETA DE VENTA ELECTRÓNICA";
+            String serie          = esFactura ? "F001" : "B001";
+            String correlativo    = String.format("%08d", new Random().nextInt(90000000) + 10000000);
+            String nroComprobante = serie + "-" + correlativo;
+            String fechaEmision   = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            String horaEmision    = java.time.LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 
-            // ── ENCABEZADO ────────────────────────────────────────────────
+            // Monto fijo (S/ 80.00) — subtotal + IGV
+            double montoTotal  = 80.00;
+            double igv         = Math.round(montoTotal / 1.18 * 0.18 * 100.0) / 100.0;
+            double subtotal    = Math.round((montoTotal - igv) * 100.0) / 100.0;
+            String montoEnLetras = numeroALetras(montoTotal);
+
+            // ── ENCABEZADO (2 columnas: Empresa | Tipo+Número+Fecha+Hora) ────────────
+
+
             PdfPTable header = new PdfPTable(2);
             header.setWidthPercentage(100);
             header.setWidths(new float[]{55f, 45f});
@@ -65,7 +84,7 @@ public class PdfService {
             celdaEmpresa.setBackgroundColor(COLOR_VERDE_OSCURO);
 
             Font fEmpresaNombre = new Font(Font.HELVETICA, 20f, Font.BOLD, COLOR_BLANCO);
-            Font fEmpresaDato  = new Font(Font.HELVETICA, 8f, Font.NORMAL, new Color(0xcc, 0xdd, 0xaa));
+            Font fEmpresaDato   = new Font(Font.HELVETICA, 8f, Font.NORMAL, new Color(0xcc, 0xdd, 0xaa));
 
             Paragraph pEmpresa = new Paragraph("Medikids", fEmpresaNombre);
             pEmpresa.setSpacingAfter(4f);
@@ -73,10 +92,9 @@ public class PdfService {
             celdaEmpresa.addElement(new Paragraph("RUC: 20123456789", fEmpresaDato));
             celdaEmpresa.addElement(new Paragraph("Los Antares 320. Of.809 Torre A - Surco", fEmpresaDato));
             celdaEmpresa.addElement(new Paragraph("970654221", fEmpresaDato));
-
             header.addCell(celdaEmpresa);
 
-            // Celda derecha: tipo + número de comprobante
+            // Celda derecha: tipo + número + fecha + hora de emisión
             PdfPCell celdaTipo = new PdfPCell();
             celdaTipo.setBorder(Rectangle.BOX);
             celdaTipo.setBorderColor(COLOR_VERDE_MEDIO);
@@ -100,10 +118,19 @@ public class PdfService {
             celdaTipo.addElement(pNum);
 
             celdaTipo.addElement(centrado("Fecha de emisión:", fTipoDato));
-            celdaTipo.addElement(centrado(fechaEmision, new Font(Font.HELVETICA, 9f, Font.BOLD, COLOR_VERDE_OSCURO)));
-
+            celdaTipo.addElement(centrado(fechaEmision + "  " + horaEmision,
+                    new Font(Font.HELVETICA, 9f, Font.BOLD, COLOR_VERDE_OSCURO)));
             header.addCell(celdaTipo);
             document.add(header);
+
+            // Generar QR (Opción B: datos del comprobante en texto)
+            String qrContenido = (esFactura ? "FACTURA ELECTRÓNICA" : "BOLETA DE VENTA ELECTRÓNICA") + "\n"
+                    + nroComprobante + "\n"
+                    + (esFactura ? "RUC CLIENTE: " : "DNI CLIENTE: ") + numeroDocumento + "\n"
+                    + "CLIENTE: " + nombreRazonSocial + "\n"
+                    + "FECHA: " + fechaEmision + "  " + horaEmision + "\n"
+                    + "MONTO: S/ " + String.format("%.2f", montoTotal);
+            byte[] qrBytes = generarQrBytes(qrContenido, 120);
 
             // ── DATOS DEL RECEPTOR ────────────────────────────────────────
             Font fSeccionTitle = new Font(Font.HELVETICA, 9f, Font.BOLD, COLOR_BLANCO);
@@ -112,7 +139,7 @@ public class PdfService {
 
             PdfPTable tReceptor = new PdfPTable(1);
             tReceptor.setWidthPercentage(100);
-            tReceptor.setSpacingAfter(16f);
+            tReceptor.setSpacingAfter(0f);
 
             PdfPCell seccionReceptor = new PdfPCell(new Phrase(
                     "  DATOS DEL " + (esFactura ? "CLIENTE / EMPRESA" : "CLIENTE"), fSeccionTitle));
@@ -120,20 +147,14 @@ public class PdfService {
             seccionReceptor.setBorder(Rectangle.NO_BORDER);
             seccionReceptor.setPadding(6f);
             tReceptor.addCell(seccionReceptor);
+            document.add(tReceptor);
 
             PdfPTable tReceptorDatos = new PdfPTable(2);
             tReceptorDatos.setWidthPercentage(100);
             tReceptorDatos.setWidths(new float[]{30f, 70f});
-
+            tReceptorDatos.setSpacingAfter(16f);
             agregarFila(tReceptorDatos, esFactura ? "RUC:" : "DNI:", numeroDocumento, fLabel, fValor);
             agregarFila(tReceptorDatos, esFactura ? "Razón Social:" : "Nombre:", nombreRazonSocial, fLabel, fValor);
-
-            PdfPCell wrapperReceptor = new PdfPCell();
-            wrapperReceptor.setBorder(Rectangle.BOX);
-            wrapperReceptor.setBorderColor(COLOR_VERDE_CLARO);
-            wrapperReceptor.setPadding(0f);
-            // workaround: add inner table via document directly
-            document.add(tReceptor);
             document.add(tReceptorDatos);
 
             // ── DETALLE DEL SERVICIO ──────────────────────────────────────
@@ -149,10 +170,9 @@ public class PdfService {
             tDetalleTitulo.addCell(seccionDetalle);
             document.add(tDetalleTitulo);
 
-            // Tabla de ítems
             PdfPTable tItems = new PdfPTable(new float[]{8f, 42f, 20f, 15f, 15f});
             tItems.setWidthPercentage(100);
-            tItems.setSpacingAfter(16f);
+            tItems.setSpacingAfter(10f);
 
             Font fColHead = new Font(Font.HELVETICA, 8f, Font.BOLD, COLOR_VERDE_OSCURO);
             agregarCeldaHeader(tItems, "CANT.", fColHead, COLOR_VERDE_CLARO);
@@ -171,21 +191,22 @@ public class PdfService {
             agregarCeldaItem(tItems, "Dr(a). " + nombreMedico, fItemVal, Element.ALIGN_LEFT);
             agregarCeldaItem(tItems, fechaHora, fItemVal, Element.ALIGN_CENTER);
             agregarCeldaItem(tItems, "S/ 80.00", fItemNeg, Element.ALIGN_RIGHT);
-
             document.add(tItems);
 
             // ── TOTALES ───────────────────────────────────────────────────
             PdfPTable tTotales = new PdfPTable(new float[]{60f, 40f});
             tTotales.setWidthPercentage(60);
             tTotales.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            tTotales.setSpacingAfter(20f);
+            tTotales.setSpacingAfter(4f);
 
             Font fTotalLabel = new Font(Font.HELVETICA, 8.5f, Font.NORMAL, COLOR_GRIS_TEXTO);
             Font fTotalVal   = new Font(Font.HELVETICA, 8.5f, Font.BOLD, COLOR_VERDE_OSCURO);
             Font fTotalGrand = new Font(Font.HELVETICA, 11f, Font.BOLD, COLOR_BLANCO);
 
-            agregarFilaTotales(tTotales, "Subtotal:", "S/ 67.80", fTotalLabel, fTotalVal);
-            agregarFilaTotales(tTotales, "IGV (18%):", "S/ 12.20", fTotalLabel, fTotalVal);
+            agregarFilaTotales(tTotales, "Subtotal (sin IGV):",
+                    String.format("S/ %.2f", subtotal), fTotalLabel, fTotalVal);
+            agregarFilaTotales(tTotales, "IGV (18%):",
+                    String.format("S/ %.2f", igv), fTotalLabel, fTotalVal);
 
             PdfPCell cTotalLabel = new PdfPCell(new Phrase("TOTAL:", fTotalGrand));
             cTotalLabel.setBackgroundColor(COLOR_VERDE_OSCURO);
@@ -193,7 +214,9 @@ public class PdfService {
             cTotalLabel.setPadding(8f);
             cTotalLabel.setHorizontalAlignment(Element.ALIGN_LEFT);
 
-            PdfPCell cTotalVal = new PdfPCell(new Phrase("S/ 80.00", fTotalGrand));
+            // Monto: solo el número en la fila TOTAL
+            PdfPCell cTotalVal = new PdfPCell(new Phrase(
+                    String.format("S/ %.2f", montoTotal), fTotalGrand));
             cTotalVal.setBackgroundColor(COLOR_VERDE_OSCURO);
             cTotalVal.setBorder(Rectangle.NO_BORDER);
             cTotalVal.setPadding(8f);
@@ -202,6 +225,23 @@ public class PdfService {
             tTotales.addCell(cTotalLabel);
             tTotales.addCell(cTotalVal);
             document.add(tTotales);
+
+            // ── MONTO EN LETRAS (debajo del total, ancho 60% alineado a la derecha) ───
+            PdfPTable tLetras = new PdfPTable(1);
+            tLetras.setWidthPercentage(60);
+            tLetras.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            tLetras.setSpacingAfter(12f);
+
+            Font fLetras = new Font(Font.HELVETICA, 8.5f, Font.ITALIC, COLOR_VERDE_OSCURO);
+            PdfPCell cLetras = new PdfPCell(new Phrase(montoEnLetras, fLetras));
+            cLetras.setBackgroundColor(new Color(0xf0, 0xf5, 0xe0));
+            cLetras.setBorder(Rectangle.BOX);
+            cLetras.setBorderColor(COLOR_VERDE_MEDIO);
+            cLetras.setBorderWidth(1f);
+            cLetras.setPadding(7f);
+            cLetras.setHorizontalAlignment(Element.ALIGN_LEFT);
+            tLetras.addCell(cLetras);
+            document.add(tLetras);
 
             // ── MÉTODO DE PAGO ────────────────────────────────────────────
             PdfPTable tPago = new PdfPTable(1);
@@ -219,18 +259,11 @@ public class PdfService {
             tPago.addCell(cPago);
             document.add(tPago);
 
-            // ── FOOTER ────────────────────────────────────────────────────
-            Font fFooter = new Font(Font.HELVETICA, 7.5f, Font.NORMAL, new Color(0x88, 0x88, 0x88));
-
-            Paragraph pFooter = new Paragraph(
-                "Representación impresa de " + tipoLabel + " - Autorizado por SUNAT\n" +
-                "Este documento es válido como comprobante de pago. © 2026 Medikids", fFooter);
-            pFooter.setAlignment(Element.ALIGN_CENTER);
-            // Línea separadora horizontal
+            // ── FOOTER: separador + QR centrado ─────────────────────────────────
             PdfPTable tSeparador = new PdfPTable(1);
             tSeparador.setWidthPercentage(100);
-            tSeparador.setSpacingBefore(10f);
-            tSeparador.setSpacingAfter(8f);
+            tSeparador.setSpacingBefore(4f);
+            tSeparador.setSpacingAfter(10f);
             PdfPCell cSep = new PdfPCell(new Phrase(" "));
             cSep.setBorder(Rectangle.BOTTOM);
             cSep.setBorderColor(COLOR_VERDE_MEDIO);
@@ -238,7 +271,23 @@ public class PdfService {
             cSep.setPadding(0f);
             tSeparador.addCell(cSep);
             document.add(tSeparador);
+
+            // QR centrado en el footer (solo imagen, sin texto)
+            if (qrBytes != null) {
+                Image qrFooter = Image.getInstance(qrBytes);
+                qrFooter.scaleToFit(90f, 90f);
+                qrFooter.setAlignment(Image.ALIGN_CENTER);
+                document.add(qrFooter);
+            }
+
+            Font fFooterBody = new Font(Font.HELVETICA, 7.5f, Font.NORMAL, new Color(0x88, 0x88, 0x88));
+            Paragraph pFooter = new Paragraph(
+                "Representación impresa de " + tipoLabel + " - Autorizado por SUNAT  ·  © 2026 Medikids",
+                fFooterBody);
+            pFooter.setAlignment(Element.ALIGN_CENTER);
+            pFooter.setSpacingBefore(6f);
             document.add(pFooter);
+
 
             document.close();
             return baos.toByteArray();
@@ -248,7 +297,80 @@ public class PdfService {
         }
     }
 
-    // ── Helpers privados ──────────────────────────────────────────────────
+    // ── Generación del QR en bytes PNG ───────────────────────────────────────
+
+    private byte[] generarQrBytes(String contenido, int tamanio) {
+        try {
+            QRCodeWriter writer = new QRCodeWriter();
+            Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
+            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+            hints.put(EncodeHintType.MARGIN, 1);
+
+            BitMatrix matrix = writer.encode(contenido, BarcodeFormat.QR_CODE, tamanio, tamanio, hints);
+            BufferedImage image = MatrixToImageWriter.toBufferedImage(matrix);
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            ImageIO.write(image, "PNG", out);
+            return out.toByteArray();
+        } catch (WriterException | java.io.IOException e) {
+            return null;
+        }
+    }
+
+    // ── Conversión de número a letras (formato peruano estándar) ─────────────
+
+    private String numeroALetras(double monto) {
+        long parteEntera = (long) monto;
+        long centavos    = Math.round((monto - parteEntera) * 100);
+        String letras    = convertirEntero(parteEntera);
+        return "Son: (" + letras + " SOLES CON " + String.format("%02d", centavos) + "/100)";
+    }
+
+    private String convertirEntero(long numero) {
+        if (numero == 0) return "CERO";
+        if (numero < 0)  return "MENOS " + convertirEntero(-numero);
+
+        String[] unidades = {"", "UN", "DOS", "TRES", "CUATRO", "CINCO",
+                             "SEIS", "SIETE", "OCHO", "NUEVE", "DIEZ",
+                             "ONCE", "DOCE", "TRECE", "CATORCE", "QUINCE",
+                             "DIECISÉIS", "DIECISIETE", "DIECIOCHO", "DIECINUEVE"};
+        String[] decenas  = {"", "DIEZ", "VEINTE", "TREINTA", "CUARENTA", "CINCUENTA",
+                             "SESENTA", "SETENTA", "OCHENTA", "NOVENTA"};
+        String[] centenas = {"", "CIENTO", "DOSCIENTOS", "TRESCIENTOS", "CUATROCIENTOS",
+                             "QUINIENTOS", "SEISCIENTOS", "SETECIENTOS", "OCHOCIENTOS", "NOVECIENTOS"};
+
+        if (numero < 20) return unidades[(int) numero];
+        if (numero < 100) {
+            long dec = numero / 10;
+            long uni = numero % 10;
+            if (numero < 30 && uni != 0) return "VEINTI" + unidades[(int) uni].toLowerCase();
+            return decenas[(int) dec] + (uni != 0 ? " Y " + unidades[(int) uni] : "");
+        }
+        if (numero == 100) return "CIEN";
+        if (numero < 1000) {
+            long cen = numero / 100;
+            long res = numero % 100;
+            return centenas[(int) cen] + (res != 0 ? " " + convertirEntero(res) : "");
+        }
+        if (numero < 2000) {
+            long res = numero % 1000;
+            return "MIL" + (res != 0 ? " " + convertirEntero(res) : "");
+        }
+        if (numero < 1_000_000) {
+            long miles = numero / 1000;
+            long res   = numero % 1000;
+            return convertirEntero(miles) + " MIL" + (res != 0 ? " " + convertirEntero(res) : "");
+        }
+        if (numero < 2_000_000) {
+            long res = numero % 1_000_000;
+            return "UN MILLÓN" + (res != 0 ? " " + convertirEntero(res) : "");
+        }
+        long millones = numero / 1_000_000;
+        long res      = numero % 1_000_000;
+        return convertirEntero(millones) + " MILLONES" + (res != 0 ? " " + convertirEntero(res) : "");
+    }
+
+    // ── Helpers privados ──────────────────────────────────────────────────────
 
     private Paragraph centrado(String texto, Font font) {
         Paragraph p = new Paragraph(texto, font);
