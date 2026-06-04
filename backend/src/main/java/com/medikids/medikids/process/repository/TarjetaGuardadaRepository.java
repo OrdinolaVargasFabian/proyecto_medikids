@@ -11,7 +11,8 @@ import java.util.List;
 
 public interface TarjetaGuardadaRepository extends JpaRepository<TarjetaGuardada, Integer> {
 
-    List<TarjetaGuardada> findByIdUsuarioAndActivoTrue(int idUsuario);
+    @Query("SELECT t FROM TarjetaGuardada t WHERE t.id_usuario = :idUsuario AND t.activo = true")
+    List<TarjetaGuardada> findByIdUsuarioAndActivoTrue(@Param("idUsuario") int idUsuario);
 
     @Modifying
     @Transactional
