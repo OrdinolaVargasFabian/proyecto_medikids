@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { CreditCardIcon, BanknotesIcon, QrCodeIcon } from "@heroicons/react/24/outline";
 import { useQueryClient } from "@tanstack/react-query";
 import { useChildren, useDoctores, useEspecialidades, useHorariosDisponibles, useCliente, useTarjetas, queryKeys } from "../../../hooks/useApiData";
@@ -54,6 +55,7 @@ export const BookAppointment = () => {
     catch { return null; }
   }, []);
 
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const clientId = useMemo(() => {
@@ -64,6 +66,7 @@ export const BookAppointment = () => {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedChild, setSelectedChild] = useState(null);
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -167,30 +170,32 @@ export const BookAppointment = () => {
 
       queryClient.invalidateQueries({ queryKey: queryKeys.citas(clientId) });
       if (selectedDoctor) queryClient.invalidateQueries({ queryKey: queryKeys.horariosDisponibles(selectedDoctor.id_medico) });
-      setMessage("Cita agendada correctamente");
-      setTimeout(() => {
-        setStep(1);
-        setSelectedChild(null);
-        setSelectedSpecialty(null);
-        setSelectedDoctor(null);
-        setSelectedHorario(null);
-        setDate("");
-        setTime("");
-        setMotivo("");
-        setMetodoPago("");
-        setMetodoBD("");
-        setTipoComprobante("");
-        setRuc("");
-        setRazonSocial("");
-        setSelectedTarjeta(null);
-        setUsarNuevaTarjeta(false);
-        setMessage("");
-      }, 2500);
-    } catch {
-      setMessage("Error al agendar la cita");
+      setShowSuccessModal(true);
+    } catch (err) {
+      setMessage(err?.response?.data?.error ?? "Error al agendar la cita");
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+    setStep(1);
+    setSelectedChild(null);
+    setSelectedSpecialty(null);
+    setSelectedDoctor(null);
+    setSelectedHorario(null);
+    setDate("");
+    setTime("");
+    setMotivo("");
+    setMetodoPago("");
+    setMetodoBD("");
+    setTipoComprobante("");
+    setRuc("");
+    setRazonSocial("");
+    setSelectedTarjeta(null);
+    setUsarNuevaTarjeta(false);
+    navigate("/padres");
   };
 
   if (!usuario) {
@@ -206,6 +211,7 @@ export const BookAppointment = () => {
   }
 
   return (
+    <>
     <div className="max-w-4xl space-y-8">
       <div>
         <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Agendar Nueva Cita</h2>
@@ -213,10 +219,7 @@ export const BookAppointment = () => {
       </div>
 
       {message && (
-        <div className={`p-4 rounded-2xl text-sm font-bold text-center ${message.includes("Error") || message.includes("inic")
-          ? "bg-red-50 text-red-700 border border-red-200"
-          : "bg-green-50 text-green-700 border border-green-200"
-          }`}>
+        <div className="p-4 rounded-2xl text-sm font-bold text-center bg-red-50 text-red-700 border border-red-200">
           {message}
         </div>
       )}
@@ -697,5 +700,35 @@ export const BookAppointment = () => {
         </div>
       </div>
     </div>
+
+      {/* ── Modal de éxito ── */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
+          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center animate-[fadeInScale_0.25s_ease]">
+
+            {/* Icono de éxito */}
+            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                strokeWidth={2} stroke="currentColor" className="w-10 h-10 text-green-600">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+            </div>
+
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-2">¡Cita agendada correctamente!</h2>
+            <p className="text-gray-500 font-medium mb-6">
+              Tu cita ha sido registrada con éxito. Recibirás un correo de confirmación con todos los detalles.
+            </p>
+
+            <button
+              id="btn-ir-panel-principal"
+              onClick={handleCloseModal}
+              className="w-full px-8 py-4 bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 text-white text-sm font-bold rounded-2xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all">
+              Ir al Panel Principal
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
