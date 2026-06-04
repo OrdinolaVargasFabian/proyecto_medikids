@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,7 @@ public class PagoHelper implements Serializable {
                 .monto(pago.getMonto())
                 .metodo_pago(pago.getMetodo_pago())
                 .estado_transaccion(estado)
+                .fecha_pago(LocalDateTime.now())
                 .build();
     }
 

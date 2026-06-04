@@ -28,4 +28,17 @@ public class Pago {
 
     @Column(name = "estado_transaccion", nullable = false)
     private String estado_transaccion;
+
+    @Column(name = "fecha_pago", nullable = false)
+    private LocalDateTime fecha_pago;
+
+    @Column(name = "id_cita", nullable = true)
+    private Integer id_cita;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.fecha_pago == null) {
+            this.fecha_pago = LocalDateTime.now();
+        }
+    }
 }
