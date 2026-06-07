@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.jsx'
 import { LenisProvider } from './app/components/LenisProvider'
+import { NotificationProvider } from './app/context/NotificationContext.jsx'
 import './index.css'
 
 const queryClient = new QueryClient({
@@ -18,9 +19,11 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <LenisProvider>
-        <App />
-      </LenisProvider>
+      <NotificationProvider>
+        <LenisProvider>
+          <App />
+        </LenisProvider>
+      </NotificationProvider>
     </QueryClientProvider>
   </StrictMode>,
 )

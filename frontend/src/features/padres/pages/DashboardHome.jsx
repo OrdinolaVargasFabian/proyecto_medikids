@@ -118,7 +118,7 @@ export const DashboardHome = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {upcoming.map((a) => {
+              {upcoming.slice(0, 4).map((a) => {
                 const date = a.fecha_cita;
                 const time = a.hora_cita;
                 const childName = a.paciente?.nombre_completo || "—";

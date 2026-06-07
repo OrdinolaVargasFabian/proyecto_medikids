@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useChildren, useDoctores, useEspecialidades, useHorariosDisponibles, useCliente, useTarjetas, queryKeys } from "../../../hooks/useApiData";
 import { saveAppointment, savePayment } from "../../../services/api";
 import { BookAppointmentSkeleton } from "../../../app/components/skeletons/BookAppointmentSkeleton";
+import { useNotifications } from "../../../app/context/NotificationContext";
 
 const marcaColorBook = {
   Visa: "from-blue-700 to-blue-900",
@@ -57,6 +58,7 @@ export const BookAppointment = () => {
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   const clientId = useMemo(() => {
     try { return Number(localStorage.getItem("cliente_id")); }
@@ -71,6 +73,7 @@ export const BookAppointment = () => {
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [selectedHorario, setSelectedHorario] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(4);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [motivo, setMotivo] = useState("");
@@ -170,6 +173,22 @@ export const BookAppointment = () => {
 
       queryClient.invalidateQueries({ queryKey: queryKeys.citas(clientId) });
       if (selectedDoctor) queryClient.invalidateQueries({ queryKey: queryKeys.horariosDisponibles(selectedDoctor.id_medico) });
+
+      // Notificaciones
+      const esEfectivo = metodoBD === "Efectivo";
+      addNotification({
+        title: "✅ Cita agendada correctamente",
+        message: `${selectedChild?.nombre_completo} · ${selectedDoctor?.usuario?.nombres} ${selectedDoctor?.usuario?.apellidos} · ${date}`,
+        type: "success",
+      });
+      addNotification({
+        title: esEfectivo ? "📋 Resumen de cita enviado" : `📧 Correo con ${tipoComprobante === "factura" ? "factura" : "boleta"} enviado`,
+        message: esEfectivo
+          ? "Se envió el resumen de tu cita al correo registrado. El comprobante se emitirá en caja."
+          : "Se envió el resumen y el comprobante de pago a tu correo electrónico.",
+        type: "email",
+      });
+
       setShowSuccessModal(true);
     } catch (err) {
       setMessage(err?.response?.data?.error ?? "Error al agendar la cita");
@@ -319,6 +338,7 @@ export const BookAppointment = () => {
                     onChange={(e) => {
                       const doc = filteredDoctors.find((d) => d.id_medico === Number(e.target.value));
                       setSelectedDoctor(doc || null);
+                      setVisibleCount(4);
                     }}
                     disabled={!selectedSpecialty}
                     className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all appearance-none disabled:opacity-40 disabled:cursor-not-allowed">
@@ -376,7 +396,7 @@ export const BookAppointment = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {horarios.map((h) => {
+                {horarios.slice(0, visibleCount).map((h) => {
                   const isSelected = selectedHorario?.id_horario === h.id_horario;
                   const fechaStr = h.fecha;
                   const fechaDate = new Date(fechaStr + "T00:00:00");
@@ -414,6 +434,34 @@ export const BookAppointment = () => {
                     </button>
                   );
                 })}
+
+                {/* Botones Ver más / Ver menos */}
+                <div className="flex gap-3 pt-1">
+                  {visibleCount < horarios.length && (
+                    <button
+                      type="button"
+                      onClick={() => setVisibleCount((v) => v + 4)}
+                      className="flex-1 py-3 rounded-2xl border-2 border-dashed border-medi-300 text-medi-600 text-sm font-bold hover:bg-medi-50 hover:border-medi-400 transition-all flex items-center justify-center gap-2"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                      </svg>
+                      Ver más ({horarios.length - visibleCount} restantes)
+                    </button>
+                  )}
+                  {visibleCount > 4 && (
+                    <button
+                      type="button"
+                      onClick={() => setVisibleCount(4)}
+                      className="px-5 py-3 rounded-2xl border-2 border-gray-200 text-gray-500 text-sm font-bold hover:bg-gray-50 transition-all flex items-center gap-2"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                      </svg>
+                      Ver menos
+                    </button>
+                  )}
+                </div>
               </div>
             )}
             <div>
