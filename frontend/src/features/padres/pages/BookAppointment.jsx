@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CreditCardIcon, BanknotesIcon, QrCodeIcon } from "@heroicons/react/24/outline";
 import { useQueryClient } from "@tanstack/react-query";
@@ -50,6 +50,19 @@ const formatTime = (val) => {
   return "";
 };
 
+const isDoctorActivo = (estado) => String(estado || "").toLowerCase() === "activo";
+
+const getHorarioDateTime = (horario) => {
+  if (!horario?.fecha || !horario?.hora_inicio) return null;
+  const dateTime = new Date(`${horario.fecha}T${horario.hora_inicio}`);
+  return Number.isNaN(dateTime.getTime()) ? null : dateTime;
+};
+
+const isHorarioFuture = (horario) => {
+  const dateTime = getHorarioDateTime(horario);
+  return dateTime ? dateTime.getTime() >= Date.now() : false;
+};
+
 export const BookAppointment = () => {
   const usuario = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("usuario")); }
@@ -92,10 +105,23 @@ export const BookAppointment = () => {
   const { data: clienteData } = useCliente(usuario?.id_usuario);
   const { data: tarjetasGuardadas = [] } = useTarjetas(usuario?.id_usuario);
 
+  const availableHorarios = useMemo(
+    () => horarios.filter(isHorarioFuture),
+    [horarios]
+  );
+
+  useEffect(() => {
+    if (selectedHorario && !availableHorarios.some((h) => h.id_horario === selectedHorario.id_horario)) {
+      setSelectedHorario(null);
+      setDate("");
+      setTime("");
+    }
+  }, [availableHorarios, selectedHorario]);
+
   const loading = loadingChildren || loadingDoctores || loadingEspecialidades || (!clientId && !loadingChildren);
 
   const activeDoctors = useMemo(
-    () => doctors.filter((d) => d.activo === "1" && d.estado === "activo"),
+    () => doctors.filter((d) => d.activo === "1" && isDoctorActivo(d.estado)),
     [doctors]
   );
 
@@ -390,13 +416,13 @@ export const BookAppointment = () => {
         {step === 3 && (
           <div className="space-y-6">
             <h3 className="text-xl font-extrabold text-gray-900">Selecciona un Turno Disponible</h3>
-            {horarios.length === 0 ? (
+            {availableHorarios.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-400 font-medium">No hay horarios disponibles para este médico.</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {horarios.slice(0, visibleCount).map((h) => {
+                {availableHorarios.slice(0, visibleCount).map((h) => {
                   const isSelected = selectedHorario?.id_horario === h.id_horario;
                   const fechaStr = h.fecha;
                   const fechaDate = new Date(fechaStr + "T00:00:00");
@@ -437,7 +463,7 @@ export const BookAppointment = () => {
 
                 {/* Botones Ver más / Ver menos */}
                 <div className="flex gap-3 pt-1">
-                  {visibleCount < horarios.length && (
+                  {visibleCount < availableHorarios.length && (
                     <button
                       type="button"
                       onClick={() => setVisibleCount((v) => v + 4)}
@@ -446,7 +472,7 @@ export const BookAppointment = () => {
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                       </svg>
-                      Ver más ({horarios.length - visibleCount} restantes)
+                      Ver más ({availableHorarios.length - visibleCount} restantes)
                     </button>
                   )}
                   {visibleCount > 4 && (

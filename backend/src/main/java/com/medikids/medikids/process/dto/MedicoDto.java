@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
+import com.medikids.medikids.process.domain.Medico.EstadoMedico;
+
 @Setter
 @Getter
 @Builder
@@ -19,7 +21,7 @@ public class MedicoDto implements Serializable {
     private int id_usuario; // FK
     private int id_especialidad; // FK
     private char activo; // 0: No | 1: Sí
-    private String estado; // "activo" | "inactivo"
+    private EstadoMedico estado; // "activo" | "inactivo"
 
     // Datos enriquecidos de la FK id_usuario
     private UsuarioDto usuario;

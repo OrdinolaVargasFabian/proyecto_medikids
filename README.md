@@ -89,12 +89,12 @@ Cómo está estructurado el sistema:
 ## Stack tecnológico
 
 - Lenguajes:
-	- Java 17 (backend)
+	- Java 21 (backend)
 	- JavaScript / JSX (frontend)
 
 - Frameworks y plataformas:
 	- Backend: Spring Boot (versión definida en `pom.xml`, starter-parent 4.x)
-	- Frontend: React (v19) con Vite como build tool
+	- Frontend: React con Vite como build tool (Node version 24)
 
 - Base de datos:
 	- MySQL (driver `mysql-connector-j` en el backend)
@@ -105,7 +105,7 @@ Cómo está estructurado el sistema:
 
 Nota: las versiones concretas del frontend están en `frontend/package.json` y las dependencias del backend en `backend/pom.xml`.
 
-## APIs / Endpoints (resumen)
+## APIs / Endpoints
 
 Se listan los endpoints principales expuestos por el backend, método HTTP, payload esperado y respuesta.
 
@@ -181,3 +181,5 @@ Se listan los endpoints principales expuestos por el backend, método HTTP, payl
 	- POST /pagos
 		- Recibe: `Pago` o `PagoRequest` { "monto": double, "metodo_pago": string, "estado": string, "fecha_pago": yyyy-MM-dd, "id_cita": int }
 		- Devuelve: `Pago` guardado.
+
+

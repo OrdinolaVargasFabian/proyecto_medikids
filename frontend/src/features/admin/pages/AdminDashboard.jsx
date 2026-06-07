@@ -14,6 +14,8 @@ const statusStyle = {
 const todayStr = new Date().toISOString().split("T")[0];
 const dateStr = new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
+const isDoctorActivo = (estado) => String(estado || "").toLowerCase() === "activo";
+
 const StatCard = ({ icon: Icon, label, value, color, bg, to }) => {
   const content = (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4 hover:shadow-md hover:border-medi-200 transition-all cursor-pointer">
@@ -77,7 +79,7 @@ export const AdminDashboard = () => {
     const totalPaid = completedPayments.reduce((sum, p) => sum + (p.monto || 0), 0);
     return {
       totalDoctors: doctors.length,
-      activeDoctors: doctors.filter((d) => d.estado === "activo").length,
+      activeDoctors: doctors.filter((d) => isDoctorActivo(d.estado)).length,
       totalPatients: patients.length,
       todayCount: todayAppointments.length,
       pendingCount: todayAppointments.filter((a) => a.estado === "Pendiente").length,

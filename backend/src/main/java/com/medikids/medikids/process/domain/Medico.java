@@ -14,7 +14,7 @@ import lombok.*;
 public class Medico {
 
     public enum EstadoMedico {
-        activo, inactivo
+        ACTIVO, INACTIVO
     }
 
     public enum Genero {
