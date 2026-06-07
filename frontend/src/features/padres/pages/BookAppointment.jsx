@@ -332,6 +332,27 @@ export const BookAppointment = () => {
                 </div>
               </div>
             )}
+
+            {/* Recuadro de precio por especialidad */}
+            {selectedSpecialty && selectedSpecialty.precio != null && (
+              <div className="flex items-center gap-4 bg-gradient-to-r from-medi-50 to-emerald-50 border border-medi-200 rounded-2xl px-6 py-4">
+                <div className="w-10 h-10 rounded-xl bg-medi-100 flex items-center justify-center shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-medi-600">
+                    <path strokeLinecap="round" strokeLinejoin="round"
+                      d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0c1.1.128 1.907 1.077 1.907 2.185Z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-medi-500 uppercase tracking-wider">Precio de la consulta</p>
+                  <p className="text-xs text-gray-400 font-medium">{selectedSpecialty.nombre}</p>
+                </div>
+                <div className="text-2xl font-extrabold text-medi-600">
+                  S/ {Number(selectedSpecialty.precio).toFixed(2)}
+                </div>
+              </div>
+            )}
+
             {selectedDoctor && (
               <div className="bg-medi-50/50 rounded-2xl p-5 flex items-center gap-4">
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-medi-400 to-medi-600 text-white flex items-center justify-center text-lg font-extrabold shadow-inner">

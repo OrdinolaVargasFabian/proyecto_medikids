@@ -5,6 +5,7 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -49,6 +50,7 @@ public class EmailService {
      * @param pdfBytes        Bytes del PDF del comprobante de pago (puede ser null)
      * @param tipoComprobante "boleta" o "factura" (para nombrar el adjunto)
      */
+    @Async
     public void enviarConfirmacionCita(String destinatario, String nombrePaciente, String nombreMedico,
                                        String especialidad, String fechaCita, String horaCita,
                                        String motivo, byte[] pdfBytes, String tipoComprobante) {
@@ -59,7 +61,7 @@ public class EmailService {
             helper.setTo(destinatario);
             helper.setSubject("✅ Medikids - Cita Registrada Exitosamente");
             helper.setText(buildCitaConfirmacionTemplate(
-                    nombrePaciente, nombreMedico, especialidad, fechaCita, horaCita, motivo), true);
+                    nombrePaciente, nombreMedico, especialidad, fechaCita, horaCita, motivo, tipoComprobante), true);
 
             // Adjuntar PDF comprobante si está disponible
             if (pdfBytes != null && pdfBytes.length > 0) {
@@ -82,7 +84,25 @@ public class EmailService {
      */
     private String buildCitaConfirmacionTemplate(String nombrePaciente, String nombreMedico,
                                                   String especialidad, String fechaCita,
-                                                  String horaCita, String motivo) {
+                                                  String horaCita, String motivo, String tipoComprobante) {
+        boolean esEfectivo = "efectivo".equalsIgnoreCase(tipoComprobante);
+        String notaEfectivo = esEfectivo
+                ? """
+                  <table role="presentation" width="100%%" cellspacing="0" cellpadding="0"
+                         style="background-color:#fffbeb; border:2px solid #f59e0b; border-radius:12px; margin:0 0 20px;">
+                      <tr>
+                          <td style="padding:16px 20px;">
+                              <p style="color:#92400e; font-size:13px; font-weight:700; margin:0 0 4px;">💵 Pago pendiente en caja</p>
+                              <p style="color:#78350f; font-size:13px; margin:0; line-height:1.6;">
+                                  Seleccionaste <strong>pago en efectivo</strong>. Por favor, acércate a
+                                  <strong>Caja Principal (Piso 1)</strong> con <strong>15 minutos de anticipación</strong>.
+                                  Tu boleta o factura será emitida al momento del pago.
+                              </p>
+                          </td>
+                      </tr>
+                  </table>
+                  """
+                : "";
         return """
                 <!DOCTYPE html>
                 <html lang="es">
@@ -160,6 +180,8 @@ public class EmailService {
                                                 </tr>
                                             </table>
 
+                                            %s
+
                                             <p style="color:#5e6d31; font-size:13px; line-height:1.6; margin:0 0 10px;">
                                                 🏥 Por favor, preséntate con el menor <strong style="color:#4a5529;">10 minutos antes</strong> de la hora indicada.
                                             </p>
@@ -183,7 +205,7 @@ public class EmailService {
                     </table>
                 </body>
                 </html>
-                """.formatted(nombrePaciente, nombreMedico, especialidad, fechaCita, horaCita, motivo);
+                """.formatted(nombrePaciente, nombreMedico, especialidad, fechaCita, horaCita, motivo, notaEfectivo);
     }
 
     /**

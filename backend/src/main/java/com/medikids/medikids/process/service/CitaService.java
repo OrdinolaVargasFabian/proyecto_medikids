@@ -238,10 +238,13 @@ public class CitaService {
                             }
                         }
 
-                        // Generar PDF del comprobante si se proporcionaron datos de pago
+                        // Generar PDF del comprobante solo si NO es pago en efectivo
                         byte[] pdfBytes = null;
                         String tipoComprobante = cita.getTipoComprobante();
-                        if (tipoComprobante != null && !tipoComprobante.isBlank()
+                        boolean esEfectivo = "Efectivo".equalsIgnoreCase(cita.getMetodoPago());
+
+                        if (!esEfectivo
+                                && tipoComprobante != null && !tipoComprobante.isBlank()
                                 && cita.getNumeroDocumento() != null
                                 && cita.getNombreRazonSocial() != null) {
                             pdfBytes = pdfService.generarComprobante(
@@ -257,6 +260,9 @@ public class CitaService {
                             );
                         }
 
+                        // Si es efectivo, pasar tipoComprobante como "efectivo" para que el correo incluya la nota
+                        String tipoParaCorreo = esEfectivo ? "efectivo" : tipoComprobante;
+
                         emailService.enviarConfirmacionCita(
                                 usuario.getEmail(),
                                 paciente.getNombre_completo(),
@@ -266,7 +272,7 @@ public class CitaService {
                                 citaDto.getHora_cita() != null ? citaDto.getHora_cita() : "Por confirmar",
                                 cita.getMotivo(),
                                 pdfBytes,
-                                tipoComprobante
+                                tipoParaCorreo
                         );
                     }
                 });
