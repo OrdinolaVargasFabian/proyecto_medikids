@@ -7,3 +7,4 @@ export * from './TestimonialsSection';
 export * from './SpecialistsSection';
 export * from './FAQSection';
 export * from './Footer';
+export * from './Chatbot';
