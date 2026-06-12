@@ -2,6 +2,10 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useNotifications } from "../app/context/NotificationContext";
 
+
+const WHATSAPP_PHONE_NUMBER = "51913378799";
+// ─────────────────────────────────────────────────────────────────────────────
+
 const padresNav = [
   { label: "Panel Principal", path: "/padres", icon: "M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" },
   { label: "Mis Hijos", path: "/padres/hijos", icon: "M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" },
@@ -103,9 +107,8 @@ export const DashboardLayout = () => {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-gradient-to-b from-medi-600 via-medi-700 to-medi-800 text-white flex flex-col shadow-2xl transition-transform duration-300 lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-gradient-to-b from-medi-600 via-medi-700 to-medi-800 text-white flex flex-col shadow-2xl transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="h-24 flex items-center justify-center border-b border-white/10">
           <Link
@@ -125,11 +128,10 @@ export const DashboardLayout = () => {
                 key={item.path}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-                  isActive
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActive
                     ? "bg-white/20 text-white shadow-md backdrop-blur-sm"
                     : "text-white/60 hover:text-white hover:bg-white/10"
-                }`}
+                  }`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 shrink-0">
                   <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
@@ -170,7 +172,7 @@ export const DashboardLayout = () => {
           </div>
 
           <div className="flex items-center gap-4">
-          {/* ── Campana de notificaciones ── */}
+            {/* ── Campana de notificaciones ── */}
             <div className="relative" ref={notifRef}>
               <button
                 id="btn-notificaciones"
@@ -216,11 +218,10 @@ export const DashboardLayout = () => {
                       notifications.map((n) => (
                         <div key={n.id} className={`flex gap-3 px-4 py-3 transition-colors hover:bg-gray-50 ${!n.read ? "bg-medi-50/40" : ""}`}>
                           {/* Icono por tipo */}
-                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
-                            n.type === "success" ? "bg-green-100" :
-                            n.type === "email"   ? "bg-blue-100"  :
-                            n.type === "warning" ? "bg-amber-100" : "bg-medi-100"
-                          }`}>
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${n.type === "success" ? "bg-green-100" :
+                              n.type === "email" ? "bg-blue-100" :
+                                n.type === "warning" ? "bg-amber-100" : "bg-medi-100"
+                            }`}>
                             {n.type === "success" && (
                               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-green-600">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -263,6 +264,42 @@ export const DashboardLayout = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* ── Botón flotante de WhatsApp (solo para padre/tutor) ── */}
+      {!isAdmin && !isDoctor && (
+        <a
+          id="btn-whatsapp-flotante"
+          href={`https://wa.me/${WHATSAPP_PHONE_NUMBER}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Contactar por WhatsApp"
+          className="fixed bottom-6 right-6 z-50 group"
+          style={{
+            filter: "drop-shadow(0 4px 16px rgba(37,211,102,0.45))",
+          }}
+        >
+          {/* Anillo pulsante */}
+          <span
+            className="absolute inset-0 rounded-full animate-ping"
+            style={{ backgroundColor: "rgba(37,211,102,0.35)" }}
+          />
+          {/* Botón principal */}
+          <span
+            className="relative flex items-center justify-center w-14 h-14 rounded-full transition-transform duration-200 group-hover:scale-110"
+            style={{ backgroundColor: "#25D366" }}
+          >
+            {/* Icono oficial de WhatsApp */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 48 48"
+              className="w-8 h-8"
+              fill="white"
+            >
+              <path d="M24 4C12.95 4 4 12.95 4 24c0 3.55.93 6.87 2.55 9.76L4 44l10.5-2.5A19.87 19.87 0 0 0 24 44c11.05 0 20-8.95 20-20S35.05 4 24 4Zm0 36a15.93 15.93 0 0 1-8.19-2.26l-.59-.35-6.23 1.49 1.56-5.97-.39-.62A15.94 15.94 0 0 1 8 24c0-8.82 7.18-16 16-16s16 7.18 16 16-7.18 16-16 16Zm8.75-11.71c-.48-.24-2.83-1.4-3.27-1.56-.44-.16-.76-.24-1.08.24-.32.48-1.24 1.56-1.52 1.88-.28.32-.56.36-1.04.12-.48-.24-2.03-.75-3.87-2.38-1.43-1.27-2.39-2.84-2.67-3.32-.28-.48-.03-.74.21-.98.22-.22.48-.56.72-.84.24-.28.32-.48.48-.8.16-.32.08-.6-.04-.84-.12-.24-1.08-2.6-1.48-3.56-.39-.93-.79-.8-1.08-.82h-.92c-.32 0-.84.12-1.28.6-.44.48-1.68 1.64-1.68 4s1.72 4.64 1.96 4.96c.24.32 3.38 5.16 8.2 7.24 1.15.5 2.04.8 2.74 1.02 1.15.36 2.2.31 3.03.19.92-.14 2.83-1.16 3.23-2.28.4-1.12.4-2.08.28-2.28-.12-.2-.44-.32-.92-.56Z" />
+            </svg>
+          </span>
+        </a>
+      )}
     </div>
   );
 };
