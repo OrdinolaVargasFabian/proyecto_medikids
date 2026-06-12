@@ -17,6 +17,8 @@ const formatDate = (dateStr) => {
   return d.toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric" });
 };
 
+const isDoctorActivo = (estado) => String(estado || "").toLowerCase() === "activo";
+
 export const DashboardHome = () => {
   const usuario = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("usuario")); }
@@ -37,7 +39,7 @@ export const DashboardHome = () => {
   const loading = loadingChildren || loadingCitas || loadingDoctores;
 
   const activeDoctorsCount = useMemo(
-    () => doctoresData.filter((d) => d.activo === "1" && d.estado === "activo").length,
+    () => doctoresData.filter((d) => d.activo === "1" && isDoctorActivo(d.estado)).length,
     [doctoresData]
   );
 

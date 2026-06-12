@@ -228,16 +228,17 @@ export const DoctorsList = () => {
       header: 'Estado',
       cell: info => {
         const doc = info.row.original;
+        const isActive = String(doc.estado || "").toLowerCase() === "activo";
         return (
           <button
             onClick={() => handleToggle(doc.id_medico)}
             className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-all ${
-              doc.estado === "activo"
+              isActive
                 ? "text-emerald-600 bg-emerald-50 border-emerald-100 hover:bg-emerald-100"
                 : "text-gray-500 bg-gray-50 border-gray-200 hover:bg-gray-100"
             }`}
           >
-            {doc.estado === "activo" ? "Activo" : "Inactivo"}
+            {isActive ? "Activo" : "Inactivo"}
           </button>
         );
       },
@@ -303,12 +304,12 @@ export const DoctorsList = () => {
         <button
           onClick={() => handleToggle(doc.id_medico)}
           className={`text-xs font-bold px-3 py-1.5 rounded-full border shrink-0 transition-all ${
-            doc.estado === "activo"
+            String(doc.estado || "").toLowerCase() === "activo"
               ? "text-emerald-600 bg-emerald-50 border-emerald-100"
               : "text-gray-500 bg-gray-50 border-gray-200"
           }`}
         >
-          {doc.estado === "activo" ? "Activo" : "Inactivo"}
+          {String(doc.estado || "").toLowerCase() === "activo" ? "Activo" : "Inactivo"}
         </button>
       </div>
     );

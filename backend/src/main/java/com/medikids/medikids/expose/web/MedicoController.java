@@ -3,6 +3,7 @@ package com.medikids.medikids.expose.web;
 import com.medikids.medikids.expose.model.request.MedicoConUsuarioRequest;
 import com.medikids.medikids.expose.model.request.MedicoRequest;
 import com.medikids.medikids.expose.model.request.UsuarioRequest;
+import com.medikids.medikids.process.domain.Medico;
 import com.medikids.medikids.process.dto.MedicoDto;
 import com.medikids.medikids.process.dto.UsuarioDto;
 import com.medikids.medikids.process.service.MedicoService;
@@ -74,7 +75,7 @@ public class MedicoController {
             medicoReq.setNro_colegiatura(request.getNro_colegiatura());
             medicoReq.setUrl_foto(request.getUrl_foto() != null ? request.getUrl_foto() : "");
             medicoReq.setGenero(request.getGenero() != null ? request.getGenero() : null);
-            medicoReq.setEstado(request.getEstado() != null ? request.getEstado() : "activo");
+            medicoReq.setEstado(request.getEstado() != null ? Medico.EstadoMedico.valueOf(request.getEstado()) : Medico.EstadoMedico.ACTIVO);
             medicoReq.setId_usuario(usuario.getId_usuario());
             medicoReq.setId_especialidad(request.getId_especialidad());
 

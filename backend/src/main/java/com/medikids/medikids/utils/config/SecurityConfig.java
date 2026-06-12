@@ -44,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/discover", "/admin/admin-hash/verify", "/admin/auth/login").permitAll()
                         .requestMatchers("/usuario/save").permitAll()
                         .requestMatchers("/cliente/save").permitAll()
+                        .requestMatchers("/chatbot/**").permitAll()
                         // ── Todo lo demás requiere JWT + @PreAuthorize (permisos atómicos) ──
                         .anyRequest().authenticated()
                 )

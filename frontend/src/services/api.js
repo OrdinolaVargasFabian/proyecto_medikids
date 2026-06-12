@@ -178,4 +178,8 @@ export const deleteTarjeta = (id) =>
 export const setPredeterminadaTarjeta = (id) =>
   api.put(`/tarjeta/${id}/predeterminada`).then((r) => r.data);
 
+// ── Chatbot ──
+export const sendChatMessage = (message, history = []) =>
+  api.post('/chatbot/message', { message, history }).then((r) => r.data);
+
 export default api;

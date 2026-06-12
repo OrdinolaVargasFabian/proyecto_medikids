@@ -1,4 +1,4 @@
-import { Hero, ImpactSection, ServicesSection, TechPortalSection, SpecialistsSection, TestimonialsSection, FAQSection } from './components';
+import { Hero, ImpactSection, ServicesSection, TechPortalSection, SpecialistsSection, TestimonialsSection, FAQSection, Chatbot } from './components';
 
 export const LandingPage = () => {
   return (
@@ -10,6 +10,8 @@ export const LandingPage = () => {
       <TechPortalSection />
       <TestimonialsSection />
       <FAQSection />
+      <Chatbot />
     </main>
   );
 };
+
