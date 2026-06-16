@@ -74,7 +74,6 @@ export const BookAppointment = () => {
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
   const { isActive: isTutorialActive, tutorialFormStep } = useTutorial();
-  const displayStep = isTutorialActive && tutorialFormStep !== null ? tutorialFormStep : step;
 
   const clientId = useMemo(() => {
     try { return Number(localStorage.getItem("cliente_id")); }
@@ -82,6 +81,7 @@ export const BookAppointment = () => {
   }, []);
 
   const [step, setStep] = useState(1);
+  const displayStep = isTutorialActive && tutorialFormStep !== null ? tutorialFormStep : step;
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -776,8 +776,8 @@ export const BookAppointment = () => {
             </div>
 
             <button
-              onClick={isTutorialActive ? undefined : handleSave}
-              disabled={saving || isTutorialActive}
+              onClick={handleSave}
+              disabled={saving}
               className="px-10 py-4 bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 text-white text-sm font-bold rounded-2xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-60"
             >
               {saving ? "Agendando..." : "Confirmar y Agendar"}

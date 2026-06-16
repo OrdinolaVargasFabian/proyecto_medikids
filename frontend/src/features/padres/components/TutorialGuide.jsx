@@ -1,11 +1,11 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useTutorial } from "../context/TutorialContext";
 import { TUTORIAL_STEPS } from "../tutorial/tutorialSteps";
 
 const PAD = 10;
 const TOOLTIP_W = 320;
-const TOOLTIP_H = 170;
+const TOOLTIP_H = 150;
 
 const calcTooltipPos = (rect, winW, winH) => {
   const spaceBelow = winH - rect.bottom - PAD;
@@ -25,7 +25,6 @@ const calcTooltipPos = (rect, winW, winH) => {
     return { top, left };
   }
 
-  // Fallback: centro de pantalla
   return {
     top: Math.max(16, winH / 2 - TOOLTIP_H / 2),
     left: Math.max(16, winW / 2 - TOOLTIP_W / 2),
@@ -35,11 +34,12 @@ const calcTooltipPos = (rect, winW, winH) => {
 export const TutorialGuide = () => {
   const { isActive, currentStep, nextStep, exitTutorial } = useTutorial();
   const [targetRect, setTargetRect] = useState(null);
+  const advancingRef = useRef(false);
 
   const step = TUTORIAL_STEPS[currentStep];
   const totalSteps = TUTORIAL_STEPS.length;
-  const isLast = currentStep === totalSteps - 1;
 
+  // Encuentra el elemento y calcula su posición
   const findAndMeasure = useCallback(() => {
     if (!step?.selector || !isActive) return;
 
@@ -60,6 +60,7 @@ export const TutorialGuide = () => {
     };
 
     setTargetRect(null);
+    advancingRef.current = false;
     setTimeout(tryFind, 100);
   }, [step?.selector, isActive, currentStep]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -74,6 +75,58 @@ export const TutorialGuide = () => {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [findAndMeasure]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-avance al interactuar con el elemento resaltado
+  useEffect(() => {
+    if (!isActive || !step?.trigger) return;
+
+    const selector = step.selector;
+    const triggerType = step.trigger;
+
+    const advance = () => {
+      if (advancingRef.current) return;
+      advancingRef.current = true;
+      setTimeout(() => nextStep(), 80);
+    };
+
+    const handleClick = (e) => {
+      const el = document.querySelector(selector);
+      if (el && (el === e.target || el.contains(e.target))) {
+        advance();
+      }
+    };
+
+    const handleChange = (e) => {
+      const el = document.querySelector(selector);
+      if (el && (el === e.target || el.contains(e.target))) {
+        advance();
+      }
+    };
+
+    const handleFocusOut = (e) => {
+      const el = document.querySelector(selector);
+      if (el && (el === e.target || el.contains(e.target))) {
+        // Solo avanza si el foco salió del elemento por completo
+        if (!el.contains(e.relatedTarget)) {
+          advance();
+        }
+      }
+    };
+
+    if (triggerType === "click") {
+      document.addEventListener("click", handleClick);
+    } else if (triggerType === "change") {
+      document.addEventListener("change", handleChange, true);
+    } else if (triggerType === "blur") {
+      document.addEventListener("focusout", handleFocusOut, true);
+    }
+
+    return () => {
+      document.removeEventListener("click", handleClick);
+      document.removeEventListener("change", handleChange, true);
+      document.removeEventListener("focusout", handleFocusOut, true);
+    };
+  }, [isActive, step?.trigger, step?.selector, nextStep]);
 
   if (!isActive || !step) return null;
 
@@ -176,72 +229,26 @@ export const TutorialGuide = () => {
           {step.message}
         </p>
 
-        {/* Botones */}
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        {/* Solo botón Cancelar */}
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <button
             onClick={exitTutorial}
             style={{
-              padding: "8px 16px",
+              padding: "8px 20px",
               borderRadius: 10,
-              border: "1.5px solid #e5e7eb",
+              border: "1.5px solid #fca5a5",
               background: "white",
               fontSize: 13,
               fontWeight: 700,
-              color: "#6b7280",
+              color: "#ef4444",
               cursor: "pointer",
             }}
           >
-            Salir
-          </button>
-          <button
-            onClick={nextStep}
-            style={{
-              padding: "8px 20px",
-              borderRadius: 10,
-              border: "none",
-              background: "linear-gradient(to right, #9cb151, #7d9440)",
-              color: "white",
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: "pointer",
-              boxShadow: "0 2px 8px rgba(156,177,81,0.4)",
-            }}
-          >
-            {isLast ? "Finalizar ✓" : "Siguiente →"}
+            Cancelar guía
           </button>
         </div>
       </div>
 
-      {/* X roja arriba-derecha */}
-      <button
-        onClick={exitTutorial}
-        aria-label="Cerrar tutorial"
-        style={{
-          position: "absolute",
-          top: 16,
-          right: 16,
-          width: 38,
-          height: 38,
-          borderRadius: "50%",
-          background: "#ef4444",
-          border: "none",
-          color: "white",
-          fontSize: 20,
-          fontWeight: 900,
-          lineHeight: 1,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 4px 14px rgba(239,68,68,0.45)",
-          pointerEvents: "auto",
-          zIndex: 10001,
-        }}
-      >
-        ×
-      </button>
-
-      {/* Animación CSS del borde pulsante */}
       <style>{`
         @keyframes mkidsTutorialPulse {
           0%, 100% { box-shadow: 0 0 0 3px rgba(156,177,81,0.25); }
