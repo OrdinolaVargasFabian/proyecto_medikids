@@ -74,7 +74,6 @@ export const BookAppointment = () => {
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
   const { isActive: isTutorialActive, tutorialFormStep } = useTutorial();
-  const displayStep = isTutorialActive && tutorialFormStep !== null ? tutorialFormStep : step;
 
   const clientId = useMemo(() => {
     try { return Number(localStorage.getItem("cliente_id")); }
@@ -82,6 +81,7 @@ export const BookAppointment = () => {
   }, []);
 
   const [step, setStep] = useState(1);
+  const displayStep = isTutorialActive && tutorialFormStep !== null ? tutorialFormStep : step;
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
