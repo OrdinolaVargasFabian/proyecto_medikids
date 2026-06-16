@@ -776,8 +776,8 @@ export const BookAppointment = () => {
             </div>
 
             <button
-              onClick={isTutorialActive ? undefined : handleSave}
-              disabled={saving || isTutorialActive}
+              onClick={handleSave}
+              disabled={saving}
               className="px-10 py-4 bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 text-white text-sm font-bold rounded-2xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-60"
             >
               {saving ? "Agendando..." : "Confirmar y Agendar"}

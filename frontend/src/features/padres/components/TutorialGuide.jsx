@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useTutorial } from "../context/TutorialContext";
 import { TUTORIAL_STEPS } from "../tutorial/tutorialSteps";
@@ -25,7 +25,6 @@ const calcTooltipPos = (rect, winW, winH) => {
     return { top, left };
   }
 
-  // Fallback: centro de pantalla
   return {
     top: Math.max(16, winH / 2 - TOOLTIP_H / 2),
     left: Math.max(16, winW / 2 - TOOLTIP_W / 2),
@@ -35,11 +34,13 @@ const calcTooltipPos = (rect, winW, winH) => {
 export const TutorialGuide = () => {
   const { isActive, currentStep, nextStep, exitTutorial } = useTutorial();
   const [targetRect, setTargetRect] = useState(null);
+  const advancingRef = useRef(false);
 
   const step = TUTORIAL_STEPS[currentStep];
   const totalSteps = TUTORIAL_STEPS.length;
   const isLast = currentStep === totalSteps - 1;
 
+  // Encuentra el elemento y calcula su posición
   const findAndMeasure = useCallback(() => {
     if (!step?.selector || !isActive) return;
 
@@ -60,6 +61,7 @@ export const TutorialGuide = () => {
     };
 
     setTargetRect(null);
+    advancingRef.current = false;
     setTimeout(tryFind, 100);
   }, [step?.selector, isActive, currentStep]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -75,6 +77,45 @@ export const TutorialGuide = () => {
     return () => window.removeEventListener("resize", onResize);
   }, [findAndMeasure]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Auto-avance al interactuar con el elemento resaltado
+  useEffect(() => {
+    if (!isActive || !step?.trigger) return;
+
+    const selector = step.selector;
+    const triggerType = step.trigger;
+
+    const advance = () => {
+      if (advancingRef.current) return;
+      advancingRef.current = true;
+      setTimeout(() => nextStep(), 80);
+    };
+
+    const handleClick = (e) => {
+      const el = document.querySelector(selector);
+      if (el && (el === e.target || el.contains(e.target))) {
+        advance();
+      }
+    };
+
+    const handleChange = (e) => {
+      const el = document.querySelector(selector);
+      if (el && (el === e.target || el.contains(e.target))) {
+        advance();
+      }
+    };
+
+    if (triggerType === "click") {
+      document.addEventListener("click", handleClick);
+    } else if (triggerType === "change") {
+      document.addEventListener("change", handleChange, true);
+    }
+
+    return () => {
+      document.removeEventListener("click", handleClick);
+      document.removeEventListener("change", handleChange, true);
+    };
+  }, [isActive, step?.trigger, step?.selector, nextStep]);
+
   if (!isActive || !step) return null;
 
   const winW = window.innerWidth;
@@ -88,6 +129,8 @@ export const TutorialGuide = () => {
   const tooltipPos = targetRect
     ? calcTooltipPos(targetRect, winW, winH)
     : { top: winH / 2 - TOOLTIP_H / 2, left: winW / 2 - TOOLTIP_W / 2 };
+
+  const hasAutoAdvance = !!step.trigger;
 
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 9999 }}>
@@ -172,9 +215,16 @@ export const TutorialGuide = () => {
         </h4>
 
         {/* Mensaje */}
-        <p style={{ margin: "0 0 20px", fontSize: 13, fontWeight: 500, color: "#6b7280", lineHeight: 1.55 }}>
+        <p style={{ margin: "0 0 14px", fontSize: 13, fontWeight: 500, color: "#6b7280", lineHeight: 1.55 }}>
           {step.message}
         </p>
+
+        {/* Hint para pasos con auto-avance */}
+        {hasAutoAdvance && (
+          <p style={{ margin: "0 0 14px", fontSize: 11, fontWeight: 600, color: "#9cb151", display: "flex", alignItems: "center", gap: 4 }}>
+            <span>↑</span> Interactúa con el área resaltada para continuar
+          </p>
+        )}
 
         {/* Botones */}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
@@ -241,7 +291,6 @@ export const TutorialGuide = () => {
         ×
       </button>
 
-      {/* Animación CSS del borde pulsante */}
       <style>{`
         @keyframes mkidsTutorialPulse {
           0%, 100% { box-shadow: 0 0 0 3px rgba(156,177,81,0.25); }
