@@ -15,9 +15,9 @@ export const TUTORIAL_STEPS = [
     id: 'step-indicator',
     selector: '[data-tutorial="step-indicator"]',
     title: 'Indicador de progreso',
-    message: 'El formulario tiene 5 pasos. Este indicador muestra en cuál etapa te encuentras. Presiona "Siguiente" para empezar.',
+    message: 'El formulario tiene 5 pasos. Este indicador muestra en cuál etapa te encuentras. Haz clic aquí para comenzar.',
     formStep: 1,
-    trigger: null,
+    trigger: 'click',
   },
   {
     id: 'children-grid',
@@ -55,9 +55,9 @@ export const TUTORIAL_STEPS = [
     id: 'motivo-input',
     selector: '[data-tutorial="motivo-input"]',
     title: 'Paso 3 — Motivo de consulta',
-    message: 'Escribe el motivo de la consulta: síntomas, tipo de revisión, u otro detalle importante. Cuando termines, presiona "Siguiente".',
+    message: 'Escribe el motivo de la consulta: síntomas, tipo de revisión, u otro detalle importante. Cuando termines, haz clic fuera del campo para continuar.',
     formStep: 3,
-    trigger: null,
+    trigger: 'blur',
   },
   {
     id: 'payment-methods',
@@ -81,6 +81,6 @@ export const TUTORIAL_STEPS = [
     title: 'Paso 5 — Confirmar tu cita',
     message: 'Revisa todos los detalles. Cuando estés listo, haz clic en "Confirmar y Agendar" para finalizar el registro de tu cita.',
     formStep: 5,
-    trigger: null,
+    trigger: 'click',
   },
 ];
