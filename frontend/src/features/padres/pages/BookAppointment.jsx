@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTutorial } from "../context/TutorialContext";
 import { CreditCardIcon, BanknotesIcon, QrCodeIcon } from "@heroicons/react/24/outline";
 import { useQueryClient } from "@tanstack/react-query";
 import { useChildren, useDoctores, useEspecialidades, useHorariosDisponibles, useCliente, useTarjetas, queryKeys } from "../../../hooks/useApiData";
@@ -72,6 +73,7 @@ export const BookAppointment = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
+  const { isActive: isTutorialActive, tutorialFormStep } = useTutorial();
 
   const clientId = useMemo(() => {
     try { return Number(localStorage.getItem("cliente_id")); }
@@ -79,6 +81,7 @@ export const BookAppointment = () => {
   }, []);
 
   const [step, setStep] = useState(1);
+  const displayStep = isTutorialActive && tutorialFormStep !== null ? tutorialFormStep : step;
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -269,16 +272,16 @@ export const BookAppointment = () => {
         </div>
       )}
 
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-4 mb-8" data-tutorial="step-indicator">
         {["Datos del Paciente", "Especialidad y Médico", "Fecha y Hora", "Pasarela de Pago", "Confirmación"].map((label, i) => (
           <div key={label} className="flex items-center gap-4 flex-1">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-extrabold transition-all ${step > i + 1
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-extrabold transition-all ${displayStep > i + 1
               ? "bg-medi-500 text-white"
-              : step === i + 1
+              : displayStep === i + 1
                 ? "bg-medi-500 text-white shadow-lg shadow-medi-200"
                 : "bg-gray-100 text-gray-400"
               }`}>
-              {step > i + 1 ? (
+              {displayStep > i + 1 ? (
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                 </svg>
@@ -287,10 +290,10 @@ export const BookAppointment = () => {
               )}
             </div>
             <div className="hidden sm:block">
-              <div className={`text-xs font-bold uppercase tracking-wider ${step === i + 1 ? "text-medi-600" : "text-gray-400"}`}>
+              <div className={`text-xs font-bold uppercase tracking-wider ${displayStep === i + 1 ? "text-medi-600" : "text-gray-400"}`}>
                 Paso {i + 1}
               </div>
-              <div className={`text-sm font-bold ${step === i + 1 ? "text-gray-900" : "text-gray-400"}`}>{label}</div>
+              <div className={`text-sm font-bold ${displayStep === i + 1 ? "text-gray-900" : "text-gray-400"}`}>{label}</div>
             </div>
             {i < 4 && <div className="flex-1 h-px bg-gray-200 last:hidden" />}
           </div>
@@ -298,7 +301,7 @@ export const BookAppointment = () => {
       </div>
 
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
-        {step === 1 && (
+        {displayStep === 1 && (
           <div className="space-y-6">
             <h3 className="text-xl font-extrabold text-gray-900">¿Para quién es la cita?</h3>
             {children.length === 0 ? (
@@ -307,7 +310,7 @@ export const BookAppointment = () => {
                 <p className="text-sm text-gray-400">Primero agrega un perfil en "Mis Hijos".</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-tutorial="children-grid">
                 {children.map((child, index) => {
                   const color = colors[index % colors.length];
                   return (
@@ -332,7 +335,7 @@ export const BookAppointment = () => {
           </div>
         )}
 
-        {step === 2 && (
+        {displayStep === 2 && (
           <div className="space-y-6">
             <h3 className="text-xl font-extrabold text-gray-900">Especialidad y Médico</h3>
             {activeDoctors.length === 0 ? (
@@ -342,7 +345,7 @@ export const BookAppointment = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
+                <div data-tutorial="specialty-select">
                   <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Especialidad</label>
                   <select value={selectedSpecialty?.id_especialidad || ""}
                     onChange={(e) => {
@@ -358,7 +361,7 @@ export const BookAppointment = () => {
                     ))}
                   </select>
                 </div>
-                <div>
+                <div data-tutorial="doctor-select">
                   <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Médico</label>
                   <select value={selectedDoctor?.id_medico || ""}
                     onChange={(e) => {
@@ -413,7 +416,7 @@ export const BookAppointment = () => {
           </div>
         )}
 
-        {step === 3 && (
+        {displayStep === 3 && (
           <div className="space-y-6">
             <h3 className="text-xl font-extrabold text-gray-900">Selecciona un Turno Disponible</h3>
             {availableHorarios.length === 0 ? (
@@ -421,7 +424,7 @@ export const BookAppointment = () => {
                 <p className="text-gray-400 font-medium">No hay horarios disponibles para este médico.</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-3" data-tutorial="horarios-list">
                 {availableHorarios.slice(0, visibleCount).map((h) => {
                   const isSelected = selectedHorario?.id_horario === h.id_horario;
                   const fechaStr = h.fecha;
@@ -490,7 +493,7 @@ export const BookAppointment = () => {
                 </div>
               </div>
             )}
-            <div>
+            <div data-tutorial="motivo-input">
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Motivo de la Consulta</label>
               <textarea rows={4} value={motivo}
                 onChange={(e) => setMotivo(e.target.value)}
@@ -499,12 +502,12 @@ export const BookAppointment = () => {
           </div>
         )}
 
-        {step === 4 && (
+        {displayStep === 4 && (
           <div className="space-y-6">
             <h3 className="text-xl font-extrabold text-gray-900">Pasarela de Pago</h3>
             <p className="text-gray-500 font-medium">Selecciona tu método de pago preferido.</p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4" data-tutorial="payment-methods">
               {[
                 { id: "yapeplin", label: "Yape / Plin", metodo_bd: "Transferencia", bg: "bg-purple-100", border: "border-purple-200", text: "text-purple-700", icon: <QrCodeIcon className="w-5 h-5 text-purple-700" /> },
                 { id: "paypal", label: "PayPal", metodo_bd: "Transferencia", bg: "bg-blue-100", border: "border-blue-200", text: "text-blue-700", icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="#1d4ed8" d="M20.437 7.104a4 4 0 0 0-.573-.523a4.72 4.72 0 0 0-1.157-3.74C17.623 1.619 15.775 1 13.214 1H7.001a1.89 1.89 0 0 0-1.864 1.592l-2.59 16.406a1.533 1.533 0 0 0 1.516 1.785h2.664l-.082.52A1.467 1.467 0 0 0 8.093 23h3.235a1.76 1.76 0 0 0 1.75-1.47l.641-4.031l.011-.055h.299c4.032 0 6.55-1.993 7.285-5.762a5.15 5.15 0 0 0-.877-4.578m-12.595 6.6l-.714 4.535l-.086.544H4.606L7.097 3h6.117c1.936 0 3.318.404 3.993 1.164a2.97 2.97 0 0 1 .607 2.733l-.018.113c-.012.076-.023.15-.044.246a5.85 5.85 0 0 1-2.005 3.67a6.68 6.68 0 0 1-4.217 1.183H9.707a1.88 1.88 0 0 0-1.865 1.595m11.51-2.405c-.552 2.828-2.243 4.145-5.323 4.145h-.484a1.76 1.76 0 0 0-1.75 1.473l-.65 4.074L8.717 21l.478-3.034l.612-3.853h1.719c.157 0 .295-.023.448-.029c.359-.012.717-.026 1.053-.068c.205-.025.393-.072.59-.108c.273-.05.545-.1.801-.171c.19-.053.368-.122.55-.186c.238-.085.474-.174.697-.279q.25-.12.486-.257a7 7 0 0 0 .613-.392q.214-.153.415-.32a7 7 0 0 0 .537-.52c.113-.12.228-.237.333-.367a7 7 0 0 0 .48-.693c.076-.122.161-.235.232-.363a8 8 0 0 0 .52-1.154l.03-.068l.014-.032a4.3 4.3 0 0 1 .026 2.193" /></svg> },
@@ -638,7 +641,7 @@ export const BookAppointment = () => {
             )}
 
             {/* ── Tipo de Comprobante ── */}
-            <div className="pt-4 border-t border-gray-100 space-y-4">
+            <div className="pt-4 border-t border-gray-100 space-y-4" data-tutorial="comprobante-section">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tipo de Comprobante</p>
               <div className="grid grid-cols-2 gap-4">
                 {[
@@ -703,8 +706,8 @@ export const BookAppointment = () => {
           </div>
         )}
 
-        {step === 5 && (
-          <div className="space-y-6 text-center">
+        {displayStep === 5 && (
+          <div className="space-y-6 text-center" data-tutorial="confirm-section">
             <div className="w-20 h-20 rounded-full bg-medi-100 flex items-center justify-center mx-auto">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-medi-600">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -772,27 +775,32 @@ export const BookAppointment = () => {
               </div>
             </div>
 
-            <button onClick={handleSave} disabled={saving}
-              className="px-10 py-4 bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 text-white text-sm font-bold rounded-2xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-60">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-10 py-4 bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 text-white text-sm font-bold rounded-2xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-60"
+            >
               {saving ? "Agendando..." : "Confirmar y Agendar"}
             </button>
           </div>
         )}
 
-        <div className="flex justify-between mt-8 pt-6 border-t border-gray-100">
-          <button onClick={() => setStep(Math.max(1, step - 1))}
-            disabled={step === 1}
-            className="px-6 py-3 text-sm font-bold text-gray-600 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-            ← Anterior
-          </button>
-          {step < 5 && (
-            <button onClick={() => canGoNext() && setStep(step + 1)}
-              disabled={!canGoNext()}
-              className="px-8 py-3 bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 text-white text-sm font-bold rounded-2xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-              {step === 3 ? "Proceder al Pago →" : "Siguiente →"}
+        {!isTutorialActive && (
+          <div className="flex justify-between mt-8 pt-6 border-t border-gray-100">
+            <button onClick={() => setStep(Math.max(1, step - 1))}
+              disabled={step === 1}
+              className="px-6 py-3 text-sm font-bold text-gray-600 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+              ← Anterior
             </button>
-          )}
-        </div>
+            {step < 5 && (
+              <button onClick={() => canGoNext() && setStep(step + 1)}
+                disabled={!canGoNext()}
+                className="px-8 py-3 bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 text-white text-sm font-bold rounded-2xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                {step === 3 ? "Proceder al Pago →" : "Siguiente →"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
 
