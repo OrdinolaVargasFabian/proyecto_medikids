@@ -10,7 +10,6 @@ import com.medikids.medikids.process.service.CitaService;
 import com.medikids.medikids.process.service.ClienteService;
 import com.medikids.medikids.process.service.MedicoService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,17 +24,10 @@ import java.util.Objects;
 @RequestMapping("/cita")
 @RequiredArgsConstructor
 public class CitaController {
-    @Autowired
     private final CitaService citaService;
-
-    @Autowired
-    private ClienteService clienteService;
-
-    @Autowired
-    private MedicoService medicoService;
-
-    @Autowired
-    private PacienteRepository pacienteRepository;
+    private final ClienteService clienteService;
+    private final MedicoService medicoService;
+    private final PacienteRepository pacienteRepository;
 
     @GetMapping("/all")
     @PreAuthorize("@permiso.has('cita:read')")

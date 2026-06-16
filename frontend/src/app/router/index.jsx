@@ -2,6 +2,9 @@ import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { PublicLayout } from '../../layouts/PublicLayout';
 import { LoginPage } from '../../features/auth';
+import { RegisterPage } from '../../features/auth/RegisterPage';
+import { ForgotPasswordPage } from '../../features/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from '../../features/auth/ResetPasswordPage';
 import { AdminLoginPage } from '../../features/auth/AdminLoginPage';
 import { AdminDiscoverPage } from '../../features/auth/AdminDiscoverPage';
 import { LandingPage } from '../../features/landing';
@@ -45,7 +48,18 @@ export const router = createBrowserRouter([
     path: '/login',
     element: <LoginPage />
   },
-
+  {
+    path: '/register',
+    element: <RegisterPage />
+  },
+  {
+    path: '/recuperar-clave',
+    element: <ForgotPasswordPage />
+  },
+  {
+    path: '/restablecer-clave/:token',
+    element: <ResetPasswordPage />
+  },
   {
     path: '/admin',
     element: <AdminDiscoverPage />

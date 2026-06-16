@@ -4,7 +4,6 @@ import com.medikids.medikids.expose.model.request.ClienteRequest;
 import com.medikids.medikids.process.dto.ClienteDto;
 import com.medikids.medikids.process.service.ClienteService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,7 +18,6 @@ import java.util.Objects;
 @RequestMapping("/cliente")
 @RequiredArgsConstructor
 public class ClienteController {
-    @Autowired
     private final ClienteService clienteService;
 
     @SuppressWarnings("unchecked")

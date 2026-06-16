@@ -5,7 +5,6 @@ import com.medikids.medikids.expose.model.request.PasswordRequest;
 import com.medikids.medikids.process.dto.UsuarioDto;
 import com.medikids.medikids.process.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,7 +19,6 @@ import java.util.Objects;
 @RequestMapping("/usuario")
 @RequiredArgsConstructor
 public class UsuarioController {
-    @Autowired
     private final UsuarioService usuarioService;
 
     @SuppressWarnings("unchecked")

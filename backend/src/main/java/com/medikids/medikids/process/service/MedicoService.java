@@ -103,7 +103,7 @@ public class MedicoService {
             medicoUpdate.get().setNro_colegiatura(medico.getNro_colegiatura());
             medicoUpdate.get().setUrl_foto(medico.getUrl_foto());
             medicoUpdate.get().setGenero(medico.getGenero() != null ? Medico.Genero.valueOf(medico.getGenero()) : null);
-            medicoUpdate.get().setEstado(medico.getEstado() != null ? medico.getEstado() : Medico.EstadoMedico.ACTIVO);
+            medicoUpdate.get().setEstado(medico.getEstado() != null ? medico.getEstado() : Medico.EstadoMedico.activo);
             medicoUpdate.get().setId_especialidad(medico.getId_especialidad());
 
             MedicoDto result = enriquecer(MedicoHelper.mapMedico(
@@ -122,10 +122,10 @@ public class MedicoService {
         Medico medico = medicoOpt.get();
         if (medico.getActivo() == '1') {
             medico.setActivo('0');
-            medico.setEstado(Medico.EstadoMedico.INACTIVO);
+            medico.setEstado(Medico.EstadoMedico.inactivo);
         } else {
             medico.setActivo('1');
-            medico.setEstado(Medico.EstadoMedico.ACTIVO);
+            medico.setEstado(Medico.EstadoMedico.activo);
         }
         MedicoDto result = enriquecer(MedicoHelper.mapMedico(medicoRepository.save(medico)));
         medicoListCache.invalidate("all");

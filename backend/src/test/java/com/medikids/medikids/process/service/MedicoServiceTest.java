@@ -52,7 +52,7 @@ class MedicoServiceTest {
         testMedico.setNro_colegiatura("12345");
         testMedico.setUrl_foto("http://example.com/foto.jpg");
         testMedico.setGenero(Medico.Genero.masculino);
-        testMedico.setEstado(Medico.EstadoMedico.ACTIVO);
+        testMedico.setEstado(Medico.EstadoMedico.activo);
         testMedico.setActivo('1');
 
         medicoRequest = new MedicoRequest();
@@ -61,7 +61,7 @@ class MedicoServiceTest {
         medicoRequest.setNro_colegiatura("12345");
         medicoRequest.setUrl_foto("http://example.com/foto.jpg");
         medicoRequest.setGenero("masculino");
-        medicoRequest.setEstado(Medico.EstadoMedico.ACTIVO);
+        medicoRequest.setEstado(Medico.EstadoMedico.activo);
     }
 
     @Test

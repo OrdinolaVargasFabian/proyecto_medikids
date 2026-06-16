@@ -4,6 +4,8 @@ import com.medikids.medikids.expose.model.response.AuthResponse;
 import com.medikids.medikids.process.domain.RefreshToken;
 import com.medikids.medikids.process.domain.Usuario;
 import com.medikids.medikids.process.service.IpAutorizadaService;
+import com.medikids.medikids.process.domain.PasswordResetToken;
+import com.medikids.medikids.process.repository.PasswordResetTokenRepository;
 import com.medikids.medikids.process.repository.UsuarioRepository;
 import com.medikids.medikids.utils.helpers.IpUtils;
 import com.medikids.medikids.utils.helpers.UsuarioHelper;
@@ -11,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.scheduling.annotation.Scheduled;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +29,9 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class AuthService {
+
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -49,6 +57,48 @@ public class AuthService {
     @Value("${codigo.2fa.expiration}")
     private long codigoExpiracionMs;
 
+    @Transactional
+    public void requestPasswordReset(String email) {
+        Optional<Usuario> userOpt = usuarioRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            Usuario usuario = userOpt.get();
+            String token = java.util.UUID.randomUUID().toString();
+
+            passwordResetTokenRepository.findByUsuario(usuario)
+                    .ifPresent(passwordResetTokenRepository::delete);
+            passwordResetTokenRepository.flush();
+
+            PasswordResetToken resetToken = PasswordResetToken.builder()
+                    .token(token)
+                    .usuario(usuario)
+                    .expiryDate(java.time.LocalDateTime.now().plusMinutes(15))
+                    .build();
+            passwordResetTokenRepository.save(resetToken);
+            emailService.enviarEnlaceRecuperacion(email, token);
+        }
+    }
+
+    @Transactional
+    public boolean validateAndResetPassword(String token, String newPassword) {
+        Optional<PasswordResetToken> tokenOpt = passwordResetTokenRepository.findByToken(token);
+        if (tokenOpt.isEmpty() || tokenOpt.get().getExpiryDate().isBefore(java.time.LocalDateTime.now())) {
+            return false;
+        }
+
+        PasswordResetToken resetToken = tokenOpt.get();
+        Usuario usuario = resetToken.getUsuario();
+        usuario.setPassword(passwordEncoder.encode(newPassword));
+        usuarioRepository.save(usuario);
+        passwordResetTokenRepository.delete(resetToken);
+        return true;
+    }
+
+    @Scheduled(fixedRate = 3600000)
+    @Transactional
+    public void cleanupExpiredPasswordResetTokens() {
+        passwordResetTokenRepository.deleteByExpiryDateBefore(java.time.LocalDateTime.now());
+    }
+
     // ── 2FA DESACTIVADO ────────────────────────────────────────────────────
     // Para reactivar 2FA:
     //   1. Descomentar el método login() de abajo
@@ -56,45 +106,10 @@ public class AuthService {
     //   3. En el frontend LoginPage.jsx, descomentar las secciones /* 2FA */
     // ────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Login SIN 2FA: valida credenciales y retorna JWT directamente.
-     * Rechaza usuarios con rol=3 (deben usar la ruta administrativa secreta).
-     */
-    public AuthResponse login(String email, String password, HttpServletRequest httpRequest) {
-        String clientIp = IpUtils.getClientIp(httpRequest);
-        String fingerprint = computeFingerprint(httpRequest);
+    // ── Login SIN 2FA (Reemplazado por Login 2FA) ──────────────────────────
+    /* public AuthResponse login(String email, String password, HttpServletRequest httpRequest) { ... } */
+    // ────────────────────────────────────────────────────────────────────────
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
-
-        if (usuarioOpt.isEmpty()) {
-            return null;
-        }
-
-        Usuario usuario = usuarioOpt.get();
-
-        if (usuario.getVisible() != '1' || Boolean.FALSE.equals(usuario.getActivo())) {
-            return null;
-        }
-
-        if (usuario.getId_rol() == 3 || usuario.getId_rol() == 4) {
-            return null;
-        }
-
-        if (!passwordEncoder.matches(password, usuario.getPassword())) {
-            return null;
-        }
-
-        String token = jwtService.generateToken(usuario);
-
-        String refreshToken = refreshTokenService.createRefreshToken(usuario.getId_usuario(), fingerprint, clientIp).getToken();
-
-        return AuthResponse.builder()
-                .token(token)
-                .refreshToken(refreshToken)
-                .message("Inicio de sesión exitoso")
-                .usuario(UsuarioHelper.mapUsuario(usuario))
-                .build();
-    }
 
     /**
      * Login exclusivo para administradores (rol=3).
@@ -136,9 +151,9 @@ public class AuthService {
                 .build();
     }
 
-    /*
     // ── Login CON 2FA ─────────────────────────────────────────────────────
-    public AuthResponse login(String email, String password) {
+    public AuthResponse login(String email, String password, HttpServletRequest httpRequest) {
+        String clientIp = IpUtils.getClientIp(httpRequest);
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
 
         if (usuarioOpt.isEmpty()) {
@@ -155,7 +170,7 @@ public class AuthService {
             return null;
         }
 
-        if (!ipAutorizadaService.isIpAutorizada(usuario.getId_usuario(), ipCliente)) {
+        if (!ipAutorizadaService.isIpAuthorized(clientIp)) {
             return null;
         }
 
@@ -171,7 +186,8 @@ public class AuthService {
                 .message("Código de verificación enviado al correo: " + ocultarEmail(email))
                 .build();
     }
-    // ──────────────────────────────────────────────────────────────────────*/
+    // ──────────────────────────────────────────────────────────────────────
+
 
     /**
      * Paso 2 del login: Verifica el código 2FA y genera JWT token.

@@ -209,6 +209,10 @@ public class CitaService {
             throw new RuntimeException("El horario seleccionado ya no está disponible");
         }
 
+        if (horario.getFecha() != null && horario.getFecha().isBefore(java.time.LocalDate.now())) {
+            throw new RuntimeException("No se pueden agendar citas en fechas pasadas");
+        }
+
         if (cita.getFecha_cita() == null || cita.getFecha_cita().contains("NaN")) {
             cita.setFecha_cita(LocalDate.now().toString());
         }

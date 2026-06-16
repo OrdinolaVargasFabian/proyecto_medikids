@@ -9,7 +9,6 @@ import com.medikids.medikids.process.dto.UsuarioDto;
 import com.medikids.medikids.process.service.MedicoService;
 import com.medikids.medikids.process.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,10 +24,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class MedicoController {
 
-    @Autowired
     private final MedicoService medicoService;
-
-    @Autowired
     private final UsuarioService usuarioService;
 
     @GetMapping("/all")
@@ -75,7 +71,7 @@ public class MedicoController {
             medicoReq.setNro_colegiatura(request.getNro_colegiatura());
             medicoReq.setUrl_foto(request.getUrl_foto() != null ? request.getUrl_foto() : "");
             medicoReq.setGenero(request.getGenero() != null ? request.getGenero() : null);
-            medicoReq.setEstado(request.getEstado() != null ? Medico.EstadoMedico.valueOf(request.getEstado()) : Medico.EstadoMedico.ACTIVO);
+            medicoReq.setEstado(request.getEstado() != null ? Medico.EstadoMedico.valueOf(request.getEstado()) : Medico.EstadoMedico.activo);
             medicoReq.setId_usuario(usuario.getId_usuario());
             medicoReq.setId_especialidad(request.getId_especialidad());
 

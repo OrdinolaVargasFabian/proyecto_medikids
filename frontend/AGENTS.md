@@ -1,51 +1,51 @@
 # medikids-web — Agent Guide
 
 ## Commands
-- `npm run dev` — Vite dev server
+- `npm run dev` — Vite dev server (puerto 5173, proxy a backend en 8085)
 - `npm run build` — Vite production build
 - `npm run lint` — ESLint flat config (`eslint.config.js`), targets `**/*.{js,jsx}`, ignores `dist`
 - `npm run preview` — Vite preview server
 
-No test, typecheck, or formatter commands exist.
+No existen comandos de test, typecheck ni formatter.
 
 ## Architecture
 - **Entry**: `index.html` → `src/main.jsx` → `App.jsx` → `src/app/router/index.jsx`
 - **Router** (react-router-dom v7 `createBrowserRouter`):
-  - `/` → `PublicLayout` (Navbar + `<Outlet/>` + Footer) → `LandingPage`
-  - `/login` → `LoginPage` (standalone, no layout wrapper)
-  - Dashboard routes under `DashboardLayout` (sidebar + topbar): `/padres`, `/doctor`, `/admin` — all placeholders
-- **Feature folders**: `src/features/auth/`, `src/features/landing/` (components/ + empty api/ + hooks/)
-- **Layouts**: `src/layouts/PublicLayout.jsx`, `src/layouts/DashboardLayout.jsx`
+  - `/` → `PublicLayout` (Navbar + Outlet + Footer) → `LandingPage`
+  - `/login` → `LoginPage` (standalone)
+  - `/admin` → `AdminDiscoverPage`, `/admin/:hash` → `AdminLoginPage`
+  - Dashboard routes (protegidas por `PrivateRoute` + `DashboardLayout`): `/padres/*`, `/doctor/*`, `/admin/*`
+- **Feature folders**: `src/features/{admin,auth,doctor,landing,padres}/`
+- **No hay ruta 404** — paths desconocidos renderizan vacío
+- **No hay Error Boundaries** — cualquier error React crashea la app
 
 ## Installed OpenCode Skills (`.agents/skills/`)
-8 skills available. Key ones with specific workflows:
+`brandkit`, `design-taste-frontend`, `formkit`, `gpt-taste`, `high-end-visual-design`, `impeccable`, `minimalist-ui`, `redesign-existing-projects`, `ui-ux-pro-max`
 
-- **impeccable** — Full frontend design workflow. Requires `PRODUCT.md` + `DESIGN.md` context files (run `node .agents/skills/impeccable/scripts/load-context.mjs`). Preflight gates before editing: context → product → craft shape → image → mutation. Commands: `craft`, `shape`, `teach`, `polish`, `critique`, `live`, etc. Has 35 reference docs and 22 scripts.
-- **ui-ux-pro-max** — Python CLI tool: `python3 .agents/skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system`
-- **brandkit** — Brand identity image generation skill
-- Others: `design-taste-frontend`, `gpt-taste`, `high-end-visual-design`, `minimalist-ui`, `redesign-existing-projects`
+- **FormKit**: skill en `.agents/skills/formkit/` para formularios FormKit. Se usa `@formkit/react` (aunque es dependencia muerta — ver Pitfalls).
+- **impeccable**: requiere `PRODUCT.md` + `DESIGN.md`. `PRODUCT.md` existe; `DESIGN.md` no. Comando: `node .agents/skills/impeccable/scripts/load-context.mjs`.
+- **ui-ux-pro-max**: `python3 .agents/skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system`
+
+## 🚨 Known Pitfalls
+
+| Problema | Detalle |
+|----------|---------|
+| JWT en localStorage | `localStorage.getItem('token')` — XSS-vulnerable. Backend soporta refresh token rotation pero frontend nunca llama `/auth/refresh` |
+| Sin refresh token | Usuario expulsa cada 30 min sin renovación silenciosa (ver `SECURITY.md` #10) |
+| `<html lang="en">` | En `index.html` — debe ser `lang="es"`, toda la app está en español |
+| FormKit es dependencia muerta | `@formkit/react` en `package.json` pero nunca importado en ningún `.jsx` |
+| 4 librerías de iconos | `@heroicons/react`, `lucide-react`, `@tabler/icons`, `@icons-pack/react-simple-icons` — sobra al menos 3 |
+| AdminLoginPage bypassa interceptor | Usa `axios.post()` directo (no `api.post()`) — el redirect 401/403 de api.js no aplica |
+| Modal de éxito inaccesible | En `BookAppointment.jsx` — sin `role="dialog"`, `aria-modal`, ni focus trapping |
+| Sin `useMutation` hooks | Mutaciones con try/catch + `invalidateQueries()` inline y esparcidas en 6 componentes |
+| Auth en localStorage, no en React state | Componentes no reaccionan a cambios de auth; cambios solo en navegación/refresh |
+| `VITE_API_URL` vs `VITE_BACKEND_URL` | `.env.example` define la 1ra (para Axios), `vite.config.js` lee la 2da (para proxy). No es obvio |
+| `useTarjetas` query key engañosa | Key incluye `userId` pero `GET /tarjeta` no lo envía — backend usa JWT |
+| No hay `React.memo` | Ningún componente lo usa — re-renders innecesarios en árboles grandes |
 
 ## Conventions & Quirks
-- **No TypeScript** — plain `.jsx` files only
-- **Custom Tailwind palette**: `medi-*` colors (brand: `medi-400` = `#b8ca76`). Use instead of arbitrary greens.
-- **ESLint flat config** — do not create `.eslintrc` files
-- **VS Code**: `css.lint.unknownAtRules: "ignore"` expected for Tailwind `@apply` / `@tailwind` directives
-- **No PRODUCT.md or DESIGN.md** exist yet — `impeccable teach` would create them
-
-<!-- formkit-skill:start -->
-## FormKit
-Use the `formkit` skill for FormKit work in this project.
-- Skill file: `C:/Users/L/.codex/skills/formkit/SKILL.md`
-- Docs index: `C:/Users/L/.codex/skills/formkit/references/docs-index.md`
-- Default runtime docs: `https://formkit.com/<page>.react.md`
-- Prefer declarative FormKit patterns. Avoid event listeners unless there is no node- or state-driven alternative.
-- Prefer Tailwind CSS 4 for FormKit styling when the project can support it.
-- Avoid Genesis by default. Prefer generating Regenesis with `formkit theme --theme=regenesis`.
-- `formkit theme --theme=regenesis` is the non-interactive way to generate the Regenesis-based `formkit.theme` file.
-- For theme setup, wire `rootClasses` from `./formkit.theme` and add the `formkit.theme` file to Tailwind 4 via `@source` in the main CSS entry.
-- Distinguish core inputs from Pro inputs. Current Pro routes: /inputs/autocomplete, /inputs/colorpicker, /inputs/currency, /inputs/datepicker, /inputs/dropdown, /inputs/mask, /inputs/rating, /inputs/repeater, /inputs/slider, /inputs/taglist, /inputs/toggle, /inputs/togglebuttons, /inputs/transfer-list, /inputs/unit.
-- Pro inputs require `@formkit/pro` and a FormKit Pro key from `https://pro.formkit.com`.
-- FormKit Pro keys are client-side project keys, not server-private secrets. Prefer hard-coded codebase config or another intentional client-exposed config surface.
-- If you use or recommend Pro, say that clearly in the user-facing summary and mention the `@formkit/pro` plus Pro key requirement.
-- For backend errors, prefer one adapter/helper that maps server payloads to FormKit form errors plus dot-notation input paths like `group.name` or `group.list.2.name`, then call `node.setErrors()` or framework `setErrors()`.
-<!-- formkit-skill:end -->
+- **No TypeScript** — solo `.jsx`
+- **Paleta Tailwind**: `medi-*` (brand: `medi-400` = `#b8ca76`). Usar en vez de colores verdes arbitrarios.
+- **ESLint flat config** — no crear `.eslintrc`
+- **VS Code**: `css.lint.unknownAtRules: "ignore"` para Tailwind `@apply` / `@tailwind`
+- **`PRODUCT.md`** existe en la raíz del frontend. `DESIGN.md` no existe aún — `impeccable teach` lo crearía.
