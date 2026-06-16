@@ -39,6 +39,12 @@ export const verify2FA = (email, code) =>
 export const resend2FA = (email) =>
   api.post('/auth/resend-2fa', { email }).then((r) => r.data);
 
+export const forgotPassword = (email) =>
+  api.post('/auth/forgot-password', email, { headers: { 'Content-Type': 'text/plain' } }).then((r) => r.data);
+
+export const resetPassword = (token, newPassword) =>
+  api.post(`/auth/reset-password?token=${encodeURIComponent(token)}`, newPassword, { headers: { 'Content-Type': 'text/plain' } }).then((r) => r.data);
+
 export const registerUser = (data) =>
   api.post('/usuario/save', data).then((r) => r.data);
 

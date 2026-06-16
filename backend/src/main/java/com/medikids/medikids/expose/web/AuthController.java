@@ -71,6 +71,23 @@ public class AuthController {
                         .build());
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody String email) {
+        authService.requestPasswordReset(email);
+        return ResponseEntity.ok("Si el correo existe, recibirás instrucciones.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestParam String token, @RequestBody String newPassword) {
+        if (newPassword == null || newPassword.length() < 6) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("La contraseña debe tener al menos 6 caracteres.");
+        }
+        if (authService.validateAndResetPassword(token, newPassword)) {
+            return ResponseEntity.ok("Contraseña actualizada exitosamente.");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token inválido o expirado.");
+    }
+
     // ── Refresh Token ──────────────────────────────────────────────────────
 
     @PostMapping("/refresh")

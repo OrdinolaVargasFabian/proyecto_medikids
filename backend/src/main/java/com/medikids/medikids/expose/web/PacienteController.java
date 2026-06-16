@@ -6,7 +6,6 @@ import com.medikids.medikids.process.dto.PacienteDto;
 import com.medikids.medikids.process.service.ClienteService;
 import com.medikids.medikids.process.service.PacienteService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,11 +21,8 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class PacienteController {
 
-    @Autowired
     private final PacienteService pacienteService;
-
-    @Autowired
-    private ClienteService clienteService;
+    private final ClienteService clienteService;
 
     @GetMapping("/all")
     @PreAuthorize("@permiso.has('paciente:read')")

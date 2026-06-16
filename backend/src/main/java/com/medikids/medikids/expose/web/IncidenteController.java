@@ -7,7 +7,6 @@ import com.medikids.medikids.process.dto.MedicoDto;
 import com.medikids.medikids.process.service.IncidenteService;
 import com.medikids.medikids.process.service.MedicoService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,11 +22,8 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class IncidenteController {
 
-    @Autowired
     private final IncidenteService incidenteService;
-
-    @Autowired
-    private MedicoService medicoService;
+    private final MedicoService medicoService;
 
     @GetMapping("/all")
     @PreAuthorize("@permiso.has('incidente:read')")

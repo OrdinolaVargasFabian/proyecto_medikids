@@ -66,7 +66,12 @@ export const DoctorSchedules = () => {
       return { ...d, date, dateStr: formatDate(date) };
     }), [weekStart]);
 
-  const today = useMemo(() => formatDate(new Date()), []);
+  const todayDate = useMemo(() => new Date(new Date().setHours(0, 0, 0, 0)), []);
+  const todayStr = useMemo(() => formatDate(todayDate), [todayDate]);
+  const currentMonday = useMemo(() => getMonday(todayDate), [todayDate]);
+
+  const canGoPrev = weekStart.getTime() > currentMonday.getTime();
+  const isPastDate = (dateStr) => dateStr < todayStr;
 
   const inicio = weekDays[0]?.dateStr;
   const fin = weekDays[5]?.dateStr;
@@ -178,12 +183,14 @@ export const DoctorSchedules = () => {
         <>
           <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden">
             <div className="flex items-center justify-between px-8 py-5 border-b border-gray-100 bg-gray-50/80">
+              {canGoPrev ? (
               <button onClick={() => setWeekStart((prev) => {
                 const d = new Date(prev); d.setDate(d.getDate() - 7); return d;
               })} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-600 hover:text-medi-600 hover:bg-medi-50 rounded-xl transition-all">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
                 Semana anterior
               </button>
+              ) : <div className="w-[140px]" />}
 
               <div className="text-center">
                 <div className="text-lg font-extrabold text-gray-900">
@@ -212,9 +219,9 @@ export const DoctorSchedules = () => {
                     <tr>
                       <th className="w-20 p-3 text-xs font-bold text-gray-400 uppercase tracking-wider border-r border-b border-gray-100 bg-gray-50/50" />
                       {weekDays.map((d) => (
-                        <th key={d.dateStr} className={`p-3 text-center border-b border-gray-100 bg-gray-50/50 ${d.dateStr === today ? "bg-medi-50" : ""}`}>
-                          <div className={`text-sm font-extrabold uppercase tracking-wide ${d.dateStr === today ? "text-medi-700" : "text-gray-900"}`}>{d.label}</div>
-                          <div className={`text-xs mt-0.5 ${d.dateStr === today ? "text-medi-500 font-bold" : "text-gray-400"}`}>{d.date.getDate()}</div>
+                        <th key={d.dateStr} className={`p-3 text-center border-b border-gray-100 bg-gray-50/50 ${d.dateStr === todayStr ? "bg-medi-50" : ""}`}>
+                          <div className={`text-sm font-extrabold uppercase tracking-wide ${d.dateStr === todayStr ? "text-medi-700" : "text-gray-900"}`}>{d.label}</div>
+                          <div className={`text-xs mt-0.5 ${d.dateStr === todayStr ? "text-medi-500 font-bold" : "text-gray-400"}`}>{d.date.getDate()}</div>
                         </th>
                       ))}
                     </tr>
@@ -227,7 +234,15 @@ export const DoctorSchedules = () => {
                           const key = toKey(d.dateStr, hour);
                           const isAvail = available.includes(key);
                           const isBooked = booked.includes(key);
-                          const isToday = d.dateStr === today;
+                          const isPast = isPastDate(d.dateStr);
+
+                          if (isPast) {
+                            return (
+                              <td key={d.dateStr} className="h-12 border-b border-r border-gray-100 bg-gray-50/80 cursor-not-allowed opacity-40">
+                                <div className="flex items-center justify-center h-full" />
+                              </td>
+                            );
+                          }
 
                           if (isBooked) {
                             return (
@@ -250,7 +265,7 @@ export const DoctorSchedules = () => {
                           }
 
                           return (
-                            <td key={d.dateStr} onClick={() => toggleCell(d.dateStr, hour)} className={`h-12 border-b border-r border-gray-100 bg-white hover:bg-medi-50 cursor-pointer transition-all ${isToday ? "border-medi-200" : ""}`}>
+                            <td key={d.dateStr} onClick={() => toggleCell(d.dateStr, hour)} className={`h-12 border-b border-r border-gray-100 bg-white hover:bg-medi-50 cursor-pointer transition-all ${d.dateStr === todayStr ? "border-medi-200" : ""}`}>
                               <div className="flex items-center justify-center h-full" />
                             </td>
                           );

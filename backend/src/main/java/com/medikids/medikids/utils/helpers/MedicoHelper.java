@@ -26,7 +26,7 @@ public class MedicoHelper implements Serializable {
                 .id_usuario(medico.getId_usuario())
                 .id_especialidad(medico.getId_especialidad())
                 .activo(medico.getActivo())
-                .estado(medico.getEstado() != null ? medico.getEstado() : Medico.EstadoMedico.ACTIVO)
+                .estado(medico.getEstado() != null ? medico.getEstado() : Medico.EstadoMedico.activo)
                 .build();
     }
 
@@ -36,7 +36,7 @@ public class MedicoHelper implements Serializable {
                 .nro_colegiatura(medico.getNro_colegiatura())
                 .url_foto(medico.getUrl_foto())
                 .genero(medico.getGenero() != null ? Medico.Genero.valueOf(medico.getGenero()) : null)
-                .estado(medico.getEstado() != null ? medico.getEstado() : Medico.EstadoMedico.ACTIVO)
+                .estado(medico.getEstado() != null ? medico.getEstado() : Medico.EstadoMedico.activo)
                 .id_usuario(medico.getId_usuario())
                 .id_especialidad(medico.getId_especialidad())
                 .activo('1')

@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useNotifications } from "../app/context/NotificationContext";
+import { Search } from "lucide-react";
 import { TutorialProvider } from "../features/padres/context/TutorialContext";
 import { TutorialGuide } from "../features/padres/components/TutorialGuide";
 
@@ -91,6 +92,10 @@ export const DashboardLayout = () => {
   const userName = `${nombres} ${apellidos}`.trim() || "Usuario";
   const initials = (nombres.charAt(0) + (apellidos.charAt(0) || "")).toUpperCase() || "U";
 
+  const sidebarPalette = isAdmin
+    ? { bg: "from-slate-800 to-slate-900", nav: "text-slate-400", navHover: "hover:text-white hover:bg-white/5", logout: "text-slate-500 hover:text-white", logo: "text-white", logoAccent: "text-medi-400" }
+    : { bg: "from-medi-600 to-medi-700", nav: "text-medi-100/70", navHover: "hover:text-white hover:bg-white/10", logout: "text-white/50 hover:text-white hover:bg-white/10", logo: "text-white", logoAccent: "text-medi-200" };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("usuario");
@@ -110,20 +115,20 @@ export const DashboardLayout = () => {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-gradient-to-b from-medi-600 via-medi-700 to-medi-800 text-white flex flex-col shadow-2xl transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-gradient-to-b ${sidebarPalette.bg} text-white flex flex-col shadow-2xl transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
-        <div className="h-24 flex items-center justify-center border-b border-white/10">
+        <div className="h-24 flex items-center justify-center border-b border-white/5">
           <Link
             to="/"
-            className="flex flex-col items-start text-left leading-[0.9] font-black text-white tracking-tighter text-3xl hover:opacity-80 transition-opacity"
+            className="flex flex-col items-start text-left leading-[0.9] font-black tracking-tighter text-3xl hover:opacity-80 transition-opacity"
           >
-            <span>medi</span>
-            <span>kids</span>
+            <span className={sidebarPalette.logo}>medi</span>
+            <span className={sidebarPalette.logoAccent}>kids</span>
           </Link>
         </div>
 
-        <nav className="flex-1 p-4 flex flex-col gap-1.5 overflow-y-auto mt-2">
+        <nav className="flex-1 p-4 flex flex-col gap-0.5 overflow-y-auto mt-2">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -131,9 +136,9 @@ export const DashboardLayout = () => {
                 key={item.path}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActive
-                    ? "bg-white/20 text-white shadow-md backdrop-blur-sm"
-                    : "text-white/60 hover:text-white hover:bg-white/10"
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${isActive
+                    ? "bg-white/10 text-white border-l-2 border-medi-400"
+                    : `${sidebarPalette.nav} ${sidebarPalette.navHover}`
                   }`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 shrink-0">
@@ -145,10 +150,10 @@ export const DashboardLayout = () => {
           })}
         </nav>
 
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-white/5">
           <button
             onClick={handleLogout}
-            className="w-full py-3 text-sm text-white/60 hover:text-white hover:bg-white/10 rounded-xl transition-colors flex items-center justify-center gap-2 font-medium"
+            className={`w-full py-3 text-sm rounded-lg transition-colors flex items-center justify-center gap-2 font-medium ${sidebarPalette.logout}`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
@@ -160,7 +165,7 @@ export const DashboardLayout = () => {
 
       <div className="lg:ml-64 flex flex-col min-h-screen">
         <header className="sticky top-0 z-10 h-16 lg:h-20 bg-white/80 backdrop-blur-xl border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 shadow-sm">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-1">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="lg:hidden w-10 h-10 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center transition-colors"
@@ -169,9 +174,19 @@ export const DashboardLayout = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
               </svg>
             </button>
-            <h1 className="text-xl font-bold text-gray-800">
+            <h1 className="text-xl font-bold text-gray-800 shrink-0">
               {navItems.find((i) => i.path === location.pathname)?.label || "Panel Principal"}
             </h1>
+            {isAdmin && (
+              <div className="relative hidden sm:block flex-1 max-w-xs ml-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar pacientes, citas..."
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50/80 rounded-xl text-sm text-slate-700 placeholder-slate-400 border border-slate-200/60 focus:border-medi-400 focus:ring-2 focus:ring-medi-400/20 transition-all outline-none"
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -257,7 +272,7 @@ export const DashboardLayout = () => {
               <div className="text-sm font-bold text-gray-900">{userName}</div>
               <div className="text-xs text-gray-500">{roleLabel}</div>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-medi-400 to-medi-600 text-white flex items-center justify-center font-extrabold shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-600 to-slate-800 text-white flex items-center justify-center font-extrabold shadow-md">
               {initials}
             </div>
           </div>
