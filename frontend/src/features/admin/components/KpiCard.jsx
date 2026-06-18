@@ -8,7 +8,7 @@ function useCountUp(end, duration = 900) {
   const rafRef = useRef(null)
 
   useEffect(() => {
-    const raw = typeof end === "string" ? end.replace(/[^0-9.\-]/g, "") : String(end)
+    const raw = typeof end === "string" ? end.replace(/[^0-9.-]/g, "") : String(end)
     const numeric = parseFloat(raw)
     if (isNaN(numeric)) return
     startRef.current = null
@@ -97,4 +97,3 @@ export const KpiCard = memo(({ icon: Icon, label, value, cambio, subtitle, linkT
   )
 })
 
-export { useCountUp }

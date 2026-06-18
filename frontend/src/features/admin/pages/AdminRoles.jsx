@@ -10,6 +10,7 @@ export const AdminRoles = () => {
   const [permisosRol, setPermisosRol] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null);
+  const [toast, setToast] = useState({ message: '', type: '' });
 
   useEffect(() => {
     Promise.all([getRoles(), getAllPermisos()])
@@ -17,13 +18,19 @@ export const AdminRoles = () => {
         setRoles(rolesData);
         setPermisos(permisosData);
       })
+      .catch(() => setToast({ message: 'Error al cargar roles', type: 'error' }))
       .finally(() => setLoading(false));
   }, []);
 
   const cargarPermisosRol = useCallback(async (rol) => {
     setSelectedRol(rol);
-    const codigos = await getPermisosDeRol(rol.id_rol);
-    setPermisosRol(codigos);
+    setToast({ message: '', type: '' });
+    try {
+      const codigos = await getPermisosDeRol(rol.id_rol);
+      setPermisosRol(codigos);
+    } catch {
+      setToast({ message: 'Error al cargar permisos del rol', type: 'error' });
+    }
   }, []);
 
   const togglePermiso = async (permiso) => {
@@ -40,7 +47,7 @@ export const AdminRoles = () => {
         setPermisosRol((prev) => [...prev, permiso.codigo]);
       }
     } catch (err) {
-      console.error("Error al cambiar permiso:", err);
+      setToast({ message: 'Error al cambiar permiso', type: 'error' });
     } finally {
       setSaving(null);
     }
@@ -60,6 +67,12 @@ export const AdminRoles = () => {
         <Shield className="w-7 h-7 text-medi-600" />
         <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Roles y Permisos</h1>
       </div>
+
+      {toast.message && (
+        <div className={`mb-6 px-4 py-3 rounded-xl text-sm font-bold ${
+          toast.type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+        }`}>{toast.message}</div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6">
         {/* ── Lista de roles ── */}

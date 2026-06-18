@@ -17,7 +17,7 @@ export const ForgotPasswordPage = () => {
     try {
       await forgotPassword(email);
       setMessage("Si el correo existe, recibirás instrucciones para restablecer tu contraseña.");
-    } catch (err) {
+    } catch {
       setError("Ocurrió un error al procesar tu solicitud.");
     } finally {
       setLoading(false);

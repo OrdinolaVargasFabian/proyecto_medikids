@@ -1,6 +1,7 @@
 package com.medikids.medikids.expose.web;
 
 import com.medikids.medikids.expose.model.request.AdminLoginRequest;
+import com.medikids.medikids.expose.model.request.BiometriaVerifyRequest;
 import com.medikids.medikids.expose.model.response.AuthResponse;
 import com.medikids.medikids.process.service.AdminConfigService;
 import com.medikids.medikids.process.service.AuthService;
@@ -72,6 +73,47 @@ public class AdminAuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(AuthResponse.builder()
                         .message("Credenciales inválidas o no tienes permisos de administrador")
+                        .build());
+    }
+
+    @PostMapping("/biometria/verify")
+    public ResponseEntity<AuthResponse> verifyFace(@RequestBody BiometriaVerifyRequest request,
+                                                    HttpServletRequest httpRequest) {
+        AuthResponse response = authService.adminLoginFaceVerify(
+                request.getEmail(),
+                request.getDescriptor(),
+                request.getPreAuthToken(),
+                httpRequest
+        );
+
+        if (Objects.nonNull(response)) {
+            return ResponseEntity.ok(response);
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(AuthResponse.builder()
+                        .message("Verificación facial fallida")
+                        .build());
+    }
+
+    @PostMapping("/auth/verify-2fa")
+    public ResponseEntity<AuthResponse> verify2FA(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String code = body.get("code");
+
+        if (email == null || code == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        AuthResponse response = authService.verify2FA(email, code);
+
+        if (Objects.nonNull(response)) {
+            return ResponseEntity.ok(response);
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(AuthResponse.builder()
+                        .message("Código inválido o expirado")
                         .build());
     }
 

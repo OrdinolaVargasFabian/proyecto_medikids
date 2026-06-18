@@ -166,6 +166,12 @@ public class AdminController {
         usuarioRequest.setApellidos(request.getApellidos());
         usuarioRequest.setTelefono(request.getTelefono());
         UsuarioDto dto = usuarioService.save(usuarioRequest);
+
+        usuarioRepository.findById(dto.getId_usuario()).ifPresent(u -> {
+            u.setActivo(false);
+            usuarioRepository.save(u);
+        });
+
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 

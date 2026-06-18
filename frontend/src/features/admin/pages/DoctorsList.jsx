@@ -4,7 +4,7 @@ import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from "
 import { getDoctors, getSpecialties, saveDoctorWithUser, updateDoctor, updateUser, toggleDoctorStatus, deleteDoctor } from "../../../services/api";
 import { AdminTableSkeleton } from "../../../app/components/skeletons/AdminTableSkeleton";
 
-const Toast = ({ message, type, onClose }) => {
+const Toast = ({ message, onClose }) => {
   useEffect(() => {
     if (!message) return;
     const t = setTimeout(onClose, 3000);
@@ -121,7 +121,7 @@ export const DoctorsList = () => {
       if (editingDoctor) {
         await updateUser(editingDoctor.id_usuario, {
           id_rol: 2, nombres: form.nombres, apellidos: form.apellidos,
-          email: form.email, telefono: 0,
+          email: form.email,
         });
         await updateDoctor(editingDoctor.id_medico, {
           nro_colegiatura: form.nro_colegiatura,
@@ -136,7 +136,7 @@ export const DoctorsList = () => {
       } else {
         await saveDoctorWithUser({
           nombres: form.nombres, apellidos: form.apellidos, email: form.email,
-          password: form.password, telefono: 0,
+          password: form.password,
           nro_colegiatura: form.nro_colegiatura,
           url_foto: form.url_foto || "",
           genero: form.genero || null,

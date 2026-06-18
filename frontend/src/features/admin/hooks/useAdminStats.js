@@ -122,15 +122,6 @@ export function useAdminStats(timeRange = "month") {
     [pagos, range]
   )
 
-  const pacientesFiltrados = useMemo(
-    () => pacientes.filter((p) => inRange(p.fecha_registro, range.start, range.end)),
-    [pacientes, range]
-  )
-  const pacientesPrev = useMemo(
-    () => pacientes.filter((p) => inRange(p.fecha_registro, range.prevStart, range.prevEnd)),
-    [pacientes, range]
-  )
-
   // ── KPIs ──
   const kpis = useMemo(() => {
     const pendientes = citasFiltradas.filter((c) => c.estado === "Pendiente").length

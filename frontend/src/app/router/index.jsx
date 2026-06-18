@@ -27,6 +27,7 @@ const AdminPayments = lazy(() => import('../../features/admin/pages/AdminPayment
 const AdminRoles = lazy(() => import('../../features/admin/pages/AdminRoles').then(m => ({ default: m.AdminRoles })));
 const CreateAdmin = lazy(() => import('../../features/admin/pages/CreateAdmin').then(m => ({ default: m.CreateAdmin })));
 const UserManagement = lazy(() => import('../../features/admin/pages/UserManagement').then(m => ({ default: m.UserManagement })));
+const FaceRegistration = lazy(() => import('../../features/admin/pages/FaceRegistration').then(m => ({ default: m.FaceRegistration })));
 const DoctorDashboard = lazy(() => import('../../features/doctor/pages/DoctorDashboard').then(m => ({ default: m.DoctorDashboard })));
 const PatientHistory = lazy(() => import('../../features/doctor/pages/PatientHistory').then(m => ({ default: m.PatientHistory })));
 const DoctorIncidents = lazy(() => import('../../features/doctor/pages/DoctorIncidents').then(m => ({ default: m.DoctorIncidents })));
@@ -147,6 +148,14 @@ export const router = createBrowserRouter([
           {
             path: '/admin/usuarios',
             element: <Suspense fallback={<RouteLoader />}><UserManagement /></Suspense>
+          },
+          {
+            path: '/admin/biometria/registrar/nuevo',
+            element: <Suspense fallback={<RouteLoader />}><FaceRegistration /></Suspense>
+          },
+          {
+            path: '/admin/biometria/registrar/:usuarioId',
+            element: <Suspense fallback={<RouteLoader />}><FaceRegistration /></Suspense>
           },
         ]
       }

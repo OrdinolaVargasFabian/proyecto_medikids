@@ -1,0 +1,334 @@
+
+> medikids-web@0.0.0 lint
+> eslint .
+
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\.agents\skills\impeccable\scripts\detector\detect-antipatterns-browser.js
+   656:108  error  Unexpected combined character in character class                 no-misleading-character-class
+   656:116  error  Unexpected joined character sequence in character class          no-misleading-character-class
+   656:124  error  Unexpected modified Emoji in character class                     no-misleading-character-class
+   657:113  error  Unexpected combined character in character class                 no-misleading-character-class
+   657:121  error  Unexpected joined character sequence in character class          no-misleading-character-class
+   657:129  error  Unexpected modified Emoji in character class                     no-misleading-character-class
+   864:9    error  'rgbM' is assigned a value but never used                        no-unused-vars
+   909:30   error  'headingFontSize' is assigned a value but never used             no-unused-vars
+  1344:52   error  'win' is defined but never used                                  no-unused-vars
+  1473:10   error  'buildCustomPropMap' is defined but never used                   no-unused-vars
+  1887:52   error  Empty block statement                                            no-empty
+  1890:48   error  Empty block statement                                            no-empty
+  1930:60   error  Empty block statement                                            no-empty
+  2109:21   error  Empty block statement                                            no-empty
+  2308:10   error  'checkElementQuality' is defined but never used                  no-unused-vars
+  2317:10   error  'checkElementBorders' is defined but never used                  no-unused-vars
+  2347:10   error  'checkElementColors' is defined but never used                   no-unused-vars
+  2401:10   error  'checkElementIconTile' is defined but never used                 no-unused-vars
+  2438:10   error  'checkElementItalicSerif' is defined but never used              no-unused-vars
+  2449:10   error  'checkElementHeroEyebrow' is defined but never used              no-unused-vars
+  2480:10   error  'checkRepeatedSectionKickersFromDoc' is defined but never used   no-unused-vars
+  2489:10   error  'checkElementMotion' is defined but never used                   no-unused-vars
+  2499:10   error  'checkElementGlow' is defined but never used                     no-unused-vars
+  2613:10   error  'checkPageTypography' is defined but never used                  no-unused-vars
+  2711:10   error  'checkPageLayout' is defined but never used                      no-unused-vars
+  2852:10   error  'checkElementOversizedH1' is defined but never used              no-unused-vars
+  2936:10   error  'checkElementGptBorderShadow' is defined but never used          no-unused-vars
+  2996:13   error  Empty block statement                                            no-empty
+  3001:13   error  Empty block statement                                            no-empty
+  3086:10   error  'checkElementClippedOverflow' is defined but never used          no-unused-vars
+  3462:11   error  'hasSlop' is assigned a value but never used                     no-unused-vars
+  4384:13   error  The value assigned to 'el' is not used in subsequent statements  no-useless-assignment
+  4823:9    error  The value assigned to 'el' is not used in subsequent statements  no-useless-assignment
+  4930:11   error  The value assigned to 'el' is not used in subsequent statements  no-useless-assignment
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\.agents\skills\impeccable\scripts\live-browser.js
+    183:11  error  Empty block statement                                                    no-empty
+    218:5   error  'cssId' is assigned a value but never used                               no-unused-vars
+    582:68  error  Empty block statement                                                    no-empty
+    595:66  error  Empty block statement                                                    no-empty
+    667:72  error  Empty block statement                                                    no-empty
+    677:72  error  Empty block statement                                                    no-empty
+    702:70  error  Empty block statement                                                    no-empty
+   1036:7   error  Duplicate key 'transition'                                               no-dupe-keys
+   1261:12  error  'configureModifierPillStyle' is defined but never used                   no-unused-vars
+   1308:12  error  'bindConfigureModifierPillHover' is defined but never used               no-unused-vars
+   2155:66  error  Empty block statement                                                    no-empty
+   2927:7   error  'paramsPanelInner' is assigned a value but never used                    no-unused-vars
+   3988:33  error  Unsafe usage of ReturnStatement                                          no-unsafe-finally
+   4255:9   error  The value assigned to 'matches' is not used in subsequent statements     no-useless-assignment
+   4404:13  error  Empty block statement                                                    no-empty
+   5523:13  error  The value assigned to 'srcWrapper' is not used in subsequent statements  no-useless-assignment
+   5816:57  error  Empty block statement                                                    no-empty
+   5823:22  error  'why' is defined but never used                                          no-unused-vars
+   5867:23  error  'why' is defined but never used                                          no-unused-vars
+   5869:13  error  'prevTarget' is assigned a value but never used                          no-unused-vars
+   6964:74  error  Empty block statement                                                    no-empty
+   7308:40  error  Empty block statement                                                    no-empty
+   7401:42  error  Empty block statement                                                    no-empty
+   7635:12  error  'commitAcceptedVariantToDom' is defined but never used                   no-unused-vars
+   8136:12  error  'loadPickPref' is defined but never used                                 no-unused-vars
+   8140:12  error  'savePickPref' is defined but never used                                 no-unused-vars
+   8190:9   error  'PAGE_CHAT_PROCESSING_W' is assigned a value but never used              no-unused-vars
+   8247:31  error  '_theme' is defined but never used                                       no-unused-vars
+   8593:31  error  'reason' is defined but never used                                       no-unused-vars
+  10782:31  error  'count' is defined but never used                                        no-unused-vars
+  11014:12  error  'highlightBold' is defined but never used                                no-unused-vars
+  11040:57  error  Empty block statement                                                    no-empty
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\.agents\skills\impeccable\scripts\modern-screenshot.umd.js
+  1:71    error  'exports' is not defined                                                       no-undef
+  1:107   error  'define' is not defined                                                        no-undef
+  1:118   error  'define' is not defined                                                        no-undef
+  1:637   error  'N' is already defined                                                         no-redeclare
+  1:808   error  'R' is already defined                                                         no-redeclare
+  1:4067  error  Unexpected control character(s) in regular expression: \x00, \x08, \x0e, \x1f  no-control-regex
+  1:6818  error  This generator function does not have 'yield'                                  require-yield
+  1:8117  error  This generator function does not have 'yield'                                  require-yield
+  7:5008  error  Unnecessary escape character: \[                                               no-useless-escape
+  7:5012  error  Unnecessary escape character: \/                                               no-useless-escape
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\app\context\NotificationContext.jsx
+  62:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\app\router\index.jsx
+  13:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  14:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  16:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  17:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  18:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  19:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  20:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  21:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  22:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  23:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  24:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  25:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  26:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  27:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  28:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  29:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  30:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  31:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  32:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  33:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  34:7  error  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\features\admin\components\KpiCard.jsx
+  11:62  error  Unnecessary escape character: \-  no-useless-escape
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\features\admin\pages\AdminAppointments.jsx
+  121:17  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+  119 |   ], []);
+  120 |
+> 121 |   const table = useReactTable({
+      |                 ^^^^^^^^^^^^^ TanStack Table's `useReactTable()` API returns functions that cannot be memoized safely
+  122 |     data: filtered,
+  123 |     columns,
+  124 |     getCoreRowModel: getCoreRowModel(),  react-hooks/incompatible-library
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\features\admin\pages\AdminIncidents.jsx
+  29:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  27 |   };
+  28 |
+> 29 |   useEffect(loadIncidents, []);
+     |             ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  30 |
+  31 |   const handleRespond = async (id) => {
+  32 |     if (!responseText.trim()) return;  react-hooks/set-state-in-effect
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\features\admin\pages\AdminPatients.jsx
+  51:17  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+  49 |   ], []);
+  50 |
+> 51 |   const table = useReactTable({
+     |                 ^^^^^^^^^^^^^ TanStack Table's `useReactTable()` API returns functions that cannot be memoized safely
+  52 |     data: filtered,
+  53 |     columns,
+  54 |     getCoreRowModel: getCoreRowModel(),  react-hooks/incompatible-library
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\features\admin\pages\AdminPayments.jsx
+  73:17  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+  71 |   ], []);
+  72 |
+> 73 |   const table = useReactTable({
+     |                 ^^^^^^^^^^^^^ TanStack Table's `useReactTable()` API returns functions that cannot be memoized safely
+  74 |     data: payments,
+  75 |     columns,
+  76 |     getCoreRowModel: getCoreRowModel(),  react-hooks/incompatible-library
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\features\admin\pages\DoctorsList.jsx
+  259:6   warning  React Hook useMemo has missing dependencies: 'getSpecialtyName' and 'handleToggle'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+  261:17  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+  259 |   ], [columnHelper, specialties]);
+  260 |
+> 261 |   const table = useReactTable({
+      |                 ^^^^^^^^^^^^^ TanStack Table's `useReactTable()` API returns functions that cannot be memoized safely
+  262 |     data: doctors,
+  263 |     columns,
+  264 |     getCoreRowModel: getCoreRowModel(),  react-hooks/incompatible-library
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\features\admin\pages\UserManagement.jsx
+  59:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  57 |
+  58 |   useEffect(() => {
+> 59 |     loadUsers();
+     |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  60 |   }, []);
+  61 |
+  62 |   const filtered = useMemo(() => {  react-hooks/set-state-in-effect
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\features\auth\LoginPage.jsx
+  83:51  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  81 |     try {
+  82 |       const payload = JSON.parse(atob(sesToken.split(".")[1]));
+> 83 |       if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+     |                                                   ^^^^^^^^^^ Cannot call impure function
+  84 |         localStorage.removeItem("token");
+  85 |         return null;
+  86 |       }  react-hooks/purity
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\features\doctor\pages\DoctorSchedules.jsx
+  100:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+   98 |       else bkd.push(key);
+   99 |     });
+> 100 |     setAvailable(avail);
+      |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  101 |     setBooked(bkd);
+  102 |     setSavedAvailable(avail);
+  103 |     setMsg(null);  react-hooks/set-state-in-effect
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\features\landing\components\Chatbot.jsx
+  53:39  error  'isLatest' is defined but never used  no-unused-vars
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\features\padres\pages\BookAppointment.jsx
+  115:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  113 |   useEffect(() => {
+  114 |     if (selectedHorario && !availableHorarios.some((h) => h.id_horario === selectedHorario.id_horario)) {
+> 115 |       setSelectedHorario(null);
+      |       ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  116 |       setDate("");
+  117 |       setTime("");
+  118 |     }  react-hooks/set-state-in-effect
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\features\padres\pages\ConsultationHistory.jsx
+  35:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  33 |   useEffect(() => {
+  34 |     if (citas.length > 0 && !selected) {
+> 35 |       setSelected(citas[0]);
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  36 |     }
+  37 |   }, [citas]);
+  38 |  react-hooks/set-state-in-effect
+  37:6  warning  React Hook useEffect has a missing dependency: 'selected'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/exhaustive-deps
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\features\padres\pages\MyProfile.jsx
+  138:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  136 |   useEffect(() => {
+  137 |     if (!confirmPassword || !newPassword) {
+> 138 |       setPasswordError("");
+      |       ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  139 |     } else if (newPassword !== confirmPassword) {
+  140 |       setPasswordError("Las contraseñas no coinciden");
+  141 |     } else {             react-hooks/set-state-in-effect
+  148:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  146 |   useEffect(() => {
+  147 |     if (!usuario) return;
+> 148 |     setNombres(usuario.nombres || "");
+      |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  149 |     setApellidos(usuario.apellidos || "");
+  150 |     setEmail(usuario.email || "");
+  151 |     setTelefono(usuario.telefono ? String(usuario.telefono) : "");  react-hooks/set-state-in-effect
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\layouts\DashboardLayout.jsx
+  67:30  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  65 |
+  66 |   const formatRelative = (iso) => {
+> 67 |     const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+     |                              ^^^^^^^^^^ Cannot call impure function
+  68 |     if (diff < 60) return "Ahora mismo";
+  69 |     if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
+  70 |     if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} h`;  react-hooks/purity
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\src\layouts\PrivateRoute.jsx
+  36:26  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  34 |   }
+  35 |
+> 36 |   const now = Math.floor(Date.now() / 1000);
+     |                          ^^^^^^^^^^ Cannot call impure function
+  37 |   if (payload.exp && payload.exp < now) {
+  38 |     localStorage.removeItem("token");
+  39 |     localStorage.removeItem("usuario");  react-hooks/purity
+
+C:\Users\L\Desktop\actual_medikids\proyecto_medikids\frontend\vite.config.js
+  6:29  error  'process' is not defined  no-undef
+
+✖ 117 problems (111 errors, 6 warnings)
+

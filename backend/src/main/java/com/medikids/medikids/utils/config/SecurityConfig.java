@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // ── Endpoints públicos ──
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/admin/discover", "/admin/admin-hash/verify", "/admin/auth/login").permitAll()
+                        .requestMatchers("/admin/discover", "/admin/admin-hash/verify", "/admin/auth/login", "/admin/auth/verify-2fa", "/admin/biometria/verify").permitAll()
                         .requestMatchers("/usuario/save").permitAll()
                         .requestMatchers("/cliente/save").permitAll()
                         .requestMatchers("/chatbot/**").permitAll()

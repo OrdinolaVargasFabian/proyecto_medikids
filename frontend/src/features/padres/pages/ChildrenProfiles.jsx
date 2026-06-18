@@ -35,11 +35,6 @@ const formatDate = (dateStr) => {
 
 export const ChildrenProfiles = () => {
   const navigate = useNavigate();
-  const usuario = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem("usuario")); }
-    catch { return null; }
-  }, []);
-
   const queryClient = useQueryClient();
 
   const clientId = useMemo(() => {
@@ -56,7 +51,7 @@ export const ChildrenProfiles = () => {
   const [form, setForm] = useState({ nombre_completo: "", dni_menor: "", fecha_nacimiento: "", genero: "" });
 
 
-  const validateName = (name) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(name);
+  const validateName = (name) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\-']+$/.test(name);
   
   const validateAge = (birthDate) => {
     const today = new Date();

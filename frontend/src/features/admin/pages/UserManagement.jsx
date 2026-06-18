@@ -111,11 +111,6 @@ export const UserManagement = () => {
     }
   };
 
-  const showToast = (message, type) => {
-    setToast({ message, type });
-    setTimeout(() => setToast({ message: "", type: "" }), 3000);
-  };
-
   if (loading) return <AdminTableSkeleton />;
 
   return (

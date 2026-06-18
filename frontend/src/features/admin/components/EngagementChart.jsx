@@ -1,19 +1,6 @@
 import { memo } from "react"
 import { Trophy } from "lucide-react"
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null
-  return (
-    <div className="bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-3.5 text-sm">
-      <p className="font-bold text-white/90 mb-1">{label}</p>
-      <p className="text-xs tabular-nums">
-        <span className="text-medi-400 font-bold">{payload[0].value}</span>{" "}
-        <span className="text-gray-400">citas</span>
-      </p>
-    </div>
-  )
-}
-
 const BAR_GRADIENTS = [
   { from: "#b8ca76", to: "#a0b85e" },
   { from: "#60a5fa", to: "#3b82f6" },

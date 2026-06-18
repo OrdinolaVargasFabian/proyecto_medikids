@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -53,6 +54,9 @@ public class AuthService {
 
     @Autowired
     private RefreshTokenService refreshTokenService;
+
+    @Autowired
+    private BiometriaService biometriaService;
 
     @Value("${codigo.2fa.expiration}")
     private long codigoExpiracionMs;
@@ -112,12 +116,12 @@ public class AuthService {
 
 
     /**
-     * Login exclusivo para administradores (rol=3).
-     * Verifica IP, genera token de corta duración y registra auditoría.
+     * Login exclusivo para administradores (rol=3 o rol=4).
+     * Si el usuario tiene biometría registrada, requiere verificación facial.
+     * Si no, usa 2FA por email (superadmin principal).
      */
     public AuthResponse adminLogin(String email, String password, HttpServletRequest httpRequest) {
         String clientIp = IpUtils.getClientIp(httpRequest);
-        String fingerprint = computeFingerprint(httpRequest);
 
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
 
@@ -138,15 +142,84 @@ public class AuthService {
             return null;
         }
 
+        if (biometriaService.existsByUsuarioId(usuario.getId_usuario())) {
+            String preAuthToken = generarTokenHex32();
+
+            usuario.setCodigoVerificacion(preAuthToken);
+            usuario.setCodigoExpiracion(new Date(System.currentTimeMillis() + 300000));
+            usuarioRepository.save(usuario);
+
+            auditService.registrarIntento(email, clientIp, true, "ADMIN_BIOM_PENDING");
+
+            return AuthResponse.builder()
+                    .message("VERIFICACION_FACIAL_REQUERIDA")
+                    .preAuthToken(preAuthToken)
+                    .build();
+        }
+
+        String codigo = generarCodigo6Digitos();
+        usuario.setCodigoVerificacion(codigo);
+        usuario.setCodigoExpiracion(new Date(System.currentTimeMillis() + codigoExpiracionMs));
+        usuarioRepository.save(usuario);
+
+        emailService.enviarCodigo2FA(email, codigo);
+
+        auditService.registrarIntento(email, clientIp, true, "ADMIN_2FA_PENDING");
+
+        return AuthResponse.builder()
+                .message("Código de verificación enviado al correo: " + ocultarEmail(email))
+                .build();
+    }
+
+    /**
+     * Paso 2 del login admin con biometría: verifica el descriptor facial y genera JWT.
+     */
+    public AuthResponse adminLoginFaceVerify(String email, List<Double> descriptor,
+                                              String preAuthToken, HttpServletRequest httpRequest) {
+        String clientIp = IpUtils.getClientIp(httpRequest);
+        String fingerprint = computeFingerprint(httpRequest);
+
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+
+        if (usuarioOpt.isEmpty()) {
+            return null;
+        }
+
+        Usuario usuario = usuarioOpt.get();
+
+        if (usuario.getCodigoVerificacion() == null || usuario.getCodigoExpiracion() == null) {
+            return null;
+        }
+
+        if (new Date().after(usuario.getCodigoExpiracion())) {
+            usuario.setCodigoVerificacion(null);
+            usuario.setCodigoExpiracion(null);
+            usuarioRepository.save(usuario);
+            return null;
+        }
+
+        if (!usuario.getCodigoVerificacion().equals(preAuthToken)) {
+            return null;
+        }
+
+        if (!biometriaService.verify(usuario.getId_usuario(), descriptor)) {
+            auditService.registrarIntento(email, clientIp, false, "ADMIN_BIOM_FAIL");
+            return null;
+        }
+
+        usuario.setCodigoVerificacion(null);
+        usuario.setCodigoExpiracion(null);
+        usuarioRepository.save(usuario);
+
         String token = jwtService.generateAdminToken(usuario);
-        auditService.registrarIntento(email, clientIp, true, "ADMIN");
+        auditService.registrarIntento(email, clientIp, true, "ADMIN_BIOM_OK");
 
         String refreshToken = refreshTokenService.createRefreshToken(usuario.getId_usuario(), fingerprint, clientIp).getToken();
 
         return AuthResponse.builder()
                 .token(token)
                 .refreshToken(refreshToken)
-                .message("Acceso administrativo autorizado")
+                .message("Acceso administrativo autorizado con biometria")
                 .usuario(UsuarioHelper.mapUsuario(usuario))
                 .build();
     }
@@ -224,7 +297,8 @@ public class AuthService {
         usuario.setCodigoExpiracion(null);
         usuarioRepository.save(usuario);
 
-        String token = jwtService.generateToken(usuario);
+        boolean isAdmin = usuario.getId_rol() == 3 || usuario.getId_rol() == 4;
+        String token = isAdmin ? jwtService.generateAdminToken(usuario) : jwtService.generateToken(usuario);
 
         return AuthResponse.builder()
                 .token(token)
@@ -327,6 +401,17 @@ public class AuthService {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────
+
+    private String generarTokenHex32() {
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[16];
+        random.nextBytes(bytes);
+        StringBuilder hex = new StringBuilder(32);
+        for (byte b : bytes) {
+            hex.append(String.format("%02x", b & 0xff));
+        }
+        return hex.toString();
+    }
 
     private String computeFingerprint(HttpServletRequest request) {
         try {

@@ -184,6 +184,22 @@ export const deleteTarjeta = (id) =>
 export const setPredeterminadaTarjeta = (id) =>
   api.put(`/tarjeta/${id}/predeterminada`).then((r) => r.data);
 
+// ── Biometría ──
+export const enrollFace = (data) =>
+  api.post('/admin/biometria/enroll', data).then((r) => r.data);
+
+export const verifyFace = (data) =>
+  api.post('/admin/biometria/verify', data).then((r) => r.data);
+
+export const getBiometriaStatus = (idUsuario) =>
+  api.get(`/admin/biometria/status/${idUsuario}`).then((r) => r.data);
+
+export const deleteBiometria = (idUsuario) =>
+  api.delete(`/admin/biometria/${idUsuario}`).then((r) => r.data);
+
+export const adminVerify2FA = (email, code) =>
+  api.post('/admin/auth/verify-2fa', { email, code }).then((r) => r.data);
+
 // ── Chatbot ──
 export const sendChatMessage = (message, history = []) =>
   api.post('/chatbot/message', { message, history }).then((r) => r.data);
