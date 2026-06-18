@@ -20,7 +20,7 @@ function capitalize(str) {
 
 export const AdminDashboard = () => {
   const [timeRange, setTimeRange] = useState("month")
-  const { kpis, chartData, rendimientoData, especialidadData, tablaHoy, isLoading, isError } =
+  const { kpis, rendimientoData, especialidadData, tablaHoy, isLoading, isError } =
     useAdminStats(timeRange)
 
   const dateStr = useMemo(

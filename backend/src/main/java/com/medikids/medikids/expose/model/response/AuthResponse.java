@@ -17,4 +17,5 @@ public class AuthResponse implements Serializable {
     private String refreshToken;
     private String message;
     private UsuarioDto usuario;
+    private String preAuthToken;
 }

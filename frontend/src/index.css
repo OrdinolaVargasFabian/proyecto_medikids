@@ -40,3 +40,8 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* Mirror effect for selfie camera (face-api.js) */
+.mirror {
+  transform: scaleX(-1);
+}

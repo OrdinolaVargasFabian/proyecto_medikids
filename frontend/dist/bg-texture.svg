@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 3200">
+  <defs>
+    <filter id="b" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="80"/>
+    </filter>
+    <radialGradient id="g1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#b8ca76" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#b8ca76" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#d4e09b" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#d4e09b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a3b85c" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#a3b85c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g4" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#c5d68a" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#c5d68a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g5" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#b8ca76" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#b8ca76" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g6" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#d4e09b" stop-opacity="0.26"/>
+      <stop offset="100%" stop-color="#d4e09b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g7" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#b8ca76" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#b8ca76" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g8" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a3b85c" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#a3b85c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g filter="url(#b)">
+    <circle cx="1300" cy="250" r="280" fill="url(#g1)"/>
+    <circle cx="-50" cy="650" r="300" fill="url(#g2)"/>
+    <circle cx="1400" cy="1100" r="250" fill="url(#g3)"/>
+    <circle cx="-30" cy="1500" r="290" fill="url(#g4)"/>
+    <circle cx="1350" cy="1900" r="270" fill="url(#g5)"/>
+    <circle cx="20" cy="2300" r="260" fill="url(#g6)"/>
+    <circle cx="1400" cy="2650" r="230" fill="url(#g7)"/>
+    <circle cx="-40" cy="3000" r="300" fill="url(#g8)"/>
+  </g>
+</svg>

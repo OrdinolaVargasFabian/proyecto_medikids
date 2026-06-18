@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { AlertTriangle, CheckCircle, XCircle, MessageSquare, Send } from "lucide-react";
+import { AlertTriangle, CheckCircle, MessageSquare, Send } from "lucide-react";
 import { getAllIncidents, respondToIncident } from "../../../services/api";
 import { AdminTableSkeleton } from "../../../app/components/skeletons/AdminTableSkeleton";
 

@@ -2,8 +2,6 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useNotifications } from "../app/context/NotificationContext";
 import { Search } from "lucide-react";
-import { TutorialProvider } from "../features/padres/context/TutorialContext";
-import { TutorialGuide } from "../features/padres/components/TutorialGuide";
 
 
 const WHATSAPP_PHONE_NUMBER = "51913378799";
@@ -104,7 +102,6 @@ export const DashboardLayout = () => {
   };
 
   return (
-    <TutorialProvider>
     <div className="min-h-screen bg-gray-100 font-sans">
       {/* Overlay móvil */}
       {sidebarOpen && (
@@ -283,9 +280,6 @@ export const DashboardLayout = () => {
         </main>
       </div>
 
-      {/* ── Guía interactiva de citas (solo para padres) ── */}
-      {!isAdmin && !isDoctor && <TutorialGuide />}
-
       {/* ── Botón flotante de WhatsApp (solo para padre/tutor) ── */}
       {!isAdmin && !isDoctor && (
         <a
@@ -322,6 +316,5 @@ export const DashboardLayout = () => {
         </a>
       )}
     </div>
-    </TutorialProvider>
   );
 };

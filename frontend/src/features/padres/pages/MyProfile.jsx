@@ -207,6 +207,7 @@ export const MyProfile = () => {
   };
 
   const handleDeleteCard = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar esta tarjeta?')) return;
     try {
       await deleteTarjeta(id);
       queryClient.invalidateQueries({ queryKey: queryKeys.tarjetas(usuario.id_usuario) });
@@ -226,6 +227,14 @@ export const MyProfile = () => {
   };
 
   const handleSave = async () => {
+    if (telefono && telefono.length !== 9) {
+      setMessage({ text: "El teléfono debe tener exactamente 9 dígitos", type: "error" });
+      return;
+    }
+    if (dni && dni.length !== 8) {
+      setMessage({ text: "El DNI debe tener exactamente 8 dígitos", type: "error" });
+      return;
+    }
     setSaving(true);
     try {
       await updateMyProfile({
@@ -335,8 +344,9 @@ export const MyProfile = () => {
                     <input
                       type="tel"
                       value={telefono}
-                      onChange={(e) => setTelefono(e.target.value.replace(/\D/g, ""))}
+                      onChange={(e) => setTelefono(e.target.value.replace(/\D/g, "").slice(0, 9))}
                       placeholder="999888777"
+                      maxLength={9}
                       className="w-full px-4 lg:px-5 py-3 lg:py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
                     />
                   </div>
@@ -345,8 +355,9 @@ export const MyProfile = () => {
                     <input
                       type="text"
                       value={dni}
-                      onChange={(e) => setDni(e.target.value.replace(/\D/g, ""))}
+                      onChange={(e) => setDni(e.target.value.replace(/\D/g, "").slice(0, 8))}
                       placeholder="12345678"
+                      maxLength={8}
                       className="w-full px-4 lg:px-5 py-3 lg:py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
                     />
                   </div>
@@ -561,6 +572,8 @@ export const MyProfile = () => {
                           type="password"
                           placeholder="•••"
                           maxLength={4}
+                          value={cardForm.cvv || ''}
+                          onChange={(e) => setCardForm((f) => ({ ...f, cvv: e.target.value.replace(/\D/g, '') }))}
                           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
                         />
                       </div>

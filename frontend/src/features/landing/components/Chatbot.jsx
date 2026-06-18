@@ -50,7 +50,7 @@ const formatMessage = (text) => {
   });
 };
 
-const ChatMessage = ({ role, content, isLatest }) => {
+const ChatMessage = ({ role, content }) => {
   const isUser = role === "user";
 
   return (

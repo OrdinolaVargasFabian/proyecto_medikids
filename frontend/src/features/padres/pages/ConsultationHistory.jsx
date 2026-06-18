@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useChildren, useCitas } from "../../../hooks/useApiData";
 import { ConsultationHistorySkeleton } from "../../../app/components/skeletons/ConsultationHistorySkeleton";
 
@@ -17,11 +16,6 @@ const statusColor = {
 };
 
 export const ConsultationHistory = () => {
-  const usuario = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem("usuario")); }
-    catch { return null; }
-  }, []);
-
   const clientId = useMemo(() => {
     try { return Number(localStorage.getItem("cliente_id")); }
     catch { return null; }
@@ -44,7 +38,7 @@ export const ConsultationHistory = () => {
 
   const filtered = useMemo(() => {
     if (filter === "todos") return appointments;
-    return appointments.filter((a) => a.paciente?.nombre_completo === filter);
+    return appointments.filter((a) => String(a.paciente?.id_paciente) === filter);
   }, [appointments, filter]);
 
   const detail = selected || filtered[0] || null;
@@ -63,7 +57,7 @@ export const ConsultationHistory = () => {
         >
           <option value="todos">Todos los hijos</option>
           {children.map((c) => (
-            <option key={c.id_paciente} value={c.nombre_completo}>{c.nombre_completo}</option>
+            <option key={c.id_paciente} value={c.id_paciente}>{c.nombre_completo}</option>
           ))}
         </select>
       </div>
