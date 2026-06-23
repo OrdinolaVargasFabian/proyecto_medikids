@@ -2,6 +2,8 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useNotifications } from "../app/context/NotificationContext";
 import { Search } from "lucide-react";
+import { TutorialProvider } from "../features/padres/context/TutorialContext";
+import { TutorialGuide } from "../features/padres/components/TutorialGuide";
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -101,6 +103,8 @@ export const DashboardLayout = () => {
   };
 
   return (
+    <TutorialProvider>
+    <TutorialGuide />
     <div className="min-h-screen bg-gray-100 font-sans">
       {/* Overlay móvil */}
       {sidebarOpen && (
@@ -281,5 +285,6 @@ export const DashboardLayout = () => {
 
 
     </div>
+    </TutorialProvider>
   );
 };

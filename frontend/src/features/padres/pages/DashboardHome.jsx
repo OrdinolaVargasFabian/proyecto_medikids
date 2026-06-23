@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useChildren, useCitas, useDoctores } from "../../../hooks/useApiData";
 import { DashboardHomeSkeleton } from "../../../app/components/skeletons/DashboardHomeSkeleton";
+import { useTutorial } from "../context/TutorialContext";
 
 const quickActions = [
   { label: "Agendar Cita", to: "/padres/agendar", icon: "M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z", color: "from-medi-500 to-medi-600" },
@@ -20,6 +21,7 @@ const formatDate = (dateStr) => {
 const isDoctorActivo = (estado) => String(estado || "").toLowerCase() === "activo";
 
 export const DashboardHome = () => {
+  const { startTutorial } = useTutorial();
   const clientId = useMemo(() => {
     try { return Number(localStorage.getItem("cliente_id")); }
     catch { return null; }
@@ -61,9 +63,20 @@ export const DashboardHome = () => {
 
   return (
     <div className="space-y-8">
-      <div className="bg-gradient-to-br from-medi-400 via-medi-500 to-medi-600 rounded-3xl p-8 text-white shadow-lg">
-        <h2 className="text-3xl font-extrabold tracking-tight">{"\u00a1"}Bienvenido de nuevo!</h2>
-        <p className="text-medi-100 mt-2 text-lg font-medium">Gestiona la salud de tus hijos de forma f{"\u00e1"}cil y r{"\u00e1"}pida.</p>
+      <div className="bg-gradient-to-br from-medi-400 via-medi-500 to-medi-600 rounded-3xl p-8 text-white shadow-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-extrabold tracking-tight">{"\u00a1"}Bienvenido de nuevo!</h2>
+          <p className="text-medi-100 mt-2 text-lg font-medium">Gestiona la salud de tus hijos de forma f{"\u00e1"}cil y r{"\u00e1"}pida.</p>
+        </div>
+        <button
+          onClick={startTutorial}
+          className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-bold text-sm px-5 py-3 rounded-2xl transition-colors shrink-0 border border-white/30"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+          </svg>
+          Gu\u00eda interactiva
+        </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -90,6 +103,7 @@ export const DashboardHome = () => {
               <Link
                 key={a.label}
                 to={a.to}
+                {...(a.label === "Agendar Cita" ? { "data-tutorial": "agendar-cita-btn" } : {})}
                 className={`bg-gradient-to-br ${a.color} text-white rounded-2xl p-5 flex flex-col items-center gap-3 text-center hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md hover:shadow-lg`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7">
