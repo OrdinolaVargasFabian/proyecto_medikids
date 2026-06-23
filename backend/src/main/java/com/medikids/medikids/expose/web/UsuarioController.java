@@ -70,7 +70,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/password/{id}")
-    @PreAuthorize("@permiso.has('usuario:write')")
+    @PreAuthorize("isAuthenticated() and @owner.sameUser(#id)")
     public ResponseEntity<Void> changePassword(@PathVariable int id, @RequestBody PasswordRequest request) {
         if (usuarioService.changePassword(id, request.getCurrentPassword(), request.getNewPassword())) {
             return ResponseEntity.ok().build();
