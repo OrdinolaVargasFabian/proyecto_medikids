@@ -146,18 +146,6 @@ export const TutorialGuide = () => {
     : { top: winH / 2 - TOOLTIP_H / 2, left: winW / 2 - TOOLTIP_W / 2 };
 
   return createPortal(
-<<<<<<< Updated upstream
-    <div style={{ position: "fixed", inset: 0, zIndex: 9999 }}>
-      {/* Overlay oscuro con recorte spotlight */}
-      <svg
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <mask id="mkids-tutorial-mask">
-            <rect width="100%" height="100%" fill="white" />
-            {targetRect && (
-=======
     <div style={{ position: "fixed", inset: 0, zIndex: 9999, pointerEvents: "none" }}>
       {hasRect && (
         <svg
@@ -167,7 +155,6 @@ export const TutorialGuide = () => {
           <defs>
             <mask id="mkids-tutorial-mask">
               <rect width="100%" height="100%" fill="white" />
->>>>>>> Stashed changes
               <rect x={x} y={y} width={w} height={h} rx={12} fill="black" />
             </mask>
           </defs>
