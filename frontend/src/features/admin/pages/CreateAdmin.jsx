@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { UserPlus, Mail, Lock, User, Phone, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { CustomSelect } from "../../../components/CustomSelect";
 
 const ROLES = [
   { id: 3, label: "Super Admin (control total)" },
@@ -81,17 +82,14 @@ export const CreateAdmin = () => {
         <div>
           <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Rol</label>
           <div className="relative">
-            <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <select
-              name="idRol"
+            <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+            <CustomSelect
               value={form.idRol}
-              onChange={handleChange}
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-medi-400 focus:border-transparent appearance-none"
-            >
-              {ROLES.map((r) => (
-                <option key={r.id} value={r.id}>{r.label}</option>
-              ))}
-            </select>
+              onChange={(val) => setForm({ ...form, idRol: Number(val) })}
+              placeholder="Seleccionar rol"
+              options={ROLES.map((r) => ({ value: r.id, label: r.label }))}
+              className="pl-10 pr-10 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-medi-400 focus:border-transparent"
+            />
           </div>
         </div>
 

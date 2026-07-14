@@ -2,6 +2,7 @@ import { useState, useRef, useMemo } from "react";
 import { Navigate, useNavigate, Link } from "react-router-dom";
 import { login as loginApi, verify2FA, resend2FA, getClienteByUserId } from "../../services/api";
 import { AuthLayout } from "./AuthLayout";
+import { FaceVerification } from "./FaceVerification";
 
 const OtpInput = ({ value, onChange }) => {
   const inputsRef = useRef([]);
@@ -73,6 +74,9 @@ export const LoginPage = () => {
   const [verifyEmail, setVerifyEmail] = useState("");
   const [code, setCode] = useState("");
 
+  const [preAuthToken, setPreAuthToken] = useState("");
+  const [faceEmail, setFaceEmail] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
 
   const redirectTarget = useMemo(() => {
@@ -87,7 +91,7 @@ export const LoginPage = () => {
       const rol = Number(payload.id_rol);
       if (rol === 1) return "/padres";
       if (rol === 2) return "/doctor";
-      if (rol === 3) return "/admin/dashboard";
+      if (rol === 3 || rol === 4) return "/admin/dashboard";
       return "/padres";
     } catch {
       localStorage.removeItem("token");
@@ -101,7 +105,7 @@ export const LoginPage = () => {
     const rol = usuario?.id_rol;
     if (rol === 1 || rol === "1") navigate("/padres");
     else if (rol === 2 || rol === "2") navigate("/doctor");
-    else if (rol === 3 || rol === "3") navigate("/admin/dashboard");
+    else if (rol === 3 || rol === "3" || rol === 4 || rol === "4") navigate("/admin/dashboard");
     else navigate("/padres");
   };
 
@@ -110,9 +114,16 @@ export const LoginPage = () => {
     setError("");
     setLoading(true);
     try {
-      await loginApi(email, password);
-      setVerifyEmail(email);
-      setStep("verify");
+      const res = await loginApi(email, password);
+
+      if (res.preAuthToken) {
+        setFaceEmail(email);
+        setPreAuthToken(res.preAuthToken);
+        setStep("face");
+      } else {
+        setVerifyEmail(email);
+        setStep("verify");
+      }
     } catch (err) {
       const msg = err.response?.data?.message || "Error al iniciar sesión. Verifica tus credenciales.";
       setError(msg);
@@ -164,22 +175,29 @@ export const LoginPage = () => {
     }
   };
 
+  const handleFaceSuccess = (usuario) => {
+    goToDashboard(usuario);
+  };
+
+  const handleFaceCancel = () => {
+    setStep("login");
+    setPreAuthToken("");
+    setFaceEmail("");
+    setError("");
+  };
+
   return (
     <AuthLayout>
 
       {/* Logo MediKids */}
-      <div className="mb-5 flex items-center gap-2">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 text-medi-500">
-          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
-          <line x1="4" y1="22" x2="4" y2="15"></line>
-        </svg>
+      <div className="mb-5">
         <span className="text-lg font-extrabold text-gray-900 tracking-tight">Medi<span className="text-medi-500">Kids</span></span>
       </div>
 
       {/* Cabecera */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
-          {step === "verify" ? "Verificar código" : "Iniciar Sesión"}
+          {step === "verify" ? "Verificar código" : step === "face" ? "Verificación Biométrica" : "Iniciar Sesión"}
         </h2>
       </div>
 
@@ -190,7 +208,14 @@ export const LoginPage = () => {
         </div>
       )}
 
-      {step === "verify" ? (
+      {step === "face" ? (
+        <FaceVerification
+          email={faceEmail}
+          preAuthToken={preAuthToken}
+          onSuccess={handleFaceSuccess}
+          onCancel={handleFaceCancel}
+        />
+      ) : step === "verify" ? (
         <form onSubmit={handleVerify}>
           <div className="mb-6">
             <label className="block text-sm font-bold text-gray-900 mb-2">Código de verificación *</label>
@@ -285,7 +310,7 @@ export const LoginPage = () => {
       )}
 
       {/* Enlace a registro */}
-      {step !== "verify" && (
+      {step !== "verify" && step !== "face" && (
         <div className="mt-6 text-center text-sm text-gray-500">
           ¿No tienes cuenta?{" "}
           <Link to="/register" className="font-bold text-medi-600 hover:text-medi-700 transition-colors">

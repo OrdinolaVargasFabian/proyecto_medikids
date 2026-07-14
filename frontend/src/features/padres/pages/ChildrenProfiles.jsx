@@ -4,27 +4,23 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useChildren, queryKeys } from "../../../hooks/useApiData";
 import { createChild } from "../../../services/api";
 import { ChildrenProfilesSkeleton } from "../../../app/components/skeletons/ChildrenProfilesSkeleton";
-
-const colors = [
-  { from: "from-pink-400", to: "to-rose-500" },
-  { from: "from-blue-400", to: "to-indigo-500" },
-  { from: "from-amber-400", to: "to-orange-500" },
-  { from: "from-emerald-400", to: "to-teal-500" },
-  { from: "from-violet-400", to: "to-purple-500" },
-];
+import { CustomSelect } from "../../../components/CustomSelect";
+import { DateInput } from "../../../components/DateInput";
 
 const getInitials = (name) =>
   name ? name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) : "";
 
 const getAge = (birthDate) => {
-  if (!birthDate) return 0;
+  if (!birthDate) return { value: 0, unit: 'años' };
   const today = new Date();
   const birth = new Date(birthDate);
-  if (isNaN(birth.getTime())) return 0;
-  let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-  return age;
+  if (isNaN(birth.getTime())) return { value: 0, unit: 'años' };
+  let years = today.getFullYear() - birth.getFullYear();
+  let months = today.getMonth() - birth.getMonth();
+  if (months < 0 || (months === 0 && today.getDate() < birth.getDate())) { years--; months += 12; }
+  if (years >= 1) return { value: years, unit: years === 1 ? 'año' : 'años' };
+  if (months < 0) months = 0;
+  return { value: months, unit: months === 1 ? 'mes' : 'meses' };
 };
 
 const formatDate = (dateStr) => {
@@ -117,8 +113,7 @@ export const ChildrenProfiles = () => {
     <div className="space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Perfiles de Mis Hijos</h2>
-          <p className="text-gray-500 font-medium mt-1">Información general y estado de salud de cada uno.</p>
+          <p className="text-gray-500 font-medium">Información general y estado de salud de cada uno.</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -146,43 +141,64 @@ export const ChildrenProfiles = () => {
           <p className="text-gray-500 font-medium text-sm">Añade el perfil de tu hijo para empezar a gestionar sus citas y salud.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {children.map((child, index) => {
-            const color = colors[index % colors.length];
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {children.map((child) => {
             const initials = getInitials(child.nombre_completo);
             const age = getAge(child.fecha_nacimiento);
             return (
               <div
                 key={child.id_paciente}
-                className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-lg transition-shadow"
+                className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
               >
-                <div className={`bg-gradient-to-br ${color.from} ${color.to} p-6 text-white`}>
+                <div className="p-5 pb-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl font-extrabold shadow-inner">
+                    <div className="w-14 h-14 rounded-xl bg-medi-500 flex items-center justify-center text-white text-lg font-extrabold shrink-0 shadow-sm">
                       {initials}
                     </div>
-                    <div>
-                      <h3 className="text-xl font-extrabold tracking-tight">{child.nombre_completo}</h3>
-                      <p className="text-white/80 text-sm font-medium">{age} años</p>
+                    <div className="min-w-0">
+                      <h3 className="text-base font-extrabold text-gray-900 truncate">{child.nombre_completo}</h3>
+                      <span className="inline-block mt-0.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-medi-50 text-medi-700">
+                        {age.value} {age.unit}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-gray-50 grid grid-cols-2 gap-3">
+                    <div className="flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-gray-400 shrink-0">
+                        <rect width="18" height="12" x="3" y="6" rx="2" />
+                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        <line x1="3" x2="21" y1="11" y2="11" />
+                      </svg>
+                      <div>
+                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-none">DNI</div>
+                        <div className="text-xs font-bold text-gray-700 mt-0.5">{child.dni_menor}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-gray-400 shrink-0">
+                        <rect width="18" height="18" x="3" y="4" rx="2" />
+                        <line x1="16" x2="16" y1="2" y2="6" />
+                        <line x1="8" x2="8" y1="2" y2="6" />
+                        <line x1="3" x2="21" y1="10" y2="10" />
+                        <path d="M8 14h.01" />
+                        <path d="M12 14h.01" />
+                        <path d="M16 14h.01" />
+                      </svg>
+                      <div>
+                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-none">Nacimiento</div>
+                        <div className="text-xs font-bold text-gray-700 mt-0.5">{formatDate(child.fecha_nacimiento)}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="p-6 space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">DNI</div>
-                      <div className="text-sm font-extrabold text-gray-900">{child.dni_menor}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Nacimiento</div>
-                      <div className="text-sm font-bold text-gray-900">{formatDate(child.fecha_nacimiento)}</div>
-                    </div>
-                  </div>
+
+                <div className="px-5 pb-5">
                   <button
-                    onClick={() => navigate(`/padres/historial?hijo=${child.id_paciente}`)}
-                    className="w-full py-3 text-sm font-bold text-medi-600 bg-medi-50 hover:bg-medi-100 rounded-2xl transition-colors"
+                    onClick={() => navigate('/padres/historial', { state: { hijoId: child.id_paciente } })}
+                    className="w-full py-2.5 text-sm font-bold text-medi-600 bg-medi-50 hover:bg-medi-100 rounded-xl transition-colors group-hover:bg-medi-100"
                   >
-                    Ver Historial Completo
+                    Ver historial
                   </button>
                 </div>
               </div>
@@ -237,29 +253,28 @@ export const ChildrenProfiles = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-1 pl-1">Género</label>
-                      <select
-                        required
+                      <CustomSelect
                         value={form.genero}
-                        onChange={(e) => setForm({ ...form, genero: e.target.value })}
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
-                      >
-                        <option value="">Seleccionar</option>
-                        <option value="masculino">Masculino</option>
-                        <option value="femenino">Femenino</option>
-                        <option value="otro">Otro</option>
-                      </select>
+                        onChange={(val) => setForm({ ...form, genero: val })}
+                        placeholder="Seleccionar"
+                        options={[
+                          { value: "masculino", label: "Masculino" },
+                          { value: "femenino", label: "Femenino" },
+                        ]}
+                        className="px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:outline-none focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                      />
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1 pl-1">Fecha Nacimiento</label>
-                    <input
-                      type="date"
-                      required
-                      max={new Date().toISOString().split("T")[0]}
-                      value={form.fecha_nacimiento}
-                      onChange={(e) => setForm({ ...form, fecha_nacimiento: e.target.value })}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
-                    />
+                      <DateInput
+                        value={form.fecha_nacimiento}
+                        onChange={(val) => setForm({ ...form, fecha_nacimiento: val })}
+                        min={(() => { const d = new Date(); d.setFullYear(d.getFullYear() - 17); return d.toISOString().split('T')[0]; })()}
+                        max={new Date().toISOString().split("T")[0]}
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 font-medium transition-all"
+                        required
+                      />
                   </div>
                   <button
                     type="submit"

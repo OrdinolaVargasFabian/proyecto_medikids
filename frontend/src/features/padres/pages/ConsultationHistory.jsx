@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { useChildren, useCitas } from "../../../hooks/useApiData";
 import { ConsultationHistorySkeleton } from "../../../app/components/skeletons/ConsultationHistorySkeleton";
+import { CustomSelect } from "../../../components/CustomSelect";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
@@ -27,7 +29,10 @@ export const ConsultationHistory = () => {
   const appointments = citas;
   const loading = loadingChildren || loadingCitas;
 
-  const [filter, setFilter] = useState("todos");
+  const location = useLocation();
+  const hijoId = location.state?.hijoId;
+
+  const [filter, setFilter] = useState(hijoId ? String(hijoId) : "todos");
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
@@ -47,19 +52,16 @@ export const ConsultationHistory = () => {
     <div className="space-y-6 sm:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Historial de Consultas</h2>
-          <p className="text-gray-500 font-medium mt-1">Registro completo de todas las consultas m{"\u00e9"}dicas.</p>
+          <p className="text-gray-500 font-medium">Registro completo de todas las consultas médicas.</p>
         </div>
-        <select
+        <CustomSelect
           value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="text-sm bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-gray-700 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all self-start"
-        >
-          <option value="todos">Todos los hijos</option>
-          {children.map((c) => (
-            <option key={c.id_paciente} value={c.id_paciente}>{c.nombre_completo}</option>
-          ))}
-        </select>
+          onChange={(val) => setFilter(val || "todos")}
+          placeholder="Todos los hijos"
+          options={children.map((c) => ({ value: String(c.id_paciente), label: c.nombre_completo }))}
+          className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 font-medium focus:outline-none focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all min-w-[180px]"
+          optionHeight="py-2"
+        />
       </div>
 
       {loading ? <ConsultationHistorySkeleton /> : filtered.length === 0 ? (

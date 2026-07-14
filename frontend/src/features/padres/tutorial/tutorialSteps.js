@@ -15,9 +15,9 @@ export const TUTORIAL_STEPS = [
     id: 'step-indicator',
     selector: '[data-tutorial="step-indicator"]',
     title: 'Indicador de progreso',
-    message: 'El formulario tiene 5 pasos. Este indicador muestra en cuál etapa te encuentras. Haz clic aquí para comenzar.',
+    message: 'El formulario tiene 5 pasos. Este indicador muestra en cuál etapa te encuentras. Cuando estés listo, haz clic en "Siguiente" para continuar.',
     formStep: 1,
-    trigger: 'click',
+    trigger: null,
   },
   {
     id: 'children-grid',
@@ -82,5 +82,6 @@ export const TUTORIAL_STEPS = [
     message: 'Revisa todos los detalles. Cuando estés listo, haz clic en "Confirmar y Agendar" para finalizar el registro de tu cita.',
     formStep: 5,
     trigger: 'click',
+    tooltipSide: 'left',
   },
 ];

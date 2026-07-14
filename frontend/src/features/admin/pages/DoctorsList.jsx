@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from "@tanstack/react-table";
 import { getDoctors, getSpecialties, saveDoctorWithUser, updateDoctor, updateUser, toggleDoctorStatus, deleteDoctor } from "../../../services/api";
 import { AdminTableSkeleton } from "../../../app/components/skeletons/AdminTableSkeleton";
+import { CustomSelect } from "../../../components/CustomSelect";
 
 const Toast = ({ message, onClose }) => {
   useEffect(() => {
@@ -321,8 +322,7 @@ export const DoctorsList = () => {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Gestión de Médicos</h2>
-          <p className="text-gray-500 font-medium mt-1">Administra los perfiles de los médicos del sistema.</p>
+          <p className="text-gray-500 font-medium">Administra los perfiles de los médicos del sistema.</p>
         </div>
         <button onClick={openAdd} className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 text-white text-sm font-bold rounded-2xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
@@ -430,24 +430,28 @@ export const DoctorsList = () => {
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-500 mb-1 pl-1">Género</label>
-                <select value={form.genero} onChange={(e) => setForm({ ...form, genero: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all outline-none appearance-none">
-                  <option value="">Seleccionar</option>
-                  <option value="masculino">Masculino</option>
-                  <option value="femenino">Femenino</option>
-                  <option value="otro">Otro</option>
-                </select>
+                <CustomSelect
+                  value={form.genero}
+                  onChange={(val) => setForm({ ...form, genero: val })}
+                  placeholder="Seleccionar"
+                  options={[
+                    { value: "masculino", label: "Masculino" },
+                    { value: "femenino", label: "Femenino" },
+                    { value: "otro", label: "Otro" },
+                  ]}
+                  className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                />
               </div>
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 mb-1 pl-1">Especialidad <span className="text-red-400">*</span></label>
-              <select value={form.id_especialidad} onChange={(e) => setForm({ ...form, id_especialidad: e.target.value })}
-                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all outline-none appearance-none">
-                <option value="">Seleccionar</option>
-                {specialties.map((s) => (
-                  <option key={s.id_especialidad} value={s.id_especialidad}>{s.nombre}</option>
-                ))}
-              </select>
+              <CustomSelect
+                value={form.id_especialidad}
+                onChange={(val) => setForm({ ...form, id_especialidad: Number(val) })}
+                placeholder="Seleccionar"
+                options={specialties.map((s) => ({ value: s.id_especialidad, label: s.nombre }))}
+                className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+              />
             </div>
           </div>
 

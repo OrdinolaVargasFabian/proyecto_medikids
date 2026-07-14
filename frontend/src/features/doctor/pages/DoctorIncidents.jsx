@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { CustomSelect } from "../../../components/CustomSelect";
+import { DateInput } from "../../../components/DateInput";
 
 const SHIFTS = ["Matutino (08:00 - 12:00)", "Vespertino (14:00 - 18:00)"];
 const INCIDENT_TYPES = [
@@ -34,8 +36,7 @@ export const DoctorIncidents = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Incidencias</h2>
-          <p className="text-gray-500 font-medium mt-1">Reporta retrasos, ausencias o emergencias.</p>
+          <p className="text-gray-500 font-medium">Reporta retrasos, ausencias o emergencias.</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
@@ -127,26 +128,22 @@ export const DoctorIncidents = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Fecha</label>
-                  <input
-                    type="date"
+                  <DateInput
                     value={form.date}
+                    onChange={(val) => setForm({ ...form, date: val })}
                     min={today}
-                    onChange={(e) => setForm({ ...form, date: e.target.value })}
-                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium transition-all"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Turno</label>
-                  <select
+                  <CustomSelect
                     value={form.shift}
-                    onChange={(e) => setForm({ ...form, shift: e.target.value })}
-                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all appearance-none"
-                  >
-                    <option value="">Seleccionar</option>
-                    {SHIFTS.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setForm({ ...form, shift: val })}
+                    placeholder="Seleccionar"
+                    options={SHIFTS.map((s) => ({ value: s, label: s }))}
+                    className="px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:outline-none focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                  />
                 </div>
               </div>
               <div>

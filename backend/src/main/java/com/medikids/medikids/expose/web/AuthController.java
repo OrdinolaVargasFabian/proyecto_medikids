@@ -1,6 +1,7 @@
 package com.medikids.medikids.expose.web;
 
 import com.medikids.medikids.expose.model.response.AuthResponse;
+import com.medikids.medikids.expose.model.request.BiometriaVerifyRequest;
 import com.medikids.medikids.expose.model.request.LoginRequest;
 import com.medikids.medikids.expose.model.request.RefreshTokenRequest;
 import com.medikids.medikids.expose.model.request.VerifyCodeRequest;
@@ -22,8 +23,8 @@ public class AuthController {
 
     /**
      * Paso 1: El usuario envía email y password.
-     * Si las credenciales son válidas, se genera un código de 6 dígitos
-     * y se envía al correo del usuario.
+     * Para admins con biometría devuelve preAuthToken para verificación facial.
+     * Para el resto envía código 2FA por email.
      */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
@@ -35,7 +36,30 @@ public class AuthController {
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(AuthResponse.builder()
-                .message("Credenciales inválidas, usuario desactivado o IP no autorizada")
+                .message("Credenciales inválidas o usuario desactivado")
+                        .build());
+    }
+
+    /**
+     * Verificación facial para admins con biometría registrada.
+     */
+    @PostMapping("/verify-face")
+    public ResponseEntity<AuthResponse> verifyFace(@RequestBody BiometriaVerifyRequest request,
+                                                    HttpServletRequest httpRequest) {
+        AuthResponse response = authService.verifyFaceLogin(
+                request.getEmail(),
+                request.getDescriptor(),
+                request.getPreAuthToken(),
+                httpRequest
+        );
+
+        if (Objects.nonNull(response)) {
+            return ResponseEntity.ok(response);
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(AuthResponse.builder()
+                        .message("Verificación facial fallida")
                         .build());
     }
 

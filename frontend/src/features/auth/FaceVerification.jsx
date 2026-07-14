@@ -1,13 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Shield, AlertTriangle } from 'lucide-react';
 import { FaceCapture } from '../../components/FaceCapture';
 import { verifyFace } from '../../services/api';
 
 const REQUIRED_DESCRIPTORS = 3;
 
-export function FaceVerification({ email, preAuthToken, onCancel }) {
-  const navigate = useNavigate();
+export function FaceVerification({ email, preAuthToken, onSuccess, onCancel }) {
   const [capturedDescriptors, setCapturedDescriptors] = useState([]);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
@@ -61,7 +59,7 @@ export function FaceVerification({ email, preAuthToken, onCancel }) {
         localStorage.setItem('token', res.token);
         localStorage.setItem('usuario', JSON.stringify(res.usuario));
         setStatus('success');
-        setTimeout(() => navigate('/admin/dashboard'), 800);
+        onSuccess(res.usuario);
       } catch (err) {
         setStatus('error');
         setError(err.response?.data?.error || 'Verificación facial fallida. Intenta de nuevo.');
@@ -70,16 +68,16 @@ export function FaceVerification({ email, preAuthToken, onCancel }) {
         setCapturedDescriptors([]);
       }
     })();
-  }, [status, capturedDescriptors, email, preAuthToken, navigate]);
+  }, [status, capturedDescriptors, email, preAuthToken, onSuccess]);
 
   if (status === 'success') {
     return (
       <div className="text-center py-8">
-        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
-          <Shield className="w-10 h-10 text-emerald-400" />
+        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center">
+          <Shield className="w-10 h-10 text-emerald-600" />
         </div>
-        <h3 className="text-xl font-bold text-white mb-1">Identidad verificada</h3>
-        <p className="text-gray-400 text-sm">Accediendo al panel...</p>
+        <h3 className="text-xl font-bold text-gray-900 mb-1">Identidad verificada</h3>
+        <p className="text-gray-500 text-sm">Accediendo al panel...</p>
       </div>
     );
   }
@@ -87,9 +85,9 @@ export function FaceVerification({ email, preAuthToken, onCancel }) {
   if (status === 'verifying') {
     return (
       <div className="text-center py-8">
-        <div className="w-10 h-10 mx-auto mb-4 border-3 border-medi-400 border-t-transparent rounded-full animate-spin" />
-        <h3 className="text-lg font-bold text-white mb-1">Verificando...</h3>
-        <p className="text-gray-400 text-sm">Comparando con datos biométricos</p>
+        <div className="w-10 h-10 mx-auto mb-4 border-3 border-medi-500 border-t-transparent rounded-full animate-spin" />
+        <h3 className="text-lg font-bold text-gray-900 mb-1">Verificando...</h3>
+        <p className="text-gray-500 text-sm">Comparando con datos biométricos</p>
       </div>
     );
   }
@@ -100,11 +98,11 @@ export function FaceVerification({ email, preAuthToken, onCancel }) {
         <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-medi-400 to-medi-600 flex items-center justify-center shadow-lg">
           <Shield className="w-8 h-8 text-white" />
         </div>
-        <h3 className="text-lg font-bold text-white">Verificación Biométrica</h3>
-        <p className="text-gray-400 text-xs mt-1">
+        <h3 className="text-lg font-bold text-gray-900">Verificación Biométrica</h3>
+        <p className="text-gray-500 text-xs mt-1">
           Sigue las instrucciones de la cámara
         </p>
-        <p className="text-medi-400 text-xs mt-2 font-medium">
+        <p className="text-medi-600 text-xs mt-2 font-medium">
           Captura {capturedDescriptors.length} de {REQUIRED_DESCRIPTORS}
         </p>
       </div>
@@ -115,9 +113,9 @@ export function FaceVerification({ email, preAuthToken, onCancel }) {
       />
 
       {error && (
-        <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
-          <p className="text-red-300 text-sm font-medium">{error}</p>
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+          <p className="text-red-700 text-sm font-medium">{error}</p>
         </div>
       )}
 
@@ -125,7 +123,7 @@ export function FaceVerification({ email, preAuthToken, onCancel }) {
         <button
           onClick={onCancel}
           disabled={status === 'verifying'}
-          className="flex-1 py-2.5 rounded-xl bg-white/10 text-gray-300 text-sm font-bold hover:bg-white/20 disabled:opacity-40 transition-colors"
+          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50 disabled:opacity-40 transition-colors"
         >
           Cancelar
         </button>
