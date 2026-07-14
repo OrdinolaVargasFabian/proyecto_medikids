@@ -209,46 +209,6 @@ public class AuthService {
                 .build();
     }
 
-<<<<<<< Updated upstream
-    // ── Login CON 2FA ─────────────────────────────────────────────────────
-    public AuthResponse login(String email, String password, HttpServletRequest httpRequest) {
-        String clientIp = IpUtils.getClientIp(httpRequest);
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
-
-        if (usuarioOpt.isEmpty()) {
-            return null;
-        }
-
-        Usuario usuario = usuarioOpt.get();
-
-        if (usuario.getVisible() != '1') {
-            return null;
-        }
-
-        if (!passwordEncoder.matches(password, usuario.getPassword())) {
-            return null;
-        }
-
-        if (usuario.getId_rol() == 3 && !ipAutorizadaService.isIpAuthorized(clientIp)) {
-            return null;
-        }
-
-        String codigo = generarCodigo6Digitos();
-
-        usuario.setCodigoVerificacion(codigo);
-        usuario.setCodigoExpiracion(new Date(System.currentTimeMillis() + codigoExpiracionMs));
-        usuarioRepository.save(usuario);
-
-        emailService.enviarCodigo2FA(email, codigo);
-
-        return AuthResponse.builder()
-                .message("Código de verificación enviado al correo: " + ocultarEmail(email))
-                .build();
-    }
-    // ──────────────────────────────────────────────────────────────────────
-
-=======
->>>>>>> Stashed changes
 
     /**
      * Paso 2 del login: Verifica el código 2FA y genera JWT token.
