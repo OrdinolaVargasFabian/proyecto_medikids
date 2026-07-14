@@ -6,7 +6,11 @@ import { useChildren, useDoctores, useEspecialidades, useHorariosDisponibles, us
 import { saveAppointment, savePayment } from "../../../services/api";
 import { BookAppointmentSkeleton } from "../../../app/components/skeletons/BookAppointmentSkeleton";
 import { useNotifications } from "../../../app/context/NotificationContext";
+<<<<<<< Updated upstream
+=======
 import { useTutorial } from "../context/TutorialContext";
+import { CustomSelect } from "../../../components/CustomSelect";
+>>>>>>> Stashed changes
 
 const marcaColorBook = {
   Visa: "from-blue-700 to-blue-900",
@@ -15,26 +19,20 @@ const marcaColorBook = {
   Otro: "from-gray-600 to-gray-800",
 };
 
-const colors = [
-  { from: "from-pink-400", to: "to-rose-500" },
-  { from: "from-blue-400", to: "to-indigo-500" },
-  { from: "from-amber-400", to: "to-orange-500" },
-  { from: "from-emerald-400", to: "to-teal-500" },
-  { from: "from-violet-400", to: "to-purple-500" },
-];
-
 const getInitials = (name) =>
   name ? name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) : "";
 
 const getAge = (birthDate) => {
-  if (!birthDate) return 0;
+  if (!birthDate) return { value: 0, unit: 'años' };
   const today = new Date();
   const birth = new Date(birthDate);
-  if (isNaN(birth.getTime())) return 0;
-  let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-  return age;
+  if (isNaN(birth.getTime())) return { value: 0, unit: 'años' };
+  let years = today.getFullYear() - birth.getFullYear();
+  let months = today.getMonth() - birth.getMonth();
+  if (months < 0 || (months === 0 && today.getDate() < birth.getDate())) { years--; months += 12; }
+  if (years >= 1) return { value: years, unit: years === 1 ? 'año' : 'años' };
+  if (months < 0) months = 0;
+  return { value: months, unit: months === 1 ? 'mes' : 'meses' };
 };
 
 const formatTime = (val) => {
@@ -73,7 +71,6 @@ export const BookAppointment = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
-  const { tutorialFormStep } = useTutorial();
 
   const clientId = useMemo(() => {
     try { return Number(localStorage.getItem("cliente_id")); }
@@ -100,10 +97,6 @@ export const BookAppointment = () => {
   const [selectedTarjeta, setSelectedTarjeta] = useState(null); // tarjeta guardada seleccionada
   const [usarNuevaTarjeta, setUsarNuevaTarjeta] = useState(false);
   const [nuevaTarjeta, setNuevaTarjeta] = useState({});
-
-  useEffect(() => {
-    if (tutorialFormStep != null) setStep(tutorialFormStep);
-  }, [tutorialFormStep]);
 
   const { data: children = [], isLoading: loadingChildren } = useChildren(clientId);
   const { data: doctors = [], isLoading: loadingDoctores } = useDoctores();
@@ -266,8 +259,7 @@ export const BookAppointment = () => {
     <>
     <div className="max-w-4xl space-y-8">
       <div>
-        <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Agendar Nueva Cita</h2>
-        <p className="text-gray-500 font-medium mt-1">Selecciona los detalles para reservar una consulta.</p>
+        <p className="text-gray-500 font-medium">Selecciona los detalles para reservar una consulta.</p>
       </div>
 
       {message && (
@@ -276,7 +268,7 @@ export const BookAppointment = () => {
         </div>
       )}
 
-      <div data-tutorial="step-indicator" className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-4 mb-8">
         {["Datos del Paciente", "Especialidad y Médico", "Fecha y Hora", "Pasarela de Pago", "Confirmación"].map((label, i) => (
           <div key={label} className="flex items-center gap-4 flex-1">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-extrabold transition-all ${step > i + 1
@@ -314,26 +306,34 @@ export const BookAppointment = () => {
                 <p className="text-sm text-gray-400">Primero agrega un perfil en "Mis Hijos".</p>
               </div>
             ) : (
-              <div data-tutorial="children-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+<<<<<<< Updated upstream
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {children.map((child, index) => {
                   const color = colors[index % colors.length];
+=======
+              <div data-tutorial="children-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {children.map((child) => {
+                  const age = getAge(child.fecha_nacimiento);
+>>>>>>> Stashed changes
                   return (
-                    <button
-                      key={child.id_paciente}
-                      onClick={() => setSelectedChild(child)}
-                      className={`bg-gradient-to-br ${color.from} ${color.to} text-white rounded-2xl p-6 text-center transition-all shadow-md ${selectedChild?.id_paciente === child.id_paciente
-                        ? "ring-4 ring-white ring-offset-2 ring-offset-transparent scale-[1.02] shadow-xl"
-                        : "hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg"
-                        }`}
-                    >
-                      <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl font-extrabold mx-auto mb-3 shadow-inner">
-                        {getInitials(child.nombre_completo)}
-                      </div>
-                      <div className="text-lg font-extrabold tracking-tight">{child.nombre_completo}</div>
-                      <div className="text-white/80 text-sm font-medium">{getAge(child.fecha_nacimiento)} años</div>
-                    </button>
-                  );
-                })}
+                  <button
+                    key={child.id_paciente}
+                    onClick={() => setSelectedChild(child)}
+                    className={`bg-white rounded-2xl border-2 p-5 text-center transition-all ${
+                      selectedChild?.id_paciente === child.id_paciente
+                        ? "border-medi-500 bg-medi-50 shadow-md scale-[1.02]"
+                        : "border-gray-100 hover:border-medi-300 hover:shadow-sm"
+                    }`}
+                  >
+                    <div className="w-14 h-14 rounded-xl bg-medi-500 flex items-center justify-center text-white text-xl font-extrabold mx-auto mb-3 shadow-sm">
+                      {getInitials(child.nombre_completo)}
+                    </div>
+                    <div className="text-base font-extrabold text-gray-900 tracking-tight">{child.nombre_completo}</div>
+                    <span className="inline-block mt-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-medi-50 text-medi-700">
+                      {age.value} {age.unit}
+                    </span>
+                  </button>
+                );})}
               </div>
             )}
           </div>
@@ -351,37 +351,50 @@ export const BookAppointment = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Especialidad</label>
-                  <select data-tutorial="specialty-select" value={selectedSpecialty?.id_especialidad || ""}
+<<<<<<< Updated upstream
+                  <select value={selectedSpecialty?.id_especialidad || ""}
                     onChange={(e) => {
                       const sp = specialties.find((s) => s.id_especialidad === Number(e.target.value));
+=======
+                  <CustomSelect
+                    dataTutorial="specialty-select"
+                    value={selectedSpecialty?.id_especialidad || ""}
+                    onChange={(val) => {
+                      const sp = specialties.find((s) => s.id_especialidad === Number(val));
+>>>>>>> Stashed changes
                       setSelectedSpecialty(sp || null);
                       setSelectedDoctor(null);
                       setSelectedHorario(null);
                     }}
-                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all appearance-none">
-                    <option value="">Selecciona una especialidad</option>
-                    {specialties.map((s) => (
-                      <option key={s.id_especialidad} value={s.id_especialidad}>{s.nombre}</option>
-                    ))}
-                  </select>
+                    placeholder="Selecciona una especialidad"
+                    options={specialties.map((s) => ({ value: s.id_especialidad, label: s.nombre }))}
+                    className="px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:outline-none focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Médico</label>
-                  <select data-tutorial="doctor-select" value={selectedDoctor?.id_medico || ""}
+<<<<<<< Updated upstream
+                  <select value={selectedDoctor?.id_medico || ""}
                     onChange={(e) => {
                       const doc = filteredDoctors.find((d) => d.id_medico === Number(e.target.value));
+=======
+                  <CustomSelect
+                    dataTutorial="doctor-select"
+                    value={selectedDoctor?.id_medico || ""}
+                    onChange={(val) => {
+                      const doc = filteredDoctors.find((d) => d.id_medico === Number(val));
+>>>>>>> Stashed changes
                       setSelectedDoctor(doc || null);
                       setVisibleCount(4);
                     }}
                     disabled={!selectedSpecialty}
-                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all appearance-none disabled:opacity-40 disabled:cursor-not-allowed">
-                    <option value="">Selecciona un médico</option>
-                    {filteredDoctors.map((d) => (
-                      <option key={d.id_medico} value={d.id_medico}>
-                        {d.usuario?.nombres} {d.usuario?.apellidos}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Selecciona un médico"
+                    options={filteredDoctors.map((d) => ({
+                      value: d.id_medico,
+                      label: `${d.usuario?.nombres || ''} ${d.usuario?.apellidos || ''}`.trim(),
+                    }))}
+                    className="px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:outline-none focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                  />
                 </div>
               </div>
             )}
@@ -428,7 +441,7 @@ export const BookAppointment = () => {
                 <p className="text-gray-400 font-medium">No hay horarios disponibles para este médico.</p>
               </div>
             ) : (
-              <div data-tutorial="horarios-list" className="space-y-3">
+              <div className="space-y-3">
                 {availableHorarios.slice(0, visibleCount).map((h) => {
                   const isSelected = selectedHorario?.id_horario === h.id_horario;
                   const fechaStr = h.fecha;
@@ -499,7 +512,7 @@ export const BookAppointment = () => {
             )}
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Motivo de la Consulta</label>
-              <textarea data-tutorial="motivo-input" rows={4} value={motivo}
+              <textarea rows={4} value={motivo}
                 onChange={(e) => setMotivo(e.target.value)}
                 className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all resize-none" />
             </div>
@@ -511,7 +524,7 @@ export const BookAppointment = () => {
             <h3 className="text-xl font-extrabold text-gray-900">Pasarela de Pago</h3>
             <p className="text-gray-500 font-medium">Selecciona tu método de pago preferido.</p>
 
-            <div data-tutorial="payment-methods" className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {[
                 { id: "yapeplin", label: "Yape / Plin", metodo_bd: "Transferencia", bg: "bg-purple-100", border: "border-purple-200", text: "text-purple-700", icon: <QrCodeIcon className="w-5 h-5 text-purple-700" /> },
                 { id: "paypal", label: "PayPal", metodo_bd: "Transferencia", bg: "bg-blue-100", border: "border-blue-200", text: "text-blue-700", icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="#1d4ed8" d="M20.437 7.104a4 4 0 0 0-.573-.523a4.72 4.72 0 0 0-1.157-3.74C17.623 1.619 15.775 1 13.214 1H7.001a1.89 1.89 0 0 0-1.864 1.592l-2.59 16.406a1.533 1.533 0 0 0 1.516 1.785h2.664l-.082.52A1.467 1.467 0 0 0 8.093 23h3.235a1.76 1.76 0 0 0 1.75-1.47l.641-4.031l.011-.055h.299c4.032 0 6.55-1.993 7.285-5.762a5.15 5.15 0 0 0-.877-4.578m-12.595 6.6l-.714 4.535l-.086.544H4.606L7.097 3h6.117c1.936 0 3.318.404 3.993 1.164a2.97 2.97 0 0 1 .607 2.733l-.018.113c-.012.076-.023.15-.044.246a5.85 5.85 0 0 1-2.005 3.67a6.68 6.68 0 0 1-4.217 1.183H9.707a1.88 1.88 0 0 0-1.865 1.595m11.51-2.405c-.552 2.828-2.243 4.145-5.323 4.145h-.484a1.76 1.76 0 0 0-1.75 1.473l-.65 4.074L8.717 21l.478-3.034l.612-3.853h1.719c.157 0 .295-.023.448-.029c.359-.012.717-.026 1.053-.068c.205-.025.393-.072.59-.108c.273-.05.545-.1.801-.171c.19-.053.368-.122.55-.186c.238-.085.474-.174.697-.279q.25-.12.486-.257a7 7 0 0 0 .613-.392q.214-.153.415-.32a7 7 0 0 0 .537-.52c.113-.12.228-.237.333-.367a7 7 0 0 0 .48-.693c.076-.122.161-.235.232-.363a8 8 0 0 0 .52-1.154l.03-.068l.014-.032a4.3 4.3 0 0 1 .026 2.193" /></svg> },
@@ -659,7 +672,7 @@ export const BookAppointment = () => {
             {/* ── Tipo de Comprobante ── */}
             <div className="pt-4 border-t border-gray-100 space-y-4">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tipo de Comprobante</p>
-              <div data-tutorial="comprobante-section" className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 {[
                   { id: "boleta", label: "Boleta", desc: "Persona natural (DNI)" },
                   { id: "factura", label: "Factura", desc: "Empresa (RUC)" },
@@ -791,7 +804,7 @@ export const BookAppointment = () => {
               </div>
             </div>
 
-            <button data-tutorial="confirm-section" onClick={handleSave} disabled={saving}
+            <button onClick={handleSave} disabled={saving}
               className="px-10 py-4 bg-gradient-to-r from-medi-500 to-medi-600 hover:from-medi-400 hover:to-medi-500 text-white text-sm font-bold rounded-2xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-60">
               {saving ? "Agendando..." : "Confirmar y Agendar"}
             </button>
