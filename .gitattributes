@@ -4,3 +4,6 @@ frontend/vite.config.js linguist-detectable=false
 frontend/eslint.config.js linguist-detectable=false
 frontend/postcss.config.js linguist-detectable=false
 *.msi
+
+# Archivos de modelos faciales — tratar como binario para evitar corrupción por CRLF
+frontend/public/models/*-shard* binary
