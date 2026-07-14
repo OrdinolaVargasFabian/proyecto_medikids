@@ -27,9 +27,6 @@ public class SecurityConfig {
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
-    private IpAuthorizationFilter ipAuthorizationFilter;
-
-    @Autowired
     private RateLimitingFilter rateLimitingFilter;
 
     @Bean
@@ -41,7 +38,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // ── Endpoints públicos ──
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/admin/discover", "/admin/admin-hash/verify", "/admin/auth/login", "/admin/auth/verify-2fa", "/admin/biometria/verify").permitAll()
                         .requestMatchers("/usuario/save").permitAll()
                         .requestMatchers("/cliente/save").permitAll()
                         .requestMatchers("/chatbot/**").permitAll()
@@ -49,7 +45,6 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(ipAuthorizationFilter, JwtAuthenticationFilter.class)
                 .addFilterBefore(rateLimitingFilter, JwtAuthenticationFilter.class);
 
         return http.build();

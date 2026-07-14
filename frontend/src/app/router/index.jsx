@@ -5,8 +5,6 @@ import { LoginPage } from '../../features/auth';
 import { RegisterPage } from '../../features/auth/RegisterPage';
 import { ForgotPasswordPage } from '../../features/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '../../features/auth/ResetPasswordPage';
-import { AdminLoginPage } from '../../features/auth/AdminLoginPage';
-import { AdminDiscoverPage } from '../../features/auth/AdminDiscoverPage';
 import { LandingPage } from '../../features/landing';
 import { RouteLoader } from '../components/skeletons/RouteLoader';
 
@@ -61,16 +59,6 @@ export const router = createBrowserRouter([
     path: '/restablecer-clave/:token',
     element: <ResetPasswordPage />
   },
-  {
-    path: '/admin',
-    element: <AdminDiscoverPage />
-  },
-
-  {
-    path: '/admin/:hash',
-    element: <AdminLoginPage />
-  },
-
   {
     element: <Suspense fallback={<RouteLoader />}><PrivateRoute /></Suspense>,
     children: [

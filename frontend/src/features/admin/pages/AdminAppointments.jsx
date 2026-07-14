@@ -4,6 +4,8 @@ import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from "
 import { Calendar, AlertTriangle, CheckCircle, XCircle, Clock } from "lucide-react";
 import { getAllAppointments, getDoctors } from "../../../services/api";
 import { AdminTableSkeleton } from "../../../app/components/skeletons/AdminTableSkeleton";
+import { CustomSelect } from "../../../components/CustomSelect";
+import { DateInput } from "../../../components/DateInput";
 
 const columnHelper = createColumnHelper();
 
@@ -141,8 +143,7 @@ export const AdminAppointments = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Citas</h2>
-        <p className="text-gray-500 font-medium mt-1">Todas las citas médicas del sistema.</p>
+        <p className="text-gray-500 font-medium">Todas las citas médicas del sistema.</p>
       </div>
 
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
@@ -152,33 +153,37 @@ export const AdminAppointments = () => {
             <h3 className="text-lg font-bold text-gray-900">Todas las Citas <span className="text-medi-500 font-extrabold">({appointments.length})</span></h3>
           </div>
           <div className="flex gap-2 flex-wrap">
-            <select
+            <CustomSelect
               value={filterDoctor}
-              onChange={(e) => setFilterDoctor(e.target.value)}
-              className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-700 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all outline-none"
-            >
-              <option value="">Todos los médicos</option>
-              {doctors.map((d) => {
+              onChange={(val) => setFilterDoctor(val)}
+              placeholder="Todos los médicos"
+              options={doctors.map((d) => {
                 const name = `${d.usuario?.nombres || ""} ${d.usuario?.apellidos || ""}`.trim();
-                return <option key={d.id_medico} value={name}>{name}</option>;
+                return { value: name, label: name };
               })}
-            </select>
-            <select
+              className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-700 font-medium focus:outline-none focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+              optionHeight="py-1.5"
+              optionFont="text-xs"
+            />
+            <CustomSelect
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-700 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all outline-none"
-            >
-              <option value="">Todos los estados</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="En curso">En curso</option>
-              <option value="Completada">Completada</option>
-              <option value="Cancelada">Cancelada</option>
-            </select>
-            <input
-              type="date"
+              onChange={(val) => setFilterStatus(val)}
+              placeholder="Todos los estados"
+              options={[
+                { value: "Pendiente", label: "Pendiente" },
+                { value: "En curso", label: "En curso" },
+                { value: "Completada", label: "Completada" },
+                { value: "Cancelada", label: "Cancelada" },
+              ]}
+              className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-700 font-medium focus:outline-none focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+              optionHeight="py-1.5"
+              optionFont="text-xs"
+            />
+            <DateInput
               value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-700 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all outline-none"
+              onChange={(val) => setFilterDate(val)}
+              placeholder="Filtrar fecha"
+              className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-700 font-medium transition-all"
             />
           </div>
         </div>

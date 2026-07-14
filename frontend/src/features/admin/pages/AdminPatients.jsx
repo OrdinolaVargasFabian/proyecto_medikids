@@ -71,8 +71,7 @@ export const AdminPatients = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Pacientes</h2>
-        <p className="text-gray-500 font-medium mt-1">Lista de todos los pacientes registrados en el sistema.</p>
+        <p className="text-gray-500 font-medium">Lista de todos los pacientes registrados en el sistema.</p>
       </div>
 
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">

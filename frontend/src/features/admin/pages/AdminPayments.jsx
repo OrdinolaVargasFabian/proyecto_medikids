@@ -93,8 +93,7 @@ export const AdminPayments = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Pagos</h2>
-        <p className="text-gray-500 font-medium mt-1">Registro de todos los pagos realizados en el sistema.</p>
+        <p className="text-gray-500 font-medium">Registro de todos los pagos realizados en el sistema.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

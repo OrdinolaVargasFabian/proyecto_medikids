@@ -63,8 +63,7 @@ export const AdminIncidents = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Incidentes</h2>
-          <p className="text-gray-500 font-medium mt-1">Gestiona los incidentes reportados por los médicos.</p>
+          <p className="text-gray-500 font-medium">Gestiona los incidentes reportados por los médicos.</p>
         </div>
         <div className="text-right">
           <div className="text-sm text-gray-500 font-medium">Pendientes</div>

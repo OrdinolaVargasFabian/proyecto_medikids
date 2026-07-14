@@ -19,6 +19,7 @@ dist-ssr
 
 # Agent skills y claude (reinstalables via skills-lock.json)
 .agents/
+.claude/
 CLAUDE.md
 
 # Editor directories and files
