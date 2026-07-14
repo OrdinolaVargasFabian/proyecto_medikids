@@ -7,6 +7,7 @@ import { saveAppointment, savePayment } from "../../../services/api";
 import { BookAppointmentSkeleton } from "../../../app/components/skeletons/BookAppointmentSkeleton";
 import { useNotifications } from "../../../app/context/NotificationContext";
 import { useTutorial } from "../context/TutorialContext";
+import { CustomSelect } from "../../../components/CustomSelect";
 
 const marcaColorBook = {
   Visa: "from-blue-700 to-blue-900",
@@ -15,26 +16,20 @@ const marcaColorBook = {
   Otro: "from-gray-600 to-gray-800",
 };
 
-const colors = [
-  { from: "from-pink-400", to: "to-rose-500" },
-  { from: "from-blue-400", to: "to-indigo-500" },
-  { from: "from-amber-400", to: "to-orange-500" },
-  { from: "from-emerald-400", to: "to-teal-500" },
-  { from: "from-violet-400", to: "to-purple-500" },
-];
-
 const getInitials = (name) =>
   name ? name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) : "";
 
 const getAge = (birthDate) => {
-  if (!birthDate) return 0;
+  if (!birthDate) return { value: 0, unit: 'años' };
   const today = new Date();
   const birth = new Date(birthDate);
-  if (isNaN(birth.getTime())) return 0;
-  let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-  return age;
+  if (isNaN(birth.getTime())) return { value: 0, unit: 'años' };
+  let years = today.getFullYear() - birth.getFullYear();
+  let months = today.getMonth() - birth.getMonth();
+  if (months < 0 || (months === 0 && today.getDate() < birth.getDate())) { years--; months += 12; }
+  if (years >= 1) return { value: years, unit: years === 1 ? 'año' : 'años' };
+  if (months < 0) months = 0;
+  return { value: months, unit: months === 1 ? 'mes' : 'meses' };
 };
 
 const formatTime = (val) => {
@@ -266,8 +261,7 @@ export const BookAppointment = () => {
     <>
     <div className="max-w-4xl space-y-8">
       <div>
-        <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Agendar Nueva Cita</h2>
-        <p className="text-gray-500 font-medium mt-1">Selecciona los detalles para reservar una consulta.</p>
+        <p className="text-gray-500 font-medium">Selecciona los detalles para reservar una consulta.</p>
       </div>
 
       {message && (
@@ -315,25 +309,27 @@ export const BookAppointment = () => {
               </div>
             ) : (
               <div data-tutorial="children-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {children.map((child, index) => {
-                  const color = colors[index % colors.length];
+                {children.map((child) => {
+                  const age = getAge(child.fecha_nacimiento);
                   return (
-                    <button
-                      key={child.id_paciente}
-                      onClick={() => setSelectedChild(child)}
-                      className={`bg-gradient-to-br ${color.from} ${color.to} text-white rounded-2xl p-6 text-center transition-all shadow-md ${selectedChild?.id_paciente === child.id_paciente
-                        ? "ring-4 ring-white ring-offset-2 ring-offset-transparent scale-[1.02] shadow-xl"
-                        : "hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg"
-                        }`}
-                    >
-                      <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl font-extrabold mx-auto mb-3 shadow-inner">
-                        {getInitials(child.nombre_completo)}
-                      </div>
-                      <div className="text-lg font-extrabold tracking-tight">{child.nombre_completo}</div>
-                      <div className="text-white/80 text-sm font-medium">{getAge(child.fecha_nacimiento)} años</div>
-                    </button>
-                  );
-                })}
+                  <button
+                    key={child.id_paciente}
+                    onClick={() => setSelectedChild(child)}
+                    className={`bg-white rounded-2xl border-2 p-5 text-center transition-all ${
+                      selectedChild?.id_paciente === child.id_paciente
+                        ? "border-medi-500 bg-medi-50 shadow-md scale-[1.02]"
+                        : "border-gray-100 hover:border-medi-300 hover:shadow-sm"
+                    }`}
+                  >
+                    <div className="w-14 h-14 rounded-xl bg-medi-500 flex items-center justify-center text-white text-xl font-extrabold mx-auto mb-3 shadow-sm">
+                      {getInitials(child.nombre_completo)}
+                    </div>
+                    <div className="text-base font-extrabold text-gray-900 tracking-tight">{child.nombre_completo}</div>
+                    <span className="inline-block mt-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-medi-50 text-medi-700">
+                      {age.value} {age.unit}
+                    </span>
+                  </button>
+                );})}
               </div>
             )}
           </div>
@@ -351,37 +347,38 @@ export const BookAppointment = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Especialidad</label>
-                  <select data-tutorial="specialty-select" value={selectedSpecialty?.id_especialidad || ""}
-                    onChange={(e) => {
-                      const sp = specialties.find((s) => s.id_especialidad === Number(e.target.value));
+                  <CustomSelect
+                    dataTutorial="specialty-select"
+                    value={selectedSpecialty?.id_especialidad || ""}
+                    onChange={(val) => {
+                      const sp = specialties.find((s) => s.id_especialidad === Number(val));
                       setSelectedSpecialty(sp || null);
                       setSelectedDoctor(null);
                       setSelectedHorario(null);
                     }}
-                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all appearance-none">
-                    <option value="">Selecciona una especialidad</option>
-                    {specialties.map((s) => (
-                      <option key={s.id_especialidad} value={s.id_especialidad}>{s.nombre}</option>
-                    ))}
-                  </select>
+                    placeholder="Selecciona una especialidad"
+                    options={specialties.map((s) => ({ value: s.id_especialidad, label: s.nombre }))}
+                    className="px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:outline-none focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Médico</label>
-                  <select data-tutorial="doctor-select" value={selectedDoctor?.id_medico || ""}
-                    onChange={(e) => {
-                      const doc = filteredDoctors.find((d) => d.id_medico === Number(e.target.value));
+                  <CustomSelect
+                    dataTutorial="doctor-select"
+                    value={selectedDoctor?.id_medico || ""}
+                    onChange={(val) => {
+                      const doc = filteredDoctors.find((d) => d.id_medico === Number(val));
                       setSelectedDoctor(doc || null);
                       setVisibleCount(4);
                     }}
                     disabled={!selectedSpecialty}
-                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all appearance-none disabled:opacity-40 disabled:cursor-not-allowed">
-                    <option value="">Selecciona un médico</option>
-                    {filteredDoctors.map((d) => (
-                      <option key={d.id_medico} value={d.id_medico}>
-                        {d.usuario?.nombres} {d.usuario?.apellidos}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Selecciona un médico"
+                    options={filteredDoctors.map((d) => ({
+                      value: d.id_medico,
+                      label: `${d.usuario?.nombres || ''} ${d.usuario?.apellidos || ''}`.trim(),
+                    }))}
+                    className="px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 font-medium focus:outline-none focus:border-medi-400 focus:ring-2 focus:ring-medi-200 transition-all"
+                  />
                 </div>
               </div>
             )}
