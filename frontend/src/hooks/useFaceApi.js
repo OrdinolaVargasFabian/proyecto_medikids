@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import * as faceapi from 'face-api.js';
 
-const MODEL_URL = '/models';
+const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
 
 export function useFaceApi() {
   const [modelsLoaded, setModelsLoaded] = useState(false);
