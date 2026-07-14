@@ -229,7 +229,7 @@ public class AuthService {
             return null;
         }
 
-        if (!ipAutorizadaService.isIpAuthorized(clientIp)) {
+        if (usuario.getId_rol() == 3 && !ipAutorizadaService.isIpAuthorized(clientIp)) {
             return null;
         }
 

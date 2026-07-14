@@ -16,6 +16,14 @@ const queryClient = new QueryClient({
   },
 })
 
+// ── Cambio de título al salir de la pestaña ──
+const TITLE_DEFAULT = 'MediKids Pediatras';
+const TITLE_AWAY    = '😢 Vuelva y agenda una cita';
+document.addEventListener('visibilitychange', () => {
+  document.title = document.hidden ? TITLE_AWAY : TITLE_DEFAULT;
+});
+
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
