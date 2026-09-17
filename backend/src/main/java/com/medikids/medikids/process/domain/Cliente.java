@@ -17,12 +17,12 @@ public class Cliente {
     @Column(nullable = false)
     private int id_cliente;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_usuario", nullable = false, unique = true)
     private Usuario usuario;
     
-    @Column(nullable = false)
-    private int dni_responsable;
+    @Column(nullable = false, length = 20)
+    private String dni_responsable;
 
     @Column(nullable = false)
     private String direccion;

@@ -44,7 +44,6 @@ public class HorarioService {
                     .hora_inicio(bloque.getHora_inicio())
                     .hora_fin(bloque.getHora_fin())
                     .disponible('1')
-                    .medico_id(request.getId_medico())
                     .id_medico(request.getId_medico())
                     .build();
             bloques.add(h);

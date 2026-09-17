@@ -18,11 +18,7 @@ public class Horario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    // ELIMINADO: @Column(nullable = false)
     private Integer id_horario;
-
-    @Column(nullable = false)
-    private Integer medico_id;
 
     @Column(nullable = false)
     private LocalDate fecha;

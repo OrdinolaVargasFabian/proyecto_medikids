@@ -3,6 +3,7 @@ package com.medikids.medikids.process.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,8 +21,8 @@ public class Pago {
     @Column(nullable = false)
     private int id_pago;
 
-    @Column(nullable = false)
-    private double monto;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal monto;
 
     @Column(name = "metodo_pago", nullable = false)
     private String metodo_pago;
@@ -31,9 +32,6 @@ public class Pago {
 
     @Column(name = "fecha_pago", nullable = false)
     private LocalDateTime fecha_pago;
-
-    @Column(name = "id_cita", nullable = true)
-    private Integer id_cita;
 
     @PrePersist
     protected void onCreate() {

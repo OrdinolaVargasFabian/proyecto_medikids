@@ -49,7 +49,7 @@ export const CreateAdmin = () => {
     }
     setLoading(true);
     try {
-      navigate('/admin/biometria/registrar/nuevo', { state: { formData: { ...form, telefono: Number(form.telefono) } } });
+      navigate('/admin/biometria/registrar/nuevo', { state: { formData: { ...form, telefono: form.telefono } } });
     } catch (err) {
       setToast({ message: err.response?.data?.message || err.response?.data?.error || "Error al crear admin", type: "error" });
       setLoading(false);

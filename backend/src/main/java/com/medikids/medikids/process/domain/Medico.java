@@ -40,7 +40,7 @@ public class Medico {
     @Column(name = "estado")
     private EstadoMedico estado;
 
-    @Column(name = "id_usuario", nullable = false)
+    @Column(name = "id_usuario", nullable = false, unique = true)
     private int id_usuario;
 
     @Column(name = "id_especialidad", nullable = false)

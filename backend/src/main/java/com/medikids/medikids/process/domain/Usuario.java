@@ -17,7 +17,7 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    @Column(nullable = false, columnDefinition = "INT UNSIGNED")
+    @Column(nullable = false)
     private int id_usuario;
     @Column(nullable = false)
     private int id_rol;
@@ -29,8 +29,8 @@ public class Usuario {
     private String email;
     @Column(nullable = false)
     private String password;
-    @Column(nullable = false)
-    private int telefono;
+    @Column(nullable = false, length = 20)
+    private String telefono;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, updatable = false)

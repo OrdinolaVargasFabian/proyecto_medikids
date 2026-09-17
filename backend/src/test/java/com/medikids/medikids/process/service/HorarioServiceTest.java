@@ -36,7 +36,6 @@ class HorarioServiceTest {
         testHorario = Horario.builder()
                 .id_horario(1)
                 .id_medico(1)
-                .medico_id(1)
                 .fecha(LocalDate.now().plusDays(1))
                 .hora_inicio(Time.valueOf("09:00:00"))
                 .hora_fin(Time.valueOf("10:00:00"))

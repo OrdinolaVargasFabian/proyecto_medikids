@@ -19,7 +19,7 @@ public class UsuarioDto implements Serializable {
     private String apellidos;
     private String email;
     private String password;
-    private int telefono;
+    private String telefono;
     private Date fecha_registro;
     private Date fecha_modificado;
     private char visible; //1: Sí, 0: No

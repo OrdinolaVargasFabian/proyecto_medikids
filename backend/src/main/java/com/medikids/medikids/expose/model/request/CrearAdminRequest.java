@@ -11,5 +11,5 @@ public class CrearAdminRequest {
     private String password;
     private String nombres;
     private String apellidos;
-    private int telefono;
+    private String telefono;
 }

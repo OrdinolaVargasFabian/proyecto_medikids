@@ -3,6 +3,8 @@ package com.medikids.medikids.process.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,6 +26,6 @@ public class Especialidad {
     @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
 
-    @Column(name = "precio")
-    private Double precio;
+    @Column(name = "precio", precision = 10, scale = 2)
+    private BigDecimal precio;
 }

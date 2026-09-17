@@ -161,6 +161,10 @@ class CitaServiceTest {
         // Arrange
         Horario testHorario = new Horario();
         testHorario.setId_horario(1);
+        testHorario.setId_medico(1);
+        testHorario.setFecha(LocalDate.now().plusDays(1));
+        testHorario.setHora_inicio(java.sql.Time.valueOf("09:00:00"));
+        testHorario.setHora_fin(java.sql.Time.valueOf("09:30:00"));
         testHorario.setDisponible('1');
         when(horarioRepository.findById(1)).thenReturn(Optional.of(testHorario));
         when(horarioRepository.save(any(Horario.class))).thenReturn(testHorario);

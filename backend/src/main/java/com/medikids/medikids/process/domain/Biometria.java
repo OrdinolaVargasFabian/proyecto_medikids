@@ -16,7 +16,7 @@ public class Biometria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    @Column(nullable = false, columnDefinition = "INT UNSIGNED")
+    @Column(nullable = false)
     private int id_biometria;
 
     @ManyToOne(fetch = FetchType.LAZY)

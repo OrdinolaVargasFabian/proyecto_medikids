@@ -15,5 +15,5 @@ public class UsuarioRequest implements Serializable {
     private String apellidos;
     private String email;
     private String password;
-    private int telefono;
+    private String telefono;
 }

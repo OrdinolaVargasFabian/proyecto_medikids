@@ -11,17 +11,17 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface HorarioRepository extends JpaRepository<Horario, Integer> {
-    @Query("SELECT h FROM Horario h WHERE h.medico_id = :idMedico")
+    @Query("SELECT h FROM Horario h WHERE h.id_medico = :idMedico")
     List<Horario> findByMedico(@Param("idMedico") int idMedico);
 
-    @Query("SELECT h FROM Horario h WHERE h.medico_id = :idMedico AND h.disponible = '1' ORDER BY h.fecha ASC, h.hora_inicio ASC")
+    @Query("SELECT h FROM Horario h WHERE h.id_medico = :idMedico AND h.disponible = '1' ORDER BY h.fecha ASC, h.hora_inicio ASC")
     List<Horario> findDisponiblesByMedico(@Param("idMedico") int idMedico);
 
-    @Query("SELECT h FROM Horario h WHERE h.medico_id = :idMedico AND h.fecha BETWEEN :inicio AND :fin ORDER BY h.fecha ASC, h.hora_inicio ASC")
+    @Query("SELECT h FROM Horario h WHERE h.id_medico = :idMedico AND h.fecha BETWEEN :inicio AND :fin ORDER BY h.fecha ASC, h.hora_inicio ASC")
     List<Horario> findByMedicoAndFechaBetween(@Param("idMedico") int idMedico, @Param("inicio") LocalDate inicio, @Param("fin") LocalDate fin);
 
     @Modifying
     @Transactional
-    @Query("DELETE FROM Horario h WHERE h.medico_id = :idMedico AND h.fecha BETWEEN :inicio AND :fin AND h.disponible = '1'")
+    @Query("DELETE FROM Horario h WHERE h.id_medico = :idMedico AND h.fecha BETWEEN :inicio AND :fin AND h.disponible = '1'")
     void deleteDisponiblesByMedicoAndFechaBetween(@Param("idMedico") int idMedico, @Param("inicio") LocalDate inicio, @Param("fin") LocalDate fin);
 }

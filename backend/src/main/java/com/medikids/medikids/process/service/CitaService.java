@@ -213,9 +213,11 @@ public class CitaService {
             throw new RuntimeException("No se pueden agendar citas en fechas pasadas");
         }
 
-        if (cita.getFecha_cita() == null || cita.getFecha_cita().contains("NaN")) {
-            cita.setFecha_cita(LocalDate.now().toString());
-        }
+        // La agenda es la fuente de verdad: no confiamos en médico, fecha u hora
+        // enviados por el cliente porque podrían contradecir el horario reservado.
+        cita.setId_medico(horario.getId_medico());
+        cita.setFecha_cita(horario.getFecha().toString());
+        cita.setHora_cita(horario.getHora_inicio().toString());
 
         Cita saved = citaRepository.save(CitaHelper.buildCita(cita));
 

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Setter
 @Getter
@@ -12,5 +13,5 @@ public class EspecialidadRequest implements Serializable {
 
     private String nombre;
     private String descripcion;
-    private Double precio;
+    private BigDecimal precio;
 }
