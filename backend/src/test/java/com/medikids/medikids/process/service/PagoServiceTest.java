@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,14 +36,13 @@ class PagoServiceTest {
     void setUp() {
         testPago = new Pago();
         testPago.setId_pago(1);
-        testPago.setId_cita(1);
-        testPago.setMonto(50.00);
+        testPago.setMonto(new BigDecimal("50.00"));
         testPago.setEstado_transaccion("completado");
         testPago.setFecha_pago(LocalDateTime.now());
         testPago.setMetodo_pago("tarjeta");
 
         pagoRequest = new PagoRequest();
-        pagoRequest.setMonto(50.00);
+        pagoRequest.setMonto(new BigDecimal("50.00"));
         pagoRequest.setMetodo_pago("tarjeta");
     }
 
@@ -72,7 +72,7 @@ class PagoServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(50.00, result.getMonto());
+        assertEquals(new BigDecimal("50.00"), result.getMonto());
         verify(pagoRepository, times(1)).save(any(Pago.class));
     }
 
@@ -125,8 +125,7 @@ class PagoServiceTest {
         // Arrange
         Pago pago2 = new Pago();
         pago2.setId_pago(2);
-        pago2.setId_cita(2);
-        pago2.setMonto(75.00);
+        pago2.setMonto(new BigDecimal("75.00"));
         pago2.setEstado_transaccion("completado");
 
         when(pagoRepository.findByCliente(1)).thenReturn(List.of(testPago, pago2));
@@ -144,7 +143,7 @@ class PagoServiceTest {
     void testGuardarPagoValido() {
         // Arrange
         PagoRequest validPago = new PagoRequest();
-        validPago.setMonto(100.50);
+        validPago.setMonto(new BigDecimal("100.50"));
         validPago.setMetodo_pago("efectivo");
 
         when(pagoRepository.save(any(Pago.class))).thenReturn(testPago);
@@ -154,6 +153,6 @@ class PagoServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertTrue(result.getMonto() > 0);
+        assertTrue(result.getMonto().signum() > 0);
     }
 }

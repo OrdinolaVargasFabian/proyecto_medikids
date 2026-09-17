@@ -32,6 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 .env
+.mysql-data/
+.mysql-local.ini
+.local-backups/
 
 ### env ###
 *.properties

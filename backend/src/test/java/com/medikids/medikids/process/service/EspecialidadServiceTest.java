@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,13 +38,13 @@ class EspecialidadServiceTest {
                 .id_especialidad(1)
                 .nombre("Pediatría General")
                 .descripcion("Atención pediátrica general")
-                .precio(50.00)
+                .precio(new BigDecimal("50.00"))
                 .build();
 
         especialidadRequest = new EspecialidadRequest();
         especialidadRequest.setNombre("Pediatría General");
         especialidadRequest.setDescripcion("Atención pediátrica general");
-        especialidadRequest.setPrecio(50.00);
+        especialidadRequest.setPrecio(new BigDecimal("50.00"));
     }
 
     @Test
@@ -111,7 +112,7 @@ class EspecialidadServiceTest {
         EspecialidadRequest updateRequest = new EspecialidadRequest();
         updateRequest.setNombre("Pediatría Avanzada");
         updateRequest.setDescripcion("Atención pediátrica avanzada");
-        updateRequest.setPrecio(75.00);
+        updateRequest.setPrecio(new BigDecimal("75.00"));
 
         when(especialidadRepository.findById(1)).thenReturn(Optional.of(testEspecialidad));
         when(especialidadRepository.save(any(Especialidad.class))).thenReturn(testEspecialidad);
@@ -160,7 +161,7 @@ class EspecialidadServiceTest {
                 .id_especialidad(2)
                 .nombre("Dermatología")
                 .descripcion("Salud de la piel")
-                .precio(60.00)
+                .precio(new BigDecimal("60.00"))
                 .build();
 
         when(especialidadRepository.findAll()).thenReturn(List.of(testEspecialidad, especialidad2));

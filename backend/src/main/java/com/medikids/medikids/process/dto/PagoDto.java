@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Setter
 @Getter
@@ -14,7 +14,7 @@ public class PagoDto implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private int id_pago;
-    private double monto;
+    private BigDecimal monto;
     private String metodo_pago;
     private String estado_transaccion;
 }

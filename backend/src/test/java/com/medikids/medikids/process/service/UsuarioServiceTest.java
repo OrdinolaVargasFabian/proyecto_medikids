@@ -46,7 +46,7 @@ class UsuarioServiceTest {
         testUsuario.setNombres("Juan");
         testUsuario.setApellidos("Pérez");
         testUsuario.setPassword(passwordEncoder.encode("password123"));
-        testUsuario.setTelefono(300123456);
+        testUsuario.setTelefono("300123456");
         testUsuario.setActivo(true);
         testUsuario.setVisible('1');
 
@@ -55,7 +55,7 @@ class UsuarioServiceTest {
         usuarioRequest.setNombres("Juan");
         usuarioRequest.setApellidos("Pérez");
         usuarioRequest.setPassword("password123");
-        usuarioRequest.setTelefono(300123456);
+        usuarioRequest.setTelefono("300123456");
         usuarioRequest.setId_rol(1);
     }
 

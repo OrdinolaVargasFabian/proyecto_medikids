@@ -14,7 +14,7 @@ public class ClienteDto implements Serializable {
 
     private int id_cliente;
     private int id_usuario;
-    private int dni_responsable;
+    private String dni_responsable;
     private String direccion;
 
     // Datos enriquecidos de la FK id_usuario

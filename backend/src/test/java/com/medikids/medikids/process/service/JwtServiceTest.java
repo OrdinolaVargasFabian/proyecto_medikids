@@ -37,7 +37,7 @@ class JwtServiceTest {
         testUsuario.setEmail("test@medikids.com");
         testUsuario.setNombres("Juan Test");
         testUsuario.setApellidos("Pérez Test");
-        testUsuario.setTelefono(300123456);
+        testUsuario.setTelefono("300123456");
         testUsuario.setActivo(true);
     }
 

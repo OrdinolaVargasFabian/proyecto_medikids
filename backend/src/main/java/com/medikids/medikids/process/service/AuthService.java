@@ -129,7 +129,7 @@ public class AuthService {
         if (isAdmin && biometriaService.existsByUsuarioId(usuario.getId_usuario())) {
             String preAuthToken = generarTokenHex32();
 
-            usuario.setCodigoVerificacion(preAuthToken);
+            usuario.setCodigoVerificacion(passwordEncoder.encode(preAuthToken));
             usuario.setCodigoExpiracion(new Date(System.currentTimeMillis() + 300000));
             usuarioRepository.save(usuario);
 
@@ -143,7 +143,7 @@ public class AuthService {
 
         String codigo = generarCodigo6Digitos();
 
-        usuario.setCodigoVerificacion(codigo);
+        usuario.setCodigoVerificacion(passwordEncoder.encode(codigo));
         usuario.setCodigoExpiracion(new Date(System.currentTimeMillis() + codigoExpiracionMs));
         usuarioRepository.save(usuario);
 
@@ -183,7 +183,7 @@ public class AuthService {
             return null;
         }
 
-        if (!usuario.getCodigoVerificacion().equals(preAuthToken)) {
+        if (!passwordEncoder.matches(preAuthToken, usuario.getCodigoVerificacion())) {
             return null;
         }
 
@@ -237,7 +237,7 @@ public class AuthService {
             return null;
         }
 
-        if (!usuario.getCodigoVerificacion().equals(code)) {
+        if (!passwordEncoder.matches(code, usuario.getCodigoVerificacion())) {
             return null;
         }
 
@@ -262,7 +262,7 @@ public class AuthService {
         Usuario usuario = usuarioOpt.get();
         String codigo = generarCodigo6Digitos();
 
-        usuario.setCodigoVerificacion(codigo);
+        usuario.setCodigoVerificacion(passwordEncoder.encode(codigo));
         usuario.setCodigoExpiracion(new Date(System.currentTimeMillis() + codigoExpiracionMs));
         usuarioRepository.save(usuario);
 

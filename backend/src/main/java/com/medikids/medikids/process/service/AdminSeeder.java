@@ -32,7 +32,7 @@ public class AdminSeeder implements CommandLineRunner {
                 .nombres("Admin")
                 .apellidos("Medikids")
                 .id_rol(3)
-                .telefono(999999999)
+                .telefono("999999999")
                 .visible('1')
                 .build();
 

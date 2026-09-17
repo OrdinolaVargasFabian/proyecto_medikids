@@ -107,11 +107,11 @@ export const RegisterPage = () => {
         apellidos,
         email,
         password,
-        telefono: telefono ? parseInt(telefono, 10) : 0,
+        telefono: telefono || "",
       });
       await registerClient({
         id_usuario: user.id_usuario,
-        dni_responsable: dni ? parseInt(dni, 10) : 0,
+        dni_responsable: dni || "",
         direccion: "",
       }).catch(() => {});
       navigate("/login");

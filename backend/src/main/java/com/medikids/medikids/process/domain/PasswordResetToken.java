@@ -23,7 +23,7 @@ public class PasswordResetToken {
     private String token;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "id_usuario", referencedColumnName = "id_usuario", columnDefinition = "INT UNSIGNED")
+    @JoinColumn(nullable = false, name = "id_usuario", referencedColumnName = "id_usuario")
     private Usuario usuario;
 
     @Column(nullable = false)

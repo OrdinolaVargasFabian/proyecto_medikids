@@ -44,12 +44,12 @@ class ClienteServiceTest {
         testCliente = new Cliente();
         testCliente.setId_cliente(1);
         testCliente.setUsuario(usuario);
-        testCliente.setDni_responsable(12345678);
+        testCliente.setDni_responsable("12345678");
         testCliente.setDireccion("Calle Principal 123");
 
         clienteRequest = new ClienteRequest();
         clienteRequest.setId_usuario(1);
-        clienteRequest.setDni_responsable(12345678);
+        clienteRequest.setDni_responsable("12345678");
         clienteRequest.setDireccion("Calle Principal 123");
     }
 
@@ -119,7 +119,7 @@ class ClienteServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(12345678, result.getDni_responsable());
+        assertEquals("12345678", result.getDni_responsable());
         verify(clienteRepository, times(1)).findByDni("12345678");
     }
 
@@ -155,7 +155,7 @@ class ClienteServiceTest {
     void testUpdate() {
         // Arrange
         ClienteRequest updateRequest = new ClienteRequest();
-        updateRequest.setDni_responsable(87654321);
+        updateRequest.setDni_responsable("87654321");
         updateRequest.setDireccion("Calle Secundaria 456");
 
         when(clienteRepository.findById(1)).thenReturn(Optional.of(testCliente));
