@@ -81,9 +81,9 @@ Incluye:
 Cómo está estructurado el sistema:
 
 - Frontend: Aplicación de una sola página (SPA) construida con React y Vite. Se encarga de la interfaz, navegación y experiencias por rol (padres, médicos, administradores).
-- Backend: API REST construida con Spring Boot (Java 17). Expone controladores que implementan la lógica de negocio y la persistencia.
+- Backend: API REST construida con Spring Boot (Java 21). Expone controladores que implementan la lógica de negocio y la persistencia.
 - APIs: Endpoints REST que comunican frontend y backend usando JSON. La autenticación usa JWT y un paso adicional de verificación por código (2FA por email).
-- Base de datos: MySQL (conector en el backend). El backend usa JPA/Hibernate para mapear entidades a tablas.
+- Base de datos: MySQL 8 con migraciones Flyway. El backend usa JPA/Hibernate para mapear entidades y validar el esquema.
 - Servicios externos: Servicio de correo electrónico (SMTP) para envío de códigos de verificación y notificaciones; librería JWT (`jjwt`) para tokens; potencial conexión a un servicio de pagos si se integra en el futuro.
 
 ## Stack tecnológico
@@ -179,7 +179,34 @@ Se listan los endpoints principales expuestos por el backend, método HTTP, payl
 	- GET /pagos
 		- Devuelve: List<Pago>
 	- POST /pagos
-		- Recibe: `Pago` o `PagoRequest` { "monto": double, "metodo_pago": string, "estado": string, "fecha_pago": yyyy-MM-dd, "id_cita": int }
+		- Recibe: `PagoRequest` { "monto": decimal, "metodo_pago": string }
 		- Devuelve: `Pago` guardado.
+
+## Ejecución local
+
+1. Crear un esquema MySQL vacío:
+
+	```sql
+	CREATE DATABASE medikids_db
+	  CHARACTER SET utf8mb4
+	  COLLATE utf8mb4_0900_ai_ci;
+	```
+
+2. Configurar `RDS_HOSTNAME`, `RDS_PORT`, `RDS_DB_NAME`, `RDS_USERNAME` y `RDS_PASSWORD`.
+3. Iniciar el backend con `mvn spring-boot:run`. Flyway aplicará las migraciones de `backend/src/main/resources/db/migration` y la API local quedará normalmente en `http://localhost:8085/api`.
+4. Iniciar el frontend con `npm ci` y `npm run dev` desde `frontend`; Vite usará normalmente `http://localhost:5173`.
+
+## Integración continua
+
+Los pull requests y cambios en `main` ejecutan una validación independiente de infraestructura externa:
+
+- `mvn --batch-mode clean verify` compila y ejecuta las pruebas del backend.
+- `npm ci` y `npm run build` validan la compilación del frontend.
+
+## Estado del despliegue
+
+El [frontend público](https://main.d32gmyvosajb2q.amplifyapp.com/) permanece alojado en AWS Amplify.
+
+El entorno histórico `backend-medikids-env` de Elastic Beanstalk ya no está disponible. Por ese motivo, el workflow de despliegue del backend es manual y requiere configurar previamente un entorno válido y sus secretos de AWS. La CI normal no depende de esa infraestructura.
 
 

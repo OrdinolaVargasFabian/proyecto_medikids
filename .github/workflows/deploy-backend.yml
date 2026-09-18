@@ -1,43 +1,49 @@
-name: Deploy Spring Boot to AWS Elastic Beanstalk
+name: Deploy Backend to AWS (manual)
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build-and-deploy:
+    name: Build and deploy backend
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v7
 
-    - name: Set up JDK 21
-      uses: actions/setup-java@v3
-      with:
-        java-version: '21'
-        distribution: 'corretto'
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          java-version: "21"
+          distribution: corretto
+          cache: maven
+          cache-dependency-path: backend/pom.xml
 
-    - name: Build with Maven
-      working-directory: ./backend
-      run: mvn clean package -DskipTests
+      - name: Build and test with Maven
+        working-directory: ./backend
+        run: mvn --batch-mode clean verify
 
-    - name: Generate deployment package
-      run: |
-        mv backend/target/*.jar application.jar
+      - name: Generate deployment package
+        run: mv backend/target/*.jar application.jar
 
-    - name: Get current timestamp
-      id: timestamp
-      run: echo "timestamp=$(date +'%Y-%m-%dT%H-%M-%S')" >> $GITHUB_ENV
+      - name: Generate version label
+        id: version
+        run: echo "label=v-$(date +'%Y-%m-%dT%H-%M-%S')" >> "$GITHUB_OUTPUT"
 
-    - name: Deploy to Elastic Beanstalk
-      uses: einaregilsson/beanstalk-deploy@v22
-      with:
-        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        application_name: backend-medikids
-        environment_name: backend-medikids-env
-        version_label: "v-${{ env.timestamp }}"
-        region: ${{ secrets.AWS_REGION }}
-        deployment_package: application.jar
+      # Requires an existing Elastic Beanstalk environment and valid repository
+      # secrets. It is manual because the historical environment is unavailable.
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v22
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: backend-medikids
+          environment_name: backend-medikids-env
+          version_label: ${{ steps.version.outputs.label }}
+          region: ${{ secrets.AWS_REGION }}
+          deployment_package: application.jar
